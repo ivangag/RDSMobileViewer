@@ -1,8 +1,10 @@
 package com.viewer.rds.actia.rdsmobileviewer;
 
+import android.content.ContentValues;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.viewer.rds.actia.rdsmobileviewer.db.RDSDBHelper;
 import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
 
 /**
@@ -160,5 +162,33 @@ public class MainContractorData implements Parcelable{
                 getFriendlyName(),getIdCustomer(),getAncodice(),getInsertDate(),
                 mIsFilePushingServiceActive,mIsSuperCRDSServiceActive,mIsEmailForwardServiceActive,mIsAutomaticDriverAssociationEnabled);
         return res;
+    }
+
+    public static MainContractorData getCustomerDataFromValues(ContentValues values) {
+        MainContractorData customerData = new MainContractorData();
+        customerData.setFriendlyName(values.getAsString(RDSDBHelper.NAME));
+        customerData.setAncodice(values.getAsString(RDSDBHelper.ANCODICE));
+        customerData.setEmail(values.getAsString(RDSDBHelper.EMAIL));
+        customerData.setIdCustomer(Integer.valueOf(values.getAsString(RDSDBHelper.ID_CUSTOMER)));
+        customerData.setInsertDate(values.getAsDouble(RDSDBHelper.INSERT_DATE).toString());
+        customerData.setIsAutomaticDriverAssociationEnabled(Boolean.valueOf(values.getAsString(RDSDBHelper.AUTO_DRIVER)));
+        customerData.setIsEmailForwardServiceActive(Boolean.valueOf(values.getAsString(RDSDBHelper.EMAIL_FORWARD)));
+        customerData.setIsSuperCRDSServiceActive(Boolean.valueOf(values.getAsString(RDSDBHelper.SUPER_CRDS)));
+        customerData.setIsFilePushingServiceActive(Boolean.valueOf(values.getAsString(RDSDBHelper.FILE_PUSH)));
+        return customerData;
+    }
+
+    public static ContentValues getCVFromCustomerData(MainContractorData customer) {
+        ContentValues cv = new ContentValues();
+        cv.put(RDSDBHelper.NAME, customer.getFriendlyName());
+        cv.put(RDSDBHelper.ANCODICE, customer.getAncodice());
+        cv.put(RDSDBHelper.EMAIL,customer.getEmail());
+        cv.put(RDSDBHelper.ID_CUSTOMER, customer.getIdCustomer());
+        cv.put(RDSDBHelper.INSERT_DATE,customer.getInsertDate());
+        cv.put(RDSDBHelper.AUTO_DRIVER, customer.ismIsAutomaticDriverAssociationEnabled());
+        cv.put(RDSDBHelper.EMAIL_FORWARD,customer.ismIsEmailForwardServiceActive());
+        cv.put(RDSDBHelper.SUPER_CRDS, customer.ismIsSuperCRDSServiceActive());
+        cv.put(RDSDBHelper.FILE_PUSH,customer.ismIsFilePushingServiceActive());
+        return cv;
     }
 }
