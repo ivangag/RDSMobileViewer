@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">RDSMobileViewer</string>
+    <string name="title_section1">Section 1</string>
+    <string name="title_section2">Section 2</string>
+    <string name="title_section3">Section 3</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_section4">Section 4</string>
+    <string name="title_vehicleNotTrusted">Vehicles</string>
+    <string name="title_crdsNotTrusted">CRDS</string>
+    <string name="title_driversNotTrusted">Drivers</string>
+    <string name="title_customers">Customers</string>
+    <string name="download_data_menu">Refresh Data</string>
+    <string name="headImageThumbail">headThumbail</string>
+    <string name="carddemo_title_list_base">List Base</string>
+    <string name="title_cards_example">Cards</string>
+    <string name="crds_fragment_title">CRDS</string>
+    <string name="vehicles_title">Vehicles</string>
+    <string name="main_menu_title">RDS Main Menu</string>
+    <string name="title_activity_main_menu">Items Not Trusted</string>
+    <string name="getVehicleDataPopMenu">Get Vehicles Data</string>
+    <string name="getDriversDataPopMenu">Get Drivers Data</string>
+    <string name="getCRDSDataPopMenu">Get CRDS Data</string>
+    <string name="getVehicleDiagnosticDataPopMenu">Retrieve Diagnostic Data</string>
+    <string name="customerVehicles">%s Vehicles</string>
+    <string name="getItemExtraDataPopMenu">Get Extra Info</string>
+    <string name="customerCRDS">%s CRDS</string>
+    <string name="drivers_title">Drivers</string>
+    <string name="customerDrivers">%s Drivers</string>
+    <string name="action_search">Search</string>
+    <string name="share">Share</string>
+    <string name="VehicleNotTrustedTitle">Vehicles Not Associated</string>
+    <string name="CRDSNotTrustedTitle">CRDS Not Associated</string>
+    <string name="CustomersListTitle">Customers</string>
+    <string name="VehiclesTitle">Vehicles</string>
+    <string name="DriversTitle">Drivers</string>
+    <string name="CRDSTitle">CRDS</string>
+    <string name="DriversNotTrustedTitle">Drivers Not Associated</string>
+    <string name="DiagnosticDataTitle">Vehicle Diagnostic Data</string>
+    <string name="progress_loading_text">Loading %s...</string>
+
+</resources>

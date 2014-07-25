@@ -1,0 +1,103 @@
+<resources>
+
+    <style name="AppThemeGreen" parent="@style/AppThemeV2"/>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="android:Theme.Holo.Light">
+        <item name="android:actionBarTabBarStyle">@style/MyActionBarTabs</item>
+        <item name="android:actionBarTabStyle">@style/MyActionBarTabs</item>
+        <!-- Customize your theme here. -->
+    </style>
+
+    <!-- ActionBar styles -->
+    <style name="MyActionBarTabs"
+        parent="@android:style/Widget.Holo.ActionBar.TabView">
+        <item name="android:background">@drawable/actionbar_tab_indicator</item>
+    </style>
+
+    <style name="carddemo_myapps_main_inner_title">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">@android:color/black</item>
+        <item name="android:layout_marginTop">2dp</item>
+    </style>
+
+    <style name="carddemo_myapps_main_inner_secondarytitle">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@android:color/darker_gray</item>
+    </style>
+
+
+    <style name="carddemo_myapps_main_inner_ratingbar"  >
+        <item name="android:indeterminateOnly">false</item>
+        <item name="android:progressDrawable">@drawable/ratingbar_small_holo_dark</item>
+        <item name="android:indeterminateDrawable">@drawable/ratingbar_small_holo_dark</item>
+        <item name="android:minHeight">12dip</item>
+        <item name="android:maxHeight">12dip</item>
+        <item name="android:thumb">@null</item>
+        <item name="android:isIndicator">true</item>
+    </style>
+
+
+    <!--Style for Content View-->
+    <style name="card.content_rds_outer_layout">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:minHeight">@dimen/card_base_rds_empty_height</item>
+        <item name="android:layout_marginTop">@dimen/card_content_outer_view_margin_top</item>
+        <item name="android:layout_marginBottom">@dimen/card_content_outer_view_margin_bottom</item>
+        <item name="android:layout_marginLeft">@dimen/card_content_outer_view_margin_left</item>
+        <item name="android:layout_marginRight">@dimen/card_content_outer_view_margin_right</item>
+    </style>
+
+    <!--Style for simple title inner main view-->
+    <style name="card.base_simple_title">
+        <item name="android:textStyle">bold</item>
+        <item name="android:layout_gravity">left|center_vertical</item>
+        <item name="android:layout_marginLeft">@dimen/card_main_simple_title_margin_left</item>
+        <item name="android:layout_marginTop">@dimen/card_main_simple_title_margin_top</item>
+    </style>
+    <!-- Thumbnail list -->
+    <style name="list_card.thumbnail">
+
+    </style>
+
+    <style name="Now"></style>
+
+    <style name="Now.card_expand_inner_layout">
+        <item name="android:paddingLeft">10dp</item>
+        <item name="android:paddingRight">10dp</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">32dp</item>
+        <item name="android:gravity">center_vertical</item>
+    </style>
+
+    <style name="Now.card_expand_inner_layout.light_gray">
+        <item name="android:background">#515254</item>
+        <item name="android:textColor">#B3B2B2</item>
+    </style>
+
+    <style name="Now.card_expand_inner_layout.light_gray.bold">
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Now.card_expand_inner_layout.dark">
+        <item name="android:background">#4A4B4D</item>
+        <item name="android:textColor">#FFF</item>
+    </style>
+
+    <style name="Now.card_expand_inner_layout.dark.bold" parent="@style/Now.card_expand_inner_layout.dark">
+        <item name="android:textStyle">bold</item>
+    </style>
+
+
+    <style name="GenericProgressBackground" parent="android:Theme">
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">fill_parent</item>
+        <item name="android:background">#DD111111</item>
+        <item name="android:gravity">center</item>
+    </style>
+    <style name="GenericProgressIndicator" parent="@android:style/Widget.ProgressBar.Small">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:indeterminate">true</item>
+    </style>
+</resources>

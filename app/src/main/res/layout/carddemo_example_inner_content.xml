@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  ~ *******************************************************************************
+  ~   Copyright (c) 2013-2014 Gabriele Mariotti.
+  ~
+  ~   Licensed under the Apache License, Version 2.0 (the "License");
+  ~   you may not use this file except in compliance with the License.
+  ~   You may obtain a copy of the License at
+  ~
+  ~   http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~   Unless required by applicable law or agreed to in writing, software
+  ~   distributed under the License is distributed on an "AS IS" BASIS,
+  ~   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~   See the License for the specific language governing permissions and
+  ~   limitations under the License.
+  ~  *****************************************************************************
+  -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_marginLeft="3dp"
+    android:gravity="center_vertical"
+    android:layout_height="64dp">
+
+
+     <ImageView
+            android:layout_marginTop="2dp"
+            android:id="@+id/rds_menu_item_thumbnail_image"
+            android:background="@drawable/ic_rds_customer"
+            android:layout_width="48dp"
+            android:layout_height="48dp"/>
+
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:weightSum="1">
+
+        <TextView
+            android:id="@+id/card_rds_customer_name_info"
+            android:layout_marginLeft="10dp"
+            android:gravity="left"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:text="Cooperativa Sociale dddddddddddddddddddddddd"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/card_element_primary_info"
+                    android:layout_marginLeft="10dp"
+                    android:gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:text="Info 1" />
+
+        <TextView
+            android:id="@+id/card_element_secondary_info"
+                    android:layout_marginLeft="10dp"
+                    android:gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:text="Info 2" />
+
+    </LinearLayout>
+
+
+</LinearLayout>

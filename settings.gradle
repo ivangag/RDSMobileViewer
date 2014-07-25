@@ -1,0 +1,1 @@
+include ':app', ':library-1.7.4-SNAPSHOT', ':library-1.8.1-SNAPSHOT'
