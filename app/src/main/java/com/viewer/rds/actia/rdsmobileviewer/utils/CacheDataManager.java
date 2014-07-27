@@ -1,9 +1,12 @@
 package com.viewer.rds.actia.rdsmobileviewer.utils;
 
+import android.content.Context;
+
 import com.viewer.rds.actia.rdsmobileviewer.CRDSCustom;
 import com.viewer.rds.actia.rdsmobileviewer.DriverCardData;
 import com.viewer.rds.actia.rdsmobileviewer.MainContractorData;
 import com.viewer.rds.actia.rdsmobileviewer.VehicleCustom;
+import com.viewer.rds.actia.rdsmobileviewer.db.RDSDBMapper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -101,8 +104,10 @@ public class CacheDataManager
         return mCachedDriversNotTrusted;
     }
 
-    public List<MainContractorData> getCustomers() {
-        return mCachedMainContractors;
+    public List<MainContractorData> getCustomers(Context context) {
+
+        return RDSDBMapper.getInstance(context).queryAllCustomers();
+        //return mCachedMainContractors;
     }
 
 

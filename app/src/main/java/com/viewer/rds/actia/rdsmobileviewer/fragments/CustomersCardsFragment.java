@@ -3,6 +3,7 @@ package com.viewer.rds.actia.rdsmobileviewer.fragments;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -110,10 +111,10 @@ public class CustomersCardsFragment extends BaseFragment implements IFragmentNot
         return inflater.inflate(R.layout.fragment_list_base_customer, container, false);
     }
 
+
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
         initCustomers();
     }
 
@@ -137,17 +138,25 @@ public class CustomersCardsFragment extends BaseFragment implements IFragmentNot
     }
 
     private void initCustomers() {
+        initAdapter();
+        initListView();
+    }
 
+    private void initListView() {
+        CardListView mListView = (CardListView) getActivity().findViewById(R.id.card_list_base_customer);
+
+        if (mListView != null) {
+            mListView.setAdapter(mCardArrayAdapter);
+        }
+    }
+
+
+    private void initAdapter() {
         if(mCardArrayAdapter == null) {
             ArrayList<Card> cards = new ArrayList<Card>();
 
             mCardArrayAdapter = new CardArrayAdapter(getActivity(), cards);
 
-        }
-        CardListView mListView = (CardListView) getActivity().findViewById(R.id.card_list_base_customer);
-
-        if (mListView != null) {
-            mListView.setAdapter(mCardArrayAdapter);
         }
     }
 

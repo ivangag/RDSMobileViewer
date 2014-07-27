@@ -5,11 +5,14 @@ import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.Debug;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.viewer.rds.actia.rdsmobileviewer.db.RDSDBMapper;
+import com.viewer.rds.actia.rdsmobileviewer.fragments.CustomersCardsFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.MainMenuCardsFragment;
 import com.viewer.rds.actia.rdsmobileviewer.utils.CacheDataManager;
 import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadRequestSchema;
@@ -25,12 +28,22 @@ public class MainMenuActivityExtended extends BaseActivity implements MainMenuCa
 
     private DownloadUtility.DownloadRequestType mCurrentPrimaryFragmentType;
     private DownloadUtility.DownloadRequestType mCurrentSecondaryFragmentType = null;
+    private RDSDBMapper mRDSDBMapper;
 
+
+    @Override
+    public void onStart() {
+
+        super.onStart();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setActivityCustomersLayout(savedInstanceState);
+        mRDSDBMapper = RDSDBMapper.getInstance(this);
+        mRDSDBMapper.open();
+        //mRDSDBMapper.deleteAllCustomers();
 
     }
 
@@ -82,6 +95,10 @@ public class MainMenuActivityExtended extends BaseActivity implements MainMenuCa
                 replaceFragment(R.id.fragment_main, getFragment(mCurrentPrimaryFragmentType), mCustomerListFragment, true);
                 addFragment(R.id.fragment_main_details, getFragment(mCurrentPrimaryFragmentType));
             }
+        }
+        else
+        {
+            removeExtraInfoFragment();
         }
     }
 
@@ -173,6 +190,13 @@ public class MainMenuActivityExtended extends BaseActivity implements MainMenuCa
                     MATCH_PARENT, 1f)));
         }
     }
+
+    @Override
+    public void onStop() {
+        mRDSDBMapper.close();
+        super.onStop();
+    }
+
     @Override
     public void handleDownloadDataFinished(DownloadRequestSchema requestType, Object result) {
 
@@ -186,10 +210,15 @@ public class MainMenuActivityExtended extends BaseActivity implements MainMenuCa
                 break;
             case CUSTOMERS_LIST:
                 //showNewFragment(mCustomerListFragment,FRAGMENT_CUSTOMERS_TAG,false);
-                if(mDisplayOrientation.equals(PORTRAIT)
+                if(mDisplayOrientation.equals(PORTRAIT) // this should never happen
                         && !getFragmentType(R.id.fragment_main).equals(DownloadUtility.DownloadRequestType.CUSTOMERS_LIST))
                     replaceFragment(R.id.fragment_main, null, mCustomerListFragment, false);
+                PushDataToFragment(mCustomerListFragment,requestType,result);
                 mCustomerListFragment.OnUpdateData("",result,MainContractorData.class);
+                for(MainContractorData customer : (List<MainContractorData>)result)
+                {
+                    mRDSDBMapper.insertCustomerData(customer);
+                }
                 break;
             case VEHICLES_OWNED:
                 //showNewFragment(mVehiclesCustomerListFragment,FRAGMENT_VEHICLES_TAG,true);

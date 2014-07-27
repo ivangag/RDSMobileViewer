@@ -314,6 +314,8 @@ public class DownloadUtility {
             MainContractorData remoteItem = new MainContractorData();
             if (!jsonObject.isNull("ancodice"))
                 remoteItem.setAncodice(jsonObject.getString("ancodice"));
+            if (!jsonObject.isNull("InsertDate"))
+                remoteItem.setInsertDate(jsonObject.getString("InsertDate"));
             if (!jsonObject.isNull("FriendlyName"))
                 remoteItem.setFriendlyName(jsonObject.getString("FriendlyName"));
             if (!jsonObject.isNull("IdCustomer"))
@@ -500,7 +502,7 @@ public class DownloadUtility {
                     break;
                 case CUSTOMERS_LIST:
                     if(mObtainCacheIfExist && (mHasCacheData = CacheDataManager.getInstance().hasCustomers())){
-                        result.setClassReturn(CacheDataManager.getInstance().getCustomers());
+                        result.setClassReturn(CacheDataManager.getInstance().getCustomers(null));
                     }
                     break;
                 case VEHICLES_OWNED:

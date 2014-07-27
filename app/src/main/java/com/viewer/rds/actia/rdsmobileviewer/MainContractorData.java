@@ -170,7 +170,7 @@ public class MainContractorData implements Parcelable{
         customerData.setAncodice(values.getAsString(RDSDBHelper.ANCODICE));
         customerData.setEmail(values.getAsString(RDSDBHelper.EMAIL));
         customerData.setIdCustomer(Integer.valueOf(values.getAsString(RDSDBHelper.ID_CUSTOMER)));
-        customerData.setInsertDate(values.getAsDouble(RDSDBHelper.INSERT_DATE).toString());
+        customerData.setInsertDate(values.getAsString(RDSDBHelper.INSERT_DATE));
         customerData.setIsAutomaticDriverAssociationEnabled(Boolean.valueOf(values.getAsString(RDSDBHelper.AUTO_DRIVER)));
         customerData.setIsEmailForwardServiceActive(Boolean.valueOf(values.getAsString(RDSDBHelper.EMAIL_FORWARD)));
         customerData.setIsSuperCRDSServiceActive(Boolean.valueOf(values.getAsString(RDSDBHelper.SUPER_CRDS)));

@@ -26,11 +26,11 @@ public class RDSDBHelper extends SQLiteOpenHelper {
     public final static String FILE_PUSH = "FilePushingEnabled";
 
 
-    final static String STORY_TABLE_NAME = "tb_customers";
+    final static String CUSTOMERS_TABLE = "tb_customers";
     final static String[] columns = { ID, NAME, ANCODICE,ID_CUSTOMER,INSERT_DATE,EMAIL,AUTO_DRIVER,EMAIL_FORWARD,SUPER_CRDS,FILE_PUSH};
 
     private static final String DATABASE_CREATE_CUSTOMERS = "create table "
-            + STORY_TABLE_NAME + " (" // start table
+            + CUSTOMERS_TABLE + " (" // start table
             + ID + " integer primary key autoincrement, " // setup
             // auto-inc.
             + NAME + " TEXT ," //
@@ -41,7 +41,7 @@ public class RDSDBHelper extends SQLiteOpenHelper {
             + SUPER_CRDS + " TEXT ," //
             + FILE_PUSH + " TEXT ," //
             + EMAIL + " TEXT ," //
-            + INSERT_DATE + " INTEGER ," //
+            + INSERT_DATE + " TEXT " //
             + " );"; // end table
 
 
@@ -68,7 +68,7 @@ public class RDSDBHelper extends SQLiteOpenHelper {
         // drop old DB
 
         // ST:dropTableIfExists:start
-        db.execSQL("DROP TABLE IF EXISTS " + STORY_TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + CUSTOMERS_TABLE);
         //db.execSQL("DROP TABLE IF EXISTS " + DATABASE_TABLE_TAGS);
         // ST:dropTableIfExists:finish
 

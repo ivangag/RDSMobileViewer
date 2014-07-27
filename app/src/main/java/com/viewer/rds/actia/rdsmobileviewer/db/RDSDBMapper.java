@@ -22,7 +22,7 @@ public class RDSDBMapper {
     private static  RDSDBMapper mRDSDBMapper = new RDSDBMapper();
 
     public static RDSDBMapper getInstance(Context context) {
-        if(context == null)
+        if(mRDSDBMapper.getContext() == null)
             mRDSDBMapper.setContext(context);
         return mRDSDBMapper;
     }
@@ -52,7 +52,7 @@ public class RDSDBMapper {
 
     public ArrayList<MainContractorData> queryAllCustomers()
     {
-        Cursor cursor = query(RDSDBHelper.STORY_TABLE_NAME,RDSDBHelper.columns,null, new String[]{},null);
+        Cursor cursor = query(RDSDBHelper.CUSTOMERS_TABLE,RDSDBHelper.columns,null, new String[]{},null);
         ArrayList<MainContractorData> res = new ArrayList<MainContractorData>();
         ContentValues values = new ContentValues();
         while (cursor.moveToNext()) {
@@ -62,7 +62,7 @@ public class RDSDBMapper {
             values.put(RDSDBHelper.EMAIL_FORWARD, cursor.getString(cursor.getColumnIndex(RDSDBHelper.EMAIL_FORWARD)));
             values.put(RDSDBHelper.FILE_PUSH, cursor.getString(cursor.getColumnIndex(RDSDBHelper.FILE_PUSH)));
             values.put(RDSDBHelper.ID_CUSTOMER, cursor.getString(cursor.getColumnIndex(RDSDBHelper.ID_CUSTOMER)));
-            values.put(RDSDBHelper.INSERT_DATE, cursor.getDouble(cursor.getColumnIndex(RDSDBHelper.INSERT_DATE)));
+            values.put(RDSDBHelper.INSERT_DATE, cursor.getString(cursor.getColumnIndex(RDSDBHelper.INSERT_DATE)));
             values.put(RDSDBHelper.SUPER_CRDS, cursor.getString(cursor.getColumnIndex(RDSDBHelper.SUPER_CRDS)));
             values.put(RDSDBHelper.NAME, cursor.getString(cursor.getColumnIndex(RDSDBHelper.NAME)));
             res.add(MainContractorData.getCustomerDataFromValues(values));
@@ -82,15 +82,18 @@ public class RDSDBMapper {
 
         return cursor;
     }
-    public synchronized long insertCustomerData(MainContractorData storyData)
+    public synchronized long insertCustomerData(MainContractorData customer)
     {
         long res;
         res = -1;
         if(mDB.isOpen())
         {
             try {
-                ContentValues values = MainContractorData.getCVFromCustomerData(storyData);
-                res = mDB.insertOrThrow(RDSDBHelper.STORY_TABLE_NAME,null,values);
+                ContentValues values = MainContractorData.getCVFromCustomerData(customer);
+                if(!this.isExistCustomer(customer.getAncodice()))
+                    res = mDB.insertOrThrow(RDSDBHelper.CUSTOMERS_TABLE, null, values);
+                else
+                    res = mDB.update(RDSDBHelper.CUSTOMERS_TABLE,values,null,null);
                 Log.i(LOG_TAG, "insertCustomerData new_index:" + res);
             }
             catch (SQLException e)
@@ -105,11 +108,28 @@ public class RDSDBMapper {
         return  res;
     }
 
+    public boolean isExistCustomer(String customerAnCodice) {
+        Cursor c = mDB.rawQuery("SELECT 1 FROM "+
+                RDSDBHelper.CUSTOMERS_TABLE
+                +" WHERE "+ RDSDBHelper.ANCODICE +"=?", new String[] {customerAnCodice});
+        boolean exists = c.moveToFirst();
+        c.close();
+        return exists;
+    }
+
     public synchronized void close()
     {
         if((null != mDB)
             && mDB.isOpen())
             mDB.close();
+    }
+
+
+    public synchronized void deleteAllCustomers()
+    {
+        if((null != mDB)
+                && mDB.isOpen())
+            mDB.delete(RDSDBHelper.CUSTOMERS_TABLE,null,null);
     }
 
     public void setContext(Context context) {

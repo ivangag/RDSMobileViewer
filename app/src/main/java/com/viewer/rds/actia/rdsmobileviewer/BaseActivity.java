@@ -43,11 +43,11 @@ public abstract class BaseActivity extends Activity implements
 
     public final static String ACTIVITY_TYPE = "ACTIVITY_TYPE";
 
-    protected final MainMenuCardsFragment mMenuCardsFragment = MainMenuCardsFragment.newInstance(DownloadUtility.DownloadRequestType.MAIN_MENU, true);
-    protected final CustomersCardsFragment mCustomerListFragment = CustomersCardsFragment.newInstance(DownloadUtility.DownloadRequestType.CUSTOMERS_LIST, true);
-    public final VehiclesCardsFragment mVehiclesCustomerListFragment = VehiclesCardsFragment.newInstance(DownloadUtility.DownloadRequestType.VEHICLES_OWNED, true);
-    protected final CRDSCardsFragment mCRDCustomerCardsFragment = CRDSCardsFragment.newInstance(DownloadUtility.DownloadRequestType.CRDS_OWNED, true);
-    protected final DriversCardsFragment mDriversCustomerListFragment = DriversHolderFragment.newInstance(DownloadUtility.DownloadRequestType.DRIVERS_OWNED, true);
+    protected static MainMenuCardsFragment mMenuCardsFragment;
+    protected static CustomersCardsFragment mCustomerListFragment;
+    protected static VehiclesCardsFragment mVehiclesCustomerListFragment;
+    protected static CRDSCardsFragment mCRDCustomerCardsFragment;
+    protected static DriversCardsFragment mDriversCustomerListFragment;
 
     protected static final int MATCH_PARENT = LinearLayout.LayoutParams.MATCH_PARENT;
     protected static final int LANDSCAPE = Configuration.ORIENTATION_LANDSCAPE;
@@ -66,6 +66,7 @@ public abstract class BaseActivity extends Activity implements
     private ArrayList<String> mFragmentTags;
     Integer mDisplayOrientation;
     protected Fragment mCurrentTabFragment;
+    protected static boolean isFragmentsInit = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +76,15 @@ public abstract class BaseActivity extends Activity implements
 
     private void init()
     {
+        if(!isFragmentsInit)
+        {
+            mMenuCardsFragment = MainMenuCardsFragment.newInstance(DownloadUtility.DownloadRequestType.MAIN_MENU, true);
+            mCustomerListFragment = CustomersCardsFragment.newInstance(DownloadUtility.DownloadRequestType.CUSTOMERS_LIST, true);
+            mVehiclesCustomerListFragment = VehiclesCardsFragment.newInstance(DownloadUtility.DownloadRequestType.VEHICLES_OWNED, true);
+            mCRDCustomerCardsFragment = CRDSCardsFragment.newInstance(DownloadUtility.DownloadRequestType.CRDS_OWNED, true);
+            mDriversCustomerListFragment = DriversHolderFragment.newInstance(DownloadUtility.DownloadRequestType.DRIVERS_OWNED, true);
+            isFragmentsInit = true;
+        }
         Utils.Init(this);
         mFragmentManager = getFragmentManager();
 
@@ -158,8 +168,8 @@ public abstract class BaseActivity extends Activity implements
     @Override
     public void onDownloadDataFinished(DownloadRequestSchema requestType, Object result) {
 
-        hideProgressDialog();
         handleDownloadDataFinished(requestType,result);
+        hideProgressDialog();
     }
 
     private boolean isProgressDialogVisible(){
@@ -383,7 +393,7 @@ public abstract class BaseActivity extends Activity implements
                 result = CacheDataManager.getInstance().getCRDSNotTrusted();
                 break;
             case CUSTOMERS_LIST:
-                result = CacheDataManager.getInstance().getCustomers();
+                result = CacheDataManager.getInstance().getCustomers(getApplicationContext());
                 break;
             case VEHICLES_OWNED:
                 result = CacheDataManager.getInstance().getCustomerVehicles(((BaseFragment) sender).getUniqueCustomerCode());
