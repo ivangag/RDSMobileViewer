@@ -1,18 +1,25 @@
 package com.viewer.rds.actia.rdsmobileviewer.utils;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.ServiceConnection;
 import android.net.http.AndroidHttpClient;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Debug;
+import android.os.IBinder;
+import android.os.RemoteException;
 import android.util.Log;
 
 import com.viewer.rds.actia.rdsmobileviewer.CRDSCustom;
 import com.viewer.rds.actia.rdsmobileviewer.DriverCardData;
+import com.viewer.rds.actia.rdsmobileviewer.IRDSGetCall;
 import com.viewer.rds.actia.rdsmobileviewer.MainContractorData;
 import com.viewer.rds.actia.rdsmobileviewer.R;
 import com.viewer.rds.actia.rdsmobileviewer.ResultOperation;
 import com.viewer.rds.actia.rdsmobileviewer.VehicleCustom;
+import com.viewer.rds.actia.rdsmobileviewer.services.RDSViewerServiceSync;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -30,12 +37,19 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
  * Created by igaglioti on 09/07/2014.
  */
 public class DownloadUtility {
+
+    public final static int DOWNLOAD_DATA_REQUEST = 0;
+
+    public final static int DOWNLOAD_RESULT_OK = 0;
+    public final static int DOWNLOAD_RESULT_FAILED = -1;
+
 
     private final static String TAG = DownloadUtility.class
             .getCanonicalName();
@@ -61,15 +75,17 @@ public class DownloadUtility {
     public static DownloadUtility getInstance() {
         return ourInstance;
     }
-
     private DownloadUtility() {
     }
 
     private Set<IRemoteDownloadDataListener> mListeners = new HashSet<IRemoteDownloadDataListener>();
 
     public void addListener(IRemoteDownloadDataListener listener) {
-        if(!mListeners.contains(listener))
+        if((listener != null)
+            &&(!mListeners.contains(listener))) {
+
             mListeners.add(listener);
+        }
     }
 
     public void removeAllListeners()
@@ -179,13 +195,6 @@ public class DownloadUtility {
         return null;
     }
 
-    public void RequireDownloadAsyncTask(IRemoteDownloadDataListener clientDownloadDataListener,
-                                         DownloadRequestSchema downloadRequestInfo) {
-
-        this.addListener(clientDownloadDataListener);
-        DownloadDataTask downloadDataTask = new DownloadDataTask();
-        downloadDataTask.execute(downloadRequestInfo);
-    }
 
 
     /**
@@ -298,7 +307,6 @@ public class DownloadUtility {
             resultOperationInstance.setOtherInfo("ResponseError::No ClassReturn Found");
         }
         resultOperationInstance.setClassReturn(jsonArray);
-        //return jsonArray;
         return resultOperationInstance;
     }
 
@@ -326,8 +334,8 @@ public class DownloadUtility {
                 remoteItem.setIsFilePushingServiceActive(jsonObject.getBoolean("IsFilePushingServiceActive"));
             if (!jsonObject.isNull("IsSuperCRDSServiceActive"))
                 remoteItem.setIsSuperCRDSServiceActive(jsonObject.getBoolean("IsSuperCRDSServiceActive"));
-            if (!jsonObject.isNull("IsAutomaticDriverAssociationEnabled"))
-                remoteItem.setIsEmailForwardServiceActive(jsonObject.getBoolean("IsAutomaticDriverAssociationEnabled"));
+            if (!jsonObject.isNull("IsEmailForwardServiceActive"))
+                remoteItem.setIsEmailForwardServiceActive(jsonObject.getBoolean("IsEmailForwardServiceActive"));
             result.add(remoteItem);
         }
         return result;
@@ -335,14 +343,7 @@ public class DownloadUtility {
     private static ArrayList parseVehicles(JSONArray vehicles) throws JSONException {
         ArrayList result;
         result = new ArrayList<VehicleCustom>();
-        // Get the JSON array of  results, marked with
-        // the 'lfs' name.
-        // For each option, create an object and add it
-        // to rValue.
-        // Get the JSON array of  results, marked with
-        // the 'lfs' name.
-        // For each option, create an object and add it
-        // to rValue.
+        // Get the JSON array of  results
         for (int i = 0; i < vehicles.length(); i++) {
             JSONObject jsonObject = vehicles.getJSONObject(i);
             VehicleCustom veh = new VehicleCustom();
@@ -376,14 +377,7 @@ public class DownloadUtility {
     private static ArrayList parseDrivers(JSONArray drivers) throws JSONException {
         ArrayList result;
         result = new ArrayList<DriverCardData>();
-        // Get the JSON array of  results, marked with
-        // the 'lfs' name.
-        // For each option, create an object and add it
-        // to rValue.
-        // Get the JSON array of  results, marked with
-        // the 'lfs' name.
-        // For each option, create an object and add it
-        // to rValue.
+        // Get the JSON array of  results
         for (int i = 0; i < drivers.length(); i++) {
             JSONObject jsonObject = drivers.getJSONObject(i);
             DriverCardData remoteItem = new DriverCardData();
@@ -446,7 +440,7 @@ public class DownloadUtility {
                 crdsItem.setModoRicezioneCodice(jsonObject.getString("ModoRicezioneCodice"));
             if(!jsonObject.isNull("Nazione"))
                 crdsItem.setNazione(jsonObject.getString("Nazione"));
-            if(!jsonObject.isNull("v"))
+            if(!jsonObject.isNull("PartitaIva"))
                 crdsItem.setPartitaIva(jsonObject.getString("PartitaIva"));
             if(!jsonObject.isNull("RagioneSociale"))
                 crdsItem.setRagioneSociale(jsonObject.getString("RagioneSociale"));
@@ -463,6 +457,13 @@ public class DownloadUtility {
         return result;
     }
 
+    public void RequireDownloadAsyncTask(IRemoteDownloadDataListener clientDownloadDataListener,
+                                         DownloadRequestSchema downloadRequestInfo) {
+
+        this.addListener(clientDownloadDataListener);
+        DownloadDataTask downloadDataTask = new DownloadDataTask();
+        downloadDataTask.execute(downloadRequestInfo);
+    }
 
     class DownloadDataTask extends AsyncTask<DownloadRequestSchema,Void,ResultOperation>
     {
@@ -472,8 +473,9 @@ public class DownloadUtility {
             boolean mHasCacheData = false;
             ResultOperation result = ResultOperation.newInstance(false,"",null);
             mRequestInfo = params[0];
-            boolean mObtainCacheIfExist = mRequestInfo.getCacheOption();
-            switch (mRequestInfo.getDownloadRequestType())
+            final boolean mObtainCacheIfExist = mRequestInfo.getCacheOption();
+            final DownloadRequestType requestType = mRequestInfo.getDownloadRequestType();
+            switch (requestType)
             {
                 case VEHICLE_NOT_TRUSTED:
                     if(mObtainCacheIfExist && (mHasCacheData = CacheDataManager.getInstance().hasVehiclesNotTrusted())){
@@ -517,8 +519,23 @@ public class DownloadUtility {
                     //result = ((List<VehicleCustom> )result).get(0).get_FileContent();
                     break;
             }
-            if(result.getClassReturn() == null)
-                result = DownloadUtility.FetchingRemoteData(mClient, mRequestInfo);
+            if(result.getClassReturn() == null){
+                if(!requestType.equals(DownloadRequestType.VEHICLE_NOT_TRUSTED)){
+                    result = DownloadUtility.FetchingRemoteData(mClient, mRequestInfo);
+                }
+                else{
+                    try {
+                        List<VehicleCustom> vehicleCustomList = (List<VehicleCustom>) mRDSClientCall.getVehiclesNotActivated();
+                        result.setClassReturn(vehicleCustomList);
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                        Log.e(TAG,String.format("RDSServiceCall::ERROR:%s",e.getLocalizedMessage()));
+                        result.setStatus(false);
+                        result.setOtherInfo(e.getLocalizedMessage());
+                    }
+                }
+            }
+
 
             if((!mObtainCacheIfExist && (result.getClassReturn() != null))
                     || !mHasCacheData)
@@ -535,6 +552,47 @@ public class DownloadUtility {
         {
             notifyListeners(mRequestInfo,result.getClassReturn());
         }
-
     }
+
+    public synchronized void startRDService(Context context){
+        // Launch the designated Bound Service if they aren't already
+        // running via a call to bindService() Bind this activity to
+        // the GeoNamesService* Services if they aren't already bound.
+        Debug.waitForDebugger();
+        if (mRDSClientCall == null)
+            context.bindService(RDSViewerServiceSync.makeIntent(context),
+                    mRDSServiceSync,
+                    context.BIND_AUTO_CREATE);
+    }
+
+    public synchronized void stopRDSService(Context context){
+
+        Debug.waitForDebugger();
+        // Unbind the Sync/Async Services if they are connected.
+        if (mRDSClientCall != null)
+            context.unbindService(mRDSServiceSync);
+    }
+
+    /**
+     * The AIDL Interface that's used to make twoway calls to the
+     * GeoNamesServiceSync Service.  This object plays the role of
+     * Requestor in the Broker Pattern.  If it's null then there's no
+     * connection to the Service.
+     */
+    IRDSGetCall mRDSClientCall = null;
+
+    ServiceConnection mRDSServiceSync = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+
+            Log.d(TAG, "ComponentName: " + name);
+            mRDSClientCall = IRDSGetCall.Stub.asInterface(service);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mRDSClientCall = null;
+        }
+    };
 }

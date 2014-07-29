@@ -78,6 +78,11 @@ public class MainMenuCardsFragment extends BaseFragment implements IFragmentNoti
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);

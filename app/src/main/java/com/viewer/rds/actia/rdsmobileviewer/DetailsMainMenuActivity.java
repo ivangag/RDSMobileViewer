@@ -322,13 +322,13 @@ public class DetailsMainMenuActivity extends Activity implements ActionBar.TabLi
             CharSequence title = null;
             Locale l = Locale.getDefault();
             switch (position) {
-                case Utils.TAB_POSITION_VEHICLES_NOT_TRUSTED:
+                case Utils.TAB_POSITION_VEHICLES:
                     title = Utils.TITLE_VEHICLES_NOT_TRUSTED;
                     break;
-                case Utils.TAB_POSITION_CRDS_NOT_TRUSTED:
+                case Utils.TAB_POSITION_CRDS:
                     title = Utils.TITLE_CRDS_NOT_TRUSTED;
                     break;
-                case Utils.TAB_POSITION_DRIVERS_NOT_TRUSTED:
+                case Utils.TAB_POSITION_DRIVERS:
                     title = Utils.TITLE_DRIVERS_NOT_TRUSTED;
                     break;
 

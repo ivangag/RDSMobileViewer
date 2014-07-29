@@ -34,9 +34,9 @@ public class Utils {
     ;
 
 
-    public final static int TAB_POSITION_VEHICLES_NOT_TRUSTED = 0;
-    public final static int TAB_POSITION_DRIVERS_NOT_TRUSTED = 1;
-    public final static int TAB_POSITION_CRDS_NOT_TRUSTED = 2;
+    public final static int TAB_POSITION_VEHICLES = 0;
+    public final static int TAB_POSITION_DRIVERS = 1;
+    public final static int TAB_POSITION_CRDS = 2;
     public final static int MAX_TABS_ITEMS_NOT_TRUSTED_COUNT = 3;
 
     public static CharSequence TITLE_DRIVERS_NOT_TRUSTED;

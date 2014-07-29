@@ -82,7 +82,7 @@ public class RDSDBMapper {
 
         return cursor;
     }
-    public synchronized long insertCustomerData(MainContractorData customer)
+    public synchronized long insertOrUpdateCustomerData(MainContractorData customer)
     {
         long res;
         res = -1;
@@ -90,15 +90,21 @@ public class RDSDBMapper {
         {
             try {
                 ContentValues values = MainContractorData.getCVFromCustomerData(customer);
+                /*
                 if(!this.isExistCustomer(customer.getAncodice()))
                     res = mDB.insertOrThrow(RDSDBHelper.CUSTOMERS_TABLE, null, values);
                 else
                     res = mDB.update(RDSDBHelper.CUSTOMERS_TABLE,values,null,null);
-                Log.i(LOG_TAG, "insertCustomerData new_index:" + res);
+                    */
+                int id = (int) mDB.insertWithOnConflict(RDSDBHelper.CUSTOMERS_TABLE, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+                if (id == -1) {
+                    mDB.update(RDSDBHelper.CUSTOMERS_TABLE, values, "AnCodice=?", new String[] {String.valueOf(customer.getAncodice())});
+                }
+                Log.i(LOG_TAG, "insertOrUpdateCustomerData new_index:" + res);
             }
             catch (SQLException e)
             {
-                Log.e(LOG_TAG, "insertCustomerData failed::" + e.getMessage());
+                Log.e(LOG_TAG, "insertOrUpdateCustomerData failed::" + e.getMessage());
             }
         }
         else
@@ -124,6 +130,13 @@ public class RDSDBMapper {
             mDB.close();
     }
 
+
+    public synchronized void deleteDatabase()
+    {
+        if((null != mDB)
+                && mDB.isOpen())
+            mDBHelper.deleteDataBase();
+    }
 
     public synchronized void deleteAllCustomers()
     {

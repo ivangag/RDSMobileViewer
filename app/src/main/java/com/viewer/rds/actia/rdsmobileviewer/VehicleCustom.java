@@ -41,6 +41,17 @@ public class VehicleCustom implements Parcelable {
     public VehicleCustom() {
     }
     public VehicleCustom(Parcel in) {
+        _CustomerName = in.readString();
+        _DiagnosticDeviceTime = in.readString();
+        _FileContent = in.readString();
+        _IMEI = in.readString();
+        _IdDevice = in.readString();
+        _JourneyEnableDate = in.readString();
+        _PhoneNumber = in.readString();
+        _StartDate = in.readString();
+        _Status = in.readString();
+        _VIN = in.readString();
+        _VRN = in.readString();
     }
 
     public String get_CustomerName() {

@@ -3,15 +3,15 @@
     package="com.viewer.rds.actia.rdsmobileviewer" >
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <!--android:configChanges="orientation|screenSize"-->
+    <!-- android:configChanges="orientation|screenSize" -->
     <application
+        android:name="com.viewer.rds.actia.rdsmobileviewer.ApplicationEx"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher_alternative"
         android:label="@string/app_name"
         android:theme="@style/Theme.Ardis" >
         <activity
             android:name=".MainMenuActivityExtended"
-
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -37,6 +37,10 @@
         <activity
             android:name=".DetailsMainMenuActivityExtended"
             android:label="@string/title_activity_main_menu" >
+        </activity>
+        <activity
+            android:name=".DownloadActivity"
+            android:label="@string/title_activity_download" >
         </activity>
     </application>
 

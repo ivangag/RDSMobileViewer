@@ -1,9 +1,12 @@
 package com.viewer.rds.actia.rdsmobileviewer.utils;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * Created by igaglioti on 16/07/2014.
  */
-public class DownloadRequestSchema {
+public class DownloadRequestSchema implements Parcelable {
 
 
     private boolean mObtainCacheIfExist;
@@ -16,6 +19,17 @@ public class DownloadRequestSchema {
 
     private DownloadRequestSchema() {
 
+    }
+
+
+    public DownloadRequestSchema(Parcel in) {
+
+        boolean[] val = new boolean[1];
+        in.readBooleanArray(val);
+        mObtainCacheIfExist = val[0];
+        mVehicleVIN = in.readString();
+        mDownloadRequestType = Enum.valueOf(DownloadUtility.DownloadRequestType.class,in.readString());
+        mUniqueCustomerCode = in.readString();
     }
 
     public static DownloadRequestSchema newInstance(DownloadUtility.DownloadRequestType requestType,
@@ -82,4 +96,29 @@ public class DownloadRequestSchema {
     public boolean getCacheOption() {
         return mObtainCacheIfExist;
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeBooleanArray(new boolean[]{mObtainCacheIfExist});
+        dest.writeString(mVehicleVIN);
+        dest.writeString(mDownloadRequestType.toString());
+        dest.writeString(mUniqueCustomerCode);
+    }
+
+    public static final Parcelable.Creator<DownloadRequestSchema> CREATOR
+            = new Parcelable.Creator<DownloadRequestSchema>() {
+        public DownloadRequestSchema createFromParcel(Parcel in) {
+            return new DownloadRequestSchema(in);
+        }
+
+        public DownloadRequestSchema[] newArray(int size) {
+            return new DownloadRequestSchema[size];
+        }
+    };
+
 }

@@ -167,4 +167,40 @@ public class CacheDataManager
     {
         return mCachedCRDSNotTrusted.size() > 0;
     }
+
+    public Object getValue(DownloadRequestSchema downloadRequestSchema) {
+
+        Object result = null;
+        final String customerCode = downloadRequestSchema.getUniqueCustomerCode();
+        final String vehicleVIN = downloadRequestSchema.getVehicleVIN();
+        switch (downloadRequestSchema.getDownloadRequestType())
+        {
+            case VEHICLE_NOT_TRUSTED:
+                result = CacheDataManager.getInstance().getVehicleNotTrusted();
+                break;
+            case CRDS_NOT_TRUSTED:
+                result = CacheDataManager.getInstance().getCRDSNotTrusted();
+                break;
+            case CUSTOMERS_LIST:
+                result = CacheDataManager.getInstance().getCachedCustomerListData();
+                break;
+            case VEHICLES_OWNED:
+                result = CacheDataManager.getInstance().getCustomerVehicles(customerCode);
+                break;
+            case DRIVERS_OWNED:
+                result = CacheDataManager.getInstance().getCustomerDrivers(customerCode);
+                break;
+            case CRDS_OWNED:
+                result = CacheDataManager.getInstance().getCustomerCRDS(customerCode);
+                break;
+            case DRIVERS_NOT_TRUSTED:
+                result = CacheDataManager.getInstance().getDriversNotTrusted();
+                break;
+            case MAIN_MENU:
+                break;
+            case VEHICLE_DIAGNOSTIC:
+                break;
+        }
+        return result;
+    }
 }

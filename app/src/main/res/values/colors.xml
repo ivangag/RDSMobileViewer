@@ -28,8 +28,8 @@
     <color name="carddemo_extras_googlenowbirth_title">@android:color/holo_blue_dark</color>
 
     <!-- color card -->
-    <color name="demoextra_card_background_color1">#FFBB33</color>
-    <color name="demoextra_card_background_color2">#98CC00</color>
+    <color name="card_background_color_orange">#FFBB33</color>
+    <color name="card_background_color_green">#6698CC00</color>
     <color name="demoextra_card_background_color3">#A966CC</color>
     <color name="card_background_color_blue">#33B4E4</color>
     <color name="demoextra_card_background_color5">#FF4343</color>
@@ -52,5 +52,5 @@
     <color name="demoextra_card_weather_temperature_color">#868686</color>
     <!--override the listlayout background-->
     <color name="card_base_cardwithlist_background_list_color">@color/card_background</color>
-
+    <color name="transparent">#00000000</color>
 </resources>

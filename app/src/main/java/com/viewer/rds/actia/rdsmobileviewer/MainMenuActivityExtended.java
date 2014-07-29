@@ -8,13 +8,18 @@ import android.os.Bundle;
 import android.os.Debug;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.viewer.rds.actia.rdsmobileviewer.db.RDSDBMapper;
+import com.viewer.rds.actia.rdsmobileviewer.fragments.BaseFragment;
+import com.viewer.rds.actia.rdsmobileviewer.fragments.CRDSCardsFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.CustomersCardsFragment;
+import com.viewer.rds.actia.rdsmobileviewer.fragments.DownloadHandlingFragment;
+import com.viewer.rds.actia.rdsmobileviewer.fragments.DriversCardsFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.MainMenuCardsFragment;
-import com.viewer.rds.actia.rdsmobileviewer.utils.CacheDataManager;
+import com.viewer.rds.actia.rdsmobileviewer.fragments.VehiclesCardsFragment;
 import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadRequestSchema;
 import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadUtility;
 import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
@@ -24,44 +29,58 @@ import java.util.List;
 /**
  * Created by igaglioti on 23/07/2014.
  */
-public class MainMenuActivityExtended extends BaseActivity implements MainMenuCardsFragment.OnMainMenuInteractionListener {
+public class MainMenuActivityExtended extends BaseActivity
+        implements MainMenuCardsFragment.OnMainMenuInteractionListener, DownloadHandlingFragment.TaskDownloadCallbacks {
+
+    private static MainMenuCardsFragment mMenuCardsFragment;
+    private static CustomersCardsFragment mCustomerListFragment;
+    private static VehiclesCardsFragment mVehiclesCustomerListFragment;
+    private static CRDSCardsFragment mCRDCustomerCardsFragment;
+    private static DriversCardsFragment mDriversCustomerListFragment;
 
     private DownloadUtility.DownloadRequestType mCurrentPrimaryFragmentType;
     private DownloadUtility.DownloadRequestType mCurrentSecondaryFragmentType = null;
     private RDSDBMapper mRDSDBMapper;
-
-
-    @Override
-    public void onStart() {
-
-        super.onStart();
-    }
+    private static boolean isFragmentsInit = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if(!isFragmentsInit)
+        {
+            mMenuCardsFragment = MainMenuCardsFragment.newInstance(DownloadUtility.DownloadRequestType.MAIN_MENU, true);
+            mCustomerListFragment = CustomersCardsFragment.newInstance(DownloadUtility.DownloadRequestType.CUSTOMERS_LIST, true);
+            mVehiclesCustomerListFragment = VehiclesCardsFragment.newInstance(DownloadUtility.DownloadRequestType.VEHICLES_OWNED, true);
+            mCRDCustomerCardsFragment = CRDSCardsFragment.newInstance(DownloadUtility.DownloadRequestType.CRDS_OWNED, true);
+            mDriversCustomerListFragment = DriversHolderFragment.newInstance(DownloadUtility.DownloadRequestType.DRIVERS_OWNED, true);
+            isFragmentsInit = true;
+        }
         setActivityCustomersLayout(savedInstanceState);
         mRDSDBMapper = RDSDBMapper.getInstance(this);
-        mRDSDBMapper.open();
-        //mRDSDBMapper.deleteAllCustomers();
 
     }
 
     private void setActivityCustomersLayout(Bundle savedInstanceState) {
 
         setContentView(R.layout.activity_main_menu);
-        findViewById(R.id.loadingPanel).setVisibility(View.GONE);
+//        findViewById(R.id.loadingPanel).setVisibility(View.GONE);
 
         mDisplayOrientation = getResources().getConfiguration().orientation;
 
         if (savedInstanceState == null) {
 
+            FragmentTransaction ft = mFragmentManager.beginTransaction();
             mCurrentPrimaryFragmentType = DownloadUtility.DownloadRequestType.MAIN_MENU;
-            mFragmentManager.beginTransaction()
-                    .add(R.id.fragment_main, mMenuCardsFragment,FRAGMENT_MAIN_MENU_TAG)
+
+            ft.add(R.id.fragment_main, mMenuCardsFragment, FRAGMENT_MAIN_MENU_TAG)
+                            .add(R.id.fragment_handling_download, DownloadHandlingFragment.newIstance(null), FRAGMENT_DOWNLOAD_TAG);
                             //.addToBackStack(null)
-                    .commit();
-            hideExtraLayout();
+            //         .commit();
+            //mFragmentManager.executePendingTransactions();
+            ft.commit();
+            mFragmentManager.executePendingTransactions();
+
+            hideProgressDialog();
         }
         else
         {
@@ -91,9 +110,10 @@ public class MainMenuActivityExtended extends BaseActivity implements MainMenuCa
             else if(mCurrentPrimaryFragmentType != DownloadUtility.DownloadRequestType.CUSTOMERS_LIST)
             {
                 // add customers on the place of extra info and put extra to secondary fragment place
-                removeFragment(getFragment(mCurrentPrimaryFragmentType));
-                replaceFragment(R.id.fragment_main, getFragment(mCurrentPrimaryFragmentType), mCustomerListFragment, true);
-                addFragment(R.id.fragment_main_details, getFragment(mCurrentPrimaryFragmentType));
+                final Fragment fragmentPrimary = getFragment(R.id.fragment_main);
+                removeFragment(fragmentPrimary);
+                replaceFragment(R.id.fragment_main, fragmentPrimary, mCustomerListFragment, true);
+                addFragment(R.id.fragment_main_details, fragmentPrimary);
             }
         }
         else
@@ -161,6 +181,7 @@ public class MainMenuActivityExtended extends BaseActivity implements MainMenuCa
 
 
     private void hideExtraLayout() {
+
         View frameLayoutDetails =  findViewById(R.id.fragment_main_details);
         View frameLayoutMain =  findViewById(R.id.fragment_main);
         if(frameLayoutDetails != null) {
@@ -192,9 +213,27 @@ public class MainMenuActivityExtended extends BaseActivity implements MainMenuCa
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        mRDSDBMapper.open();
+        //DownloadUtility.getInstance().startRDService(this);
+        //mRDSDBMapper.deleteDatabase();
+       // mRDSDBMapper.deleteAllCustomers(); //!!only for test!!
+
+    }
+
+
+    @Override
     public void onStop() {
-        mRDSDBMapper.close();
         super.onStop();
+        DownloadUtility.getInstance().removeListener(this);
+        //DownloadUtility.getInstance().stopRDSService(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        mRDSDBMapper.close();
+        super.onDestroy();
     }
 
     @Override
@@ -209,7 +248,6 @@ public class MainMenuActivityExtended extends BaseActivity implements MainMenuCa
             case DRIVERS_NOT_TRUSTED:
                 break;
             case CUSTOMERS_LIST:
-                //showNewFragment(mCustomerListFragment,FRAGMENT_CUSTOMERS_TAG,false);
                 if(mDisplayOrientation.equals(PORTRAIT) // this should never happen
                         && !getFragmentType(R.id.fragment_main).equals(DownloadUtility.DownloadRequestType.CUSTOMERS_LIST))
                     replaceFragment(R.id.fragment_main, null, mCustomerListFragment, false);
@@ -217,31 +255,34 @@ public class MainMenuActivityExtended extends BaseActivity implements MainMenuCa
                 mCustomerListFragment.OnUpdateData("",result,MainContractorData.class);
                 for(MainContractorData customer : (List<MainContractorData>)result)
                 {
-                    mRDSDBMapper.insertCustomerData(customer);
+                    mRDSDBMapper.insertOrUpdateCustomerData(customer);
                 }
                 break;
             case VEHICLES_OWNED:
-                //showNewFragment(mVehiclesCustomerListFragment,FRAGMENT_VEHICLES_TAG,true);
-                if(mDisplayOrientation.equals(LANDSCAPE))
-                    replaceFragment(R.id.fragment_main_details,null,mVehiclesCustomerListFragment,false);
-                else
-                    replaceFragment(R.id.fragment_main, null, mVehiclesCustomerListFragment, false);
+                if(getFragmentType(R.id.fragment_main).equals(DownloadUtility.DownloadRequestType.CUSTOMERS_LIST)) {
+                    if ((mDisplayOrientation.equals(LANDSCAPE)))
+                        replaceFragment(R.id.fragment_main_details, null, mVehiclesCustomerListFragment, false);
+                    else
+                        replaceFragment(R.id.fragment_main, null, mVehiclesCustomerListFragment, false);
+                }
                 mVehiclesCustomerListFragment.OnUpdateData(requestType.getUniqueCustomerCode(), result,VehicleCustom.class);
                 break;
             case DRIVERS_OWNED:
-                if(mDisplayOrientation.equals(LANDSCAPE))
-                    replaceFragment(R.id.fragment_main_details,null,mDriversCustomerListFragment,false);
-                else
-                    replaceFragment(R.id.fragment_main, null, mDriversCustomerListFragment, false);
-                //showNewFragment(mDriversCustomerListFragment,FRAGMENT_DRIVERS_TAG,true);
+                if(getFragmentType(R.id.fragment_main).equals(DownloadUtility.DownloadRequestType.CUSTOMERS_LIST)) {
+                    if (mDisplayOrientation.equals(LANDSCAPE))
+                        replaceFragment(R.id.fragment_main_details, null, mDriversCustomerListFragment, false);
+                    else
+                        replaceFragment(R.id.fragment_main, null, mDriversCustomerListFragment, false);
+                }
                 mDriversCustomerListFragment.OnUpdateData(requestType.getUniqueCustomerCode(), result, DriverCardData.class);
                 break;
             case CRDS_OWNED:
-                //showNewFragment(mCRDCustomerCardsFragment,FRAGMENT_CRDS_TAG,true);
-                if(mDisplayOrientation.equals(LANDSCAPE))
-                    replaceFragment(R.id.fragment_main_details,null,mCRDCustomerCardsFragment,false);
-                else
-                    replaceFragment(R.id.fragment_main, null, mCRDCustomerCardsFragment, false);
+                if(getFragmentType(R.id.fragment_main).equals(DownloadUtility.DownloadRequestType.CUSTOMERS_LIST)) {
+                    if (mDisplayOrientation.equals(LANDSCAPE))
+                        replaceFragment(R.id.fragment_main_details, null, mCRDCustomerCardsFragment, false);
+                    else
+                        replaceFragment(R.id.fragment_main, null, mCRDCustomerCardsFragment, false);
+                }
                 mCRDCustomerCardsFragment.OnUpdateData(requestType.getUniqueCustomerCode(),result,CRDSCustom.class);
                 break;
             case MAIN_MENU:
@@ -254,20 +295,26 @@ public class MainMenuActivityExtended extends BaseActivity implements MainMenuCa
 
     @Override
     public void hideProgressDialog() {
-        findViewById(R.id.loadingPanel).setVisibility(View.GONE);
-        findViewById(R.id.fragment_main).setVisibility(View.VISIBLE);
-        View view = findViewById(R.id.fragment_main_details);
-        if(view != null)
-            view.setVisibility(View.VISIBLE);
+        FragmentTransaction ft = mFragmentManager.beginTransaction();
+        ft.hide(getFragment(R.id.fragment_handling_download));
+        FrameLayout frameLayout = (FrameLayout) findViewById(R.id.fragment_handling_download);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,0 ,0f);
+        frameLayout.setLayoutParams(lp);
+        ft.commit();
+        mFragmentManager.executePendingTransactions();
     }
+
     @Override
     public void showProgressDialog(String text) {
-        ((TextView)findViewById(R.id.txt_progress_loading)).setText(String.format(getString(R.string.progress_loading_text),text));
-        findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
-        findViewById(R.id.fragment_main).setVisibility(View.GONE);
-        View view = findViewById(R.id.fragment_main_details);
-        if(view != null)
-            view.setVisibility(View.GONE);
+
+        FragmentTransaction ft = mFragmentManager.beginTransaction();
+        ft.show(getFragment(R.id.fragment_handling_download));
+        FrameLayout frameLayout = (FrameLayout) findViewById(R.id.fragment_handling_download);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,0 ,0.5f);
+        frameLayout.setLayoutParams(lp);
+        ft.commit();
+        mFragmentManager.executePendingTransactions();
+
     }
 
     @Override
@@ -276,25 +323,14 @@ public class MainMenuActivityExtended extends BaseActivity implements MainMenuCa
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
+        //item.getMenuInfo()
         switch (id) {
             case R.id.action_settings:
                 return true;
             case R.id.action_download_data:
-                makeDownloadRequest( getFragmentType(R.id.fragment_main),false);
-                /*
-                if (mCustomerListFragment.isVisible()) {
-                    requireDataDownload(DownloadRequestSchema.newInstance(DownloadUtility.DownloadRequestType.CUSTOMERS_LIST, false));
+                if(!(getFragmentType(R.id.fragment_main).equals(DownloadUtility.DownloadRequestType.MAIN_MENU))) {
+                    makeDownloadRequest((BaseFragment) getFragment(R.id.fragment_main), getFragmentType(R.id.fragment_main), false);
                 }
-                else if (mVehiclesCustomerListFragment.isVisible()) {
-                    requireDataDownload(DownloadRequestSchema.newInstance(DownloadUtility.DownloadRequestType.VEHICLES_OWNED, mVehiclesCustomerListFragment.getUniqueCustomerCode(), "", false));
-                }
-                else if (mDriversCustomerListFragment.isVisible()) {
-                    requireDataDownload(DownloadRequestSchema.newInstance(DownloadUtility.DownloadRequestType.DRIVERS_OWNED, mDriversCustomerListFragment.getUniqueCustomerCode(), "", false));
-                }
-                else if (mCRDCustomerCardsFragment.isVisible()) {
-                    requireDataDownload(DownloadRequestSchema.newInstance(DownloadUtility.DownloadRequestType.CRDS_OWNED, mCRDCustomerCardsFragment.getUniqueCustomerCode(), "", false));
-                }
-                */
                 return true;
         }
 
@@ -308,7 +344,7 @@ public class MainMenuActivityExtended extends BaseActivity implements MainMenuCa
         switch (subMenuSelected)
         {
             case CUSTOMERS:
-                showExtraLayout();
+                //showExtraLayout();
                 showNewFragment(mCustomerListFragment,FRAGMENT_CUSTOMERS_TAG);
                 break;
             case ITEMS_NOT_TRUSTED:
@@ -319,6 +355,7 @@ public class MainMenuActivityExtended extends BaseActivity implements MainMenuCa
 
     private void showItemNotTrustedSection(Utils.MainMenuSectionItemType requestType) {
 
+        //DownloadUtility.getInstance().stopRDSService(this);
         Intent launchDetailsIntent = new Intent(MainMenuActivityExtended.this,DetailsMainMenuActivityExtended.class);
         Bundle data = new Bundle();
         data.putString(Utils.MAIN_MENU_KEY, String.valueOf(requestType));
@@ -352,4 +389,23 @@ public class MainMenuActivityExtended extends BaseActivity implements MainMenuCa
             super.onBackPressed();
     }
 
+    @Override
+    public void onPreExecute() {
+
+    }
+
+    @Override
+    public void onProgressUpdate(int percent) {
+
+    }
+
+    @Override
+    public void onCancelled() {
+
+    }
+
+    @Override
+    public void onPostExecute() {
+
+    }
 }

@@ -4,10 +4,12 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.net.http.AndroidHttpClient;
+import android.os.Debug;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
+import com.viewer.rds.actia.rdsmobileviewer.ResultOperation;
 import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadRequestSchema;
 import com.viewer.rds.actia.rdsmobileviewer.VehicleCustom;
 import com.viewer.rds.actia.rdsmobileviewer.IRDSGetCall;
@@ -29,8 +31,8 @@ public class RDSViewerServiceSync extends Service {
     /**
      * Object that can invoke HTTP GET requests on URLs.
      */
-    private final static AndroidHttpClient mClient =
-            AndroidHttpClient.newInstance("");
+    private final static AndroidHttpClient mClient
+            = AndroidHttpClient.newInstance("");
 
 
     /**
@@ -53,6 +55,7 @@ public class RDSViewerServiceSync extends Service {
      */
     @Override
     public IBinder onBind(Intent intent) {
+
         return mRDSServiceCallImpl;
     }
 
@@ -68,16 +71,21 @@ public class RDSViewerServiceSync extends Service {
         public List<VehicleCustom> getVehiclesNotActivated()
                 throws RemoteException {
 
+
+            //final AndroidHttpClient client = getHttpClient();
+            //Debug.waitForDebugger();
             // Call the Acronym Web service to get the list of
             // possible expansions of the designated acronym.
-            List<VehicleCustom> vehicleResults =
-                    (List<VehicleCustom>) DownloadUtility.FetchingRemoteData(mClient, DownloadRequestSchema.newInstance(DownloadUtility.DownloadRequestType.VEHICLE_NOT_TRUSTED, false));
+           ResultOperation resOp =
+                   DownloadUtility.FetchingRemoteData(mClient, DownloadRequestSchema.newInstance(DownloadUtility.DownloadRequestType.VEHICLE_NOT_TRUSTED, false));
 
-            Log.d(TAG, "" + vehicleResults.size() + " results for getVehiclesNotActivated: ");
+            final List<VehicleCustom> res = (List<VehicleCustom>) resOp.getClassReturn();
+            Log.d(TAG, "" + "otherInfo:" + resOp.getOtherInfo() + ";"
+                    + "status:" + resOp.isStatus() + " results for getVehiclesNotActivated: ");
 
             // Return the list of acronym expansions back to the
             // AcronymActivity.
-            return vehicleResults;
+            return res;
         }
     };
 
@@ -86,4 +94,12 @@ public class RDSViewerServiceSync extends Service {
         mClient.close();
         super.onDestroy();
     }
+
+    /*
+    public AndroidHttpClient getHttpClient() {
+        if(mClient == null)
+            mClient = AndroidHttpClient.newInstance("");
+        return mClient;
+    }
+    */
 }

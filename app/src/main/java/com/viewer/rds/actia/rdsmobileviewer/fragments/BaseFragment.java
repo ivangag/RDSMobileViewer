@@ -48,11 +48,10 @@ public abstract class BaseFragment extends Fragment {
     }
 
     public abstract boolean getIfHastToSetTitle();
-
     public abstract String getCustomTitleText();
     public abstract int getTitleResourceId();
-
     public abstract String getUniqueCustomerCode() ;
+    //public abstract DownloadUtility.DownloadRequestType getFragmentType();
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

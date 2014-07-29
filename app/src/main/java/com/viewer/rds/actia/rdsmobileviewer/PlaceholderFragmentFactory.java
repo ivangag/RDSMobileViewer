@@ -34,13 +34,13 @@ public abstract class PlaceholderFragmentFactory extends ListFragment {
         Fragment fragment = null;
         final int sectionNumberActual = sectionNumber - 1;
         switch (sectionNumberActual) {
-            case Utils.TAB_POSITION_VEHICLES_NOT_TRUSTED:
+            case Utils.TAB_POSITION_VEHICLES:
                 fragment = VehiclesCardsFragment.newInstance(DownloadUtility.DownloadRequestType.VEHICLE_NOT_TRUSTED,false);
                 break;
-            case Utils.TAB_POSITION_DRIVERS_NOT_TRUSTED:
+            case Utils.TAB_POSITION_DRIVERS:
                 fragment = DriversCardsFragment.newInstance(DownloadUtility.DownloadRequestType.DRIVERS_NOT_TRUSTED, false);
                 break;
-            case Utils.TAB_POSITION_CRDS_NOT_TRUSTED:
+            case Utils.TAB_POSITION_CRDS:
                 fragment = CRDSCardsFragment.newInstance(DownloadUtility.DownloadRequestType.CRDS_NOT_TRUSTED,false);
                 break;
             /*

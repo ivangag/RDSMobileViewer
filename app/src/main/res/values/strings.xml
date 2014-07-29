@@ -40,5 +40,6 @@
     <string name="DriversNotTrustedTitle">Drivers Not Associated</string>
     <string name="DiagnosticDataTitle">Vehicle Diagnostic Data</string>
     <string name="progress_loading_text">Loading %s...</string>
+    <string name="title_activity_download">DownloadActivity</string>
 
 </resources>

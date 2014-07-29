@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.viewer.rds.actia.rdsmobileviewer.fragments.BaseFragment;
 import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadRequestSchema;
 import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadUtility;
 import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
@@ -30,7 +31,6 @@ public class DetailsMainMenuActivityExtended extends BaseActivity implements Act
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setActivityDetailsLayout();
-
     }
 
     private void setActivityDetailsLayout() {
@@ -121,13 +121,13 @@ public class DetailsMainMenuActivityExtended extends BaseActivity implements Act
             CharSequence title = null;
             Locale l = Locale.getDefault();
             switch (position) {
-                case Utils.TAB_POSITION_VEHICLES_NOT_TRUSTED:
+                case Utils.TAB_POSITION_VEHICLES:
                     title = Utils.TITLE_VEHICLES_NOT_TRUSTED;
                     break;
-                case Utils.TAB_POSITION_CRDS_NOT_TRUSTED:
+                case Utils.TAB_POSITION_CRDS:
                     title = Utils.TITLE_CRDS_NOT_TRUSTED;
                     break;
-                case Utils.TAB_POSITION_DRIVERS_NOT_TRUSTED:
+                case Utils.TAB_POSITION_DRIVERS:
                     title = Utils.TITLE_DRIVERS_NOT_TRUSTED;
                     break;
 
@@ -156,6 +156,19 @@ public class DetailsMainMenuActivityExtended extends BaseActivity implements Act
     }
 
     @Override
+    public void onStop() {
+        super.onStop();
+     //   DownloadUtility.getInstance().stopRDSService(this);
+    }
+
+    @Override
+    public void onStart() {
+       super.onStart();
+   //    DownloadUtility.getInstance().startRDService(this);
+
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -168,8 +181,10 @@ public class DetailsMainMenuActivityExtended extends BaseActivity implements Act
             case R.id.action_download_data:
                 //launchDownloadRequest(false);
                 //requireDataDownload(makeDownloadRequestSchema(false));
-                DownloadUtility.DownloadRequestType fragmentType = DownloadUtility.DownloadRequestType.valueOf(mCurrentTabFragment.getArguments().getString(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE));
-                makeDownloadRequest(fragmentType,false);
+                DownloadUtility.DownloadRequestType fragmentType =
+                        DownloadUtility.DownloadRequestType.valueOf(mCurrentTabFragment.getArguments().
+                        getString(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE));
+                makeDownloadRequest((BaseFragment) mCurrentTabFragment, fragmentType,false);
                 return true;
         }
         return super.onOptionsItemSelected(item);

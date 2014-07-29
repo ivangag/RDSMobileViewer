@@ -34,7 +34,7 @@ public class RDSDBHelper extends SQLiteOpenHelper {
             + ID + " integer primary key autoincrement, " // setup
             // auto-inc.
             + NAME + " TEXT ," //
-            + ANCODICE + " TEXT ," //
+            + ANCODICE + " TEXT unique," //
             + ID_CUSTOMER + " TEXT ," //
             + AUTO_DRIVER + " TEXT ," //
             + EMAIL_FORWARD + " TEXT ," //
@@ -76,7 +76,7 @@ public class RDSDBHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    protected boolean deleteDataBase()
+    public boolean deleteDataBase()
     {
        return mContext.deleteDatabase(DATABASE_NAME);
     }

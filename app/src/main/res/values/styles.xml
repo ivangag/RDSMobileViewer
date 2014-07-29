@@ -88,16 +88,23 @@
         <item name="android:textStyle">bold</item>
     </style>
 
-
-    <style name="GenericProgressBackground" parent="android:Theme">
+    <style name="LayoutBackgroundTransparent" parent="@android:style/Theme.Translucent">
         <item name="android:layout_width">fill_parent</item>
         <item name="android:layout_height">fill_parent</item>
-        <item name="android:background">#DD111111</item>
+    </style>
+
+    <style name="GenericProgressBackground" parent="@android:style/Theme.Translucent">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:background">@color/card_background_color_green</item>
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">fill_parent</item>
+        <item name ="android:windowBackground">@color/transparent</item>
         <item name="android:gravity">center</item>
     </style>
     <style name="GenericProgressIndicator" parent="@android:style/Widget.ProgressBar.Small">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:indeterminate">true</item>
+        <item name ="android:windowBackground">@color/transparent</item>
     </style>
 </resources>

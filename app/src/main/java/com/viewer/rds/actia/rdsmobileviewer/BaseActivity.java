@@ -1,6 +1,5 @@
 package com.viewer.rds.actia.rdsmobileviewer;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -8,8 +7,6 @@ import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.support.v13.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,14 +15,12 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.SearchView;
 import android.widget.ShareActionProvider;
-import android.widget.TextView;
 
 import com.viewer.rds.actia.rdsmobileviewer.fragments.BaseFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.CRDSCardsFragment;
-import com.viewer.rds.actia.rdsmobileviewer.fragments.CustomersCardsFragment;
+import com.viewer.rds.actia.rdsmobileviewer.fragments.DownloadHandlingFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.DriversCardsFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.IFragmentNotification;
-import com.viewer.rds.actia.rdsmobileviewer.fragments.MainMenuCardsFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.VehiclesCardsFragment;
 import com.viewer.rds.actia.rdsmobileviewer.utils.CacheDataManager;
 import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadRequestSchema;
@@ -34,20 +29,12 @@ import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
 
 
 public abstract class BaseActivity extends Activity implements
         DownloadUtility.IRemoteDownloadDataListener,BaseFragment.IFragmentsInteractionListener {
 
     public final static String ACTIVITY_TYPE = "ACTIVITY_TYPE";
-
-    protected static MainMenuCardsFragment mMenuCardsFragment;
-    protected static CustomersCardsFragment mCustomerListFragment;
-    protected static VehiclesCardsFragment mVehiclesCustomerListFragment;
-    protected static CRDSCardsFragment mCRDCustomerCardsFragment;
-    protected static DriversCardsFragment mDriversCustomerListFragment;
 
     protected static final int MATCH_PARENT = LinearLayout.LayoutParams.MATCH_PARENT;
     protected static final int LANDSCAPE = Configuration.ORIENTATION_LANDSCAPE;
@@ -62,11 +49,11 @@ public abstract class BaseActivity extends Activity implements
     final protected static String FRAGMENT_CRDS_TAG       = "CRDS_FRAGMENT";
     final protected static String FRAGMENT_MAIN_MENU_TAG  = "MAIN_MENU_FRAGMENT";
     final protected static String FRAGMENT_CUSTOMERS_TAG  = "CUSTOMERS_FRAGMENT";
+    final protected static String FRAGMENT_DOWNLOAD_TAG  = "FRAGMENT_DOWNLOAD_TAG";
 
     private ArrayList<String> mFragmentTags;
     Integer mDisplayOrientation;
     protected Fragment mCurrentTabFragment;
-    protected static boolean isFragmentsInit = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +63,8 @@ public abstract class BaseActivity extends Activity implements
 
     private void init()
     {
+        /*
+    }
         if(!isFragmentsInit)
         {
             mMenuCardsFragment = MainMenuCardsFragment.newInstance(DownloadUtility.DownloadRequestType.MAIN_MENU, true);
@@ -85,6 +74,7 @@ public abstract class BaseActivity extends Activity implements
             mDriversCustomerListFragment = DriversHolderFragment.newInstance(DownloadUtility.DownloadRequestType.DRIVERS_OWNED, true);
             isFragmentsInit = true;
         }
+        */
         Utils.Init(this);
         mFragmentManager = getFragmentManager();
 
@@ -238,16 +228,15 @@ public abstract class BaseActivity extends Activity implements
 
     @Override
     public void onStart()   {
-        //DownloadUtility.getInstance().addListener(CacheDataManager.getInstance());
         super.onStart();
+
 
     }
 
     @Override
     public void onStop()   {
-        DownloadUtility.getInstance().removeAllListeners();
+        //DownloadUtility.getInstance().removeAllListeners();
         super.onStop();
-
     }
 
     @Override
@@ -258,7 +247,7 @@ public abstract class BaseActivity extends Activity implements
         {
             HideDetailsLayout();
         }*/
-        if(!isProgressDialogVisible())
+        //if(!isProgressDialogVisible())
             super.onBackPressed();
     }
 
@@ -296,35 +285,39 @@ public abstract class BaseActivity extends Activity implements
         requireDataDownload(DownloadRequestSchema.newInstance(DownloadUtility.DownloadRequestType.VEHICLE_DIAGNOSTIC, "", vehicleVIN, cacheIfExist));
     }
 
-    protected void makeDownloadRequest(DownloadUtility.DownloadRequestType downloadRequestType, boolean getCacheIfExists) {
-        //switch (getFragmentType(R.id.fragment_main))
-        switch (downloadRequestType)
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == DownloadUtility.DOWNLOAD_DATA_REQUEST)
         {
-            case VEHICLE_NOT_TRUSTED:
-                requireDataDownload(DownloadRequestSchema.newInstance(DownloadUtility.DownloadRequestType.VEHICLE_NOT_TRUSTED, mVehiclesCustomerListFragment.getUniqueCustomerCode(), "", getCacheIfExists));
-                break;
-            case VEHICLES_OWNED:
-                requireDataDownload(DownloadRequestSchema.newInstance(DownloadUtility.DownloadRequestType.VEHICLES_OWNED, mVehiclesCustomerListFragment.getUniqueCustomerCode(), "", getCacheIfExists));
-                break;
-            case CUSTOMERS_LIST:
-                requireDataDownload(DownloadRequestSchema.newInstance(DownloadUtility.DownloadRequestType.CUSTOMERS_LIST, false));
-                break;
-            case CRDS_NOT_TRUSTED:
-                requireDataDownload(DownloadRequestSchema.newInstance(DownloadUtility.DownloadRequestType.CRDS_NOT_TRUSTED, mCRDCustomerCardsFragment.getUniqueCustomerCode(), "", getCacheIfExists));
-                break;
-            case CRDS_OWNED:
-                requireDataDownload(DownloadRequestSchema.newInstance(DownloadUtility.DownloadRequestType.CRDS_OWNED, mCRDCustomerCardsFragment.getUniqueCustomerCode(), "", getCacheIfExists));
-                break;
-            case DRIVERS_NOT_TRUSTED:
-                requireDataDownload(DownloadRequestSchema.newInstance(DownloadUtility.DownloadRequestType.DRIVERS_NOT_TRUSTED, mDriversCustomerListFragment.getUniqueCustomerCode(), "", getCacheIfExists));
-                break;
-            case DRIVERS_OWNED:
-                requireDataDownload(DownloadRequestSchema.newInstance(DownloadUtility.DownloadRequestType.DRIVERS_OWNED, mDriversCustomerListFragment.getUniqueCustomerCode(), "", getCacheIfExists));
-                break;
-            case MAIN_MENU:
-                break;
-            case VEHICLE_DIAGNOSTIC:
-                break;
+            if(resultCode == DownloadUtility.DOWNLOAD_RESULT_OK) {
+                DownloadRequestSchema downloadRequestSchema = data.getExtras().getParcelable(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE);
+                handleDownloadDataFinished(downloadRequestSchema, CacheDataManager.getInstance().getValue(downloadRequestSchema));
+            }
+        }
+    }
+
+    protected void makeDownloadRequest(BaseFragment requiringFragment, DownloadUtility.DownloadRequestType downloadRequestType, boolean getCacheIfExists) {
+        DownloadRequestSchema request = DownloadRequestSchema.newInstance(downloadRequestType,
+                requiringFragment.getUniqueCustomerCode(), "", getCacheIfExists);
+
+        if(downloadRequestType.equals(DownloadUtility.DownloadRequestType.CUSTOMERS_LIST))
+        {
+            final Fragment downloadFragment = getFragmentManager().findFragmentByTag(FRAGMENT_DOWNLOAD_TAG);
+            if(downloadFragment != null)
+            {
+                showProgressDialog("");
+                ((DownloadHandlingFragment)(downloadFragment)).startDownloadRequest(request);
+            }
+            else {
+                Bundle args = new Bundle();
+                args.putParcelable(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE, request);
+                Intent intent = new Intent(this, DownloadActivity.class);
+                intent.putExtras(args);
+                startActivityForResult(intent, DownloadUtility.DOWNLOAD_DATA_REQUEST);
+            }
+        }
+        else {
+            requireDataDownload(request);
         }
     }
 
@@ -443,39 +436,15 @@ public abstract class BaseActivity extends Activity implements
 
     protected DownloadUtility.DownloadRequestType getFragmentType(int fragmentLayoutId)
     {
-        Fragment fragment = mFragmentManager.findFragmentById(fragmentLayoutId);
+        Fragment fragment = getFragment(fragmentLayoutId);
         if(fragment != null)
             return Enum.valueOf(DownloadUtility.DownloadRequestType.class,fragment.getArguments().getString(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE));
         return null;
     }
 
-    protected Fragment getFragment(DownloadUtility.DownloadRequestType  fragmentType)
+    protected Fragment getFragment(int fragmentLayoutId)
     {
-
-        Fragment fragment = null;
-        switch (fragmentType)
-        {
-            case VEHICLES_OWNED:
-            case VEHICLE_NOT_TRUSTED:
-                fragment = mVehiclesCustomerListFragment;
-                break;
-            case CRDS_OWNED:
-            case CRDS_NOT_TRUSTED:
-                fragment = mCRDCustomerCardsFragment;
-                break;
-            case CUSTOMERS_LIST:
-                fragment = mCustomerListFragment;
-                break;
-            case DRIVERS_OWNED:
-            case DRIVERS_NOT_TRUSTED:
-                fragment = mDriversCustomerListFragment;
-                break;
-            case MAIN_MENU:
-                fragment = mMenuCardsFragment;
-                break;
-            case VEHICLE_DIAGNOSTIC:
-                break;
-        }
-        return fragment;
+        return mFragmentManager.findFragmentById(fragmentLayoutId);
     }
+
 }
