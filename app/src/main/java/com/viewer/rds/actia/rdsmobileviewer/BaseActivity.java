@@ -23,7 +23,6 @@ import com.viewer.rds.actia.rdsmobileviewer.fragments.DriversCardsFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.IFragmentNotification;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.VehiclesCardsFragment;
 import com.viewer.rds.actia.rdsmobileviewer.utils.CacheDataManager;
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadRequestSchema;
 import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadUtility;
 import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
 
@@ -88,7 +87,7 @@ public abstract class BaseActivity extends Activity implements
 
 
 
-    public abstract void handleDownloadDataFinished(DownloadRequestSchema requestType, Object result);
+    public abstract void handleDownloadDataFinished(DownloadRequestSchema requestType, ResultOperation result);
 
 
 
@@ -156,7 +155,7 @@ public abstract class BaseActivity extends Activity implements
     }
 
     @Override
-    public void onDownloadDataFinished(DownloadRequestSchema requestType, Object result) {
+    public void onDownloadDataFinished(DownloadRequestSchema requestType, ResultOperation result) {
 
         handleDownloadDataFinished(requestType,result);
         hideProgressDialog();
@@ -291,7 +290,7 @@ public abstract class BaseActivity extends Activity implements
         {
             if(resultCode == DownloadUtility.DOWNLOAD_RESULT_OK) {
                 DownloadRequestSchema downloadRequestSchema = data.getExtras().getParcelable(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE);
-                handleDownloadDataFinished(downloadRequestSchema, CacheDataManager.getInstance().getValue(downloadRequestSchema));
+                handleDownloadDataFinished(downloadRequestSchema, ResultOperation.newInstance(true,"",CacheDataManager.getInstance().getValue(downloadRequestSchema)));
             }
         }
     }

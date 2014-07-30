@@ -19,7 +19,6 @@ import android.widget.ShareActionProvider;
 import android.widget.Toast;
 
 import com.viewer.rds.actia.rdsmobileviewer.utils.CacheDataManager;
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadRequestSchema;
 import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadUtility;
 import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.IFragmentNotification;
@@ -219,8 +218,10 @@ public class DetailsMainMenuActivity extends Activity implements ActionBar.TabLi
     }
 
     @Override
-    public void onDownloadDataFinished(DownloadRequestSchema requestType, Object result) {
-        PushDataToFragment(mCurrentFragment, requestType, result);
+    public void onDownloadDataFinished(DownloadRequestSchema requestType, ResultOperation result) {
+        if(result.isStatus()) {
+            PushDataToFragment(mCurrentFragment, requestType, result.getClassReturn());
+        }
     }
 
     private void PushDataToFragment(Fragment fragment, DownloadRequestSchema requestType, Object result) {

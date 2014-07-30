@@ -106,22 +106,8 @@ public class Utils {
         return result;
     }
 
-    public static byte[] decompressFromGZip(ByteArrayInputStream bytesIn) throws IOException {
-        GZIPInputStream in = new GZIPInputStream(bytesIn);
-        ByteArrayOutputStream contents = new ByteArrayOutputStream();
-        try {
-            byte[] buf = new byte[4096];
-            int len;
-            while ((len = in.read(buf)) > 0) {
-                contents.write(buf, 0, len);
-            }
-        } finally {
-            in.close();
-        }
-        return contents.toByteArray();
-    }
 
-    public static byte[] convertToByteArray(ArrayList<Byte> list) throws IOException {
+    public static byte[] convertToByteArray(byte[] list) throws IOException {
         // write to byte array
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream out = new DataOutputStream(baos);

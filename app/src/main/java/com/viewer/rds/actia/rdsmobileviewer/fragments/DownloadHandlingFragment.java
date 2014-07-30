@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 
 import com.viewer.rds.actia.rdsmobileviewer.PlaceholderFragmentFactory;
 import com.viewer.rds.actia.rdsmobileviewer.R;
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadRequestSchema;
+import com.viewer.rds.actia.rdsmobileviewer.DownloadRequestSchema;
 import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadUtility;
 
 /**

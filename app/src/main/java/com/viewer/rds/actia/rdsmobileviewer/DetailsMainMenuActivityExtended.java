@@ -13,7 +13,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.viewer.rds.actia.rdsmobileviewer.fragments.BaseFragment;
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadRequestSchema;
 import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadUtility;
 import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
 
@@ -80,11 +79,13 @@ public class DetailsMainMenuActivityExtended extends BaseActivity implements Act
 
     @Override
     public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction ft) {
+        int i = tab.getPosition();
 
     }
 
     @Override
     public void onTabReselected(ActionBar.Tab tab, FragmentTransaction ft) {
+        int i = tab.getPosition();
 
     }
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
@@ -200,9 +201,11 @@ public class DetailsMainMenuActivityExtended extends BaseActivity implements Act
     }
 
    @Override
-    public void handleDownloadDataFinished(DownloadRequestSchema requestType, Object result)
+    public void handleDownloadDataFinished(DownloadRequestSchema requestType, ResultOperation result)
     {
-        PushDataToFragment(mCurrentTabFragment, requestType, result);
+        if(result.isStatus()) {
+            PushDataToFragment(mCurrentTabFragment, requestType, result);
+        }
     }
 
 

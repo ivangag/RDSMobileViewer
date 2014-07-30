@@ -5,49 +5,112 @@
     android:layout_height="match_parent"
     tools:context="com.viewer.rds.actia.rdsmobileviewer.MainMenuActivity"
     android:weightSum="3"
-    android:orientation="horizontal">
+    android:orientation="vertical">
 
-
-    <FrameLayout
-        android:id="@+id/fragment_main"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1" >
-    </FrameLayout>
-
-    <FrameLayout
-        android:id="@+id/fragment_main_details"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="2" >
-    </FrameLayout>
-
-<!--    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@android:color/holo_red_light"
-        android:text="LANDSCAPE MODE!!!"
-        />-->
-
-    <LinearLayout
-        style="@style/GenericProgressBackground"
-        android:id="@+id/loadingPanel"
+  <!--
+    <RelativeLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:orientation="vertical">
-    <ProgressBar
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:indeterminate="true" />
-        <TextView
-            android:id="@+id/txt_progress_loading"
-            android:textColor="@android:color/holo_orange_dark"
-            android:textStyle="bold|italic"
-            android:text="@string/progress_loading_text"
+        android:layout_weight="1"
+        >
+
+        <View android:id="@+id/dummyView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_centerInParent="true"/>
+
+        <FrameLayout
+            android:id="@+id/fragment_main"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="fill_parent"
+            android:layout_alignRight="@id/dummyView"
+             >
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/fragment_main_details"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_alignLeft="@id/dummyView"
+            >
+        </FrameLayout>
+    </RelativeLayout>-->
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_weight="0.5"
+        >
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            >
+
+            <FrameLayout
+                android:id="@+id/fragment_main"
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                >
+            </FrameLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            >
+            <FrameLayout
+                android:id="@+id/fragment_main_details"
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                >
+            </FrameLayout>
+        </LinearLayout>
     </LinearLayout>
+
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="2.5"
+        >
+
+        <FrameLayout
+            style="@style/LayoutBackgroundTransparent"
+            android:id="@+id/fragment_handling_download"
+            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            />
+    </LinearLayout>
+
+
+    <!--
+        <LinearLayout
+            style="@style/GenericProgressBackground"
+            android:id="@+id/loadingPanel"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical">
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true" />
+            <TextView
+                android:id="@+id/txt_progress_loading"
+                android:textColor="@android:color/holo_orange_dark"
+                android:textStyle="bold|italic"
+                android:text="@string/progress_loading_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>-->
 
 </LinearLayout>
 

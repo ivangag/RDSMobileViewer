@@ -6,19 +6,22 @@ import android.content.Context;
 import android.content.ServiceConnection;
 import android.net.http.AndroidHttpClient;
 import android.os.AsyncTask;
-import android.os.Build;
-import android.os.Debug;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
+import android.view.View;
 
 import com.viewer.rds.actia.rdsmobileviewer.CRDSCustom;
+import com.viewer.rds.actia.rdsmobileviewer.DownloadRequestSchema;
 import com.viewer.rds.actia.rdsmobileviewer.DriverCardData;
+import com.viewer.rds.actia.rdsmobileviewer.IRDSClientResponse;
 import com.viewer.rds.actia.rdsmobileviewer.IRDSGetCall;
 import com.viewer.rds.actia.rdsmobileviewer.MainContractorData;
 import com.viewer.rds.actia.rdsmobileviewer.R;
+import com.viewer.rds.actia.rdsmobileviewer.IRDSClientRequest;
 import com.viewer.rds.actia.rdsmobileviewer.ResultOperation;
 import com.viewer.rds.actia.rdsmobileviewer.VehicleCustom;
+import com.viewer.rds.actia.rdsmobileviewer.services.RDSViewerServiceAsync;
 import com.viewer.rds.actia.rdsmobileviewer.services.RDSViewerServiceSync;
 
 import org.apache.http.HttpResponse;
@@ -32,13 +35,13 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Created by igaglioti on 09/07/2014.
@@ -50,6 +53,7 @@ public class DownloadUtility {
     public final static int DOWNLOAD_RESULT_OK = 0;
     public final static int DOWNLOAD_RESULT_FAILED = -1;
 
+    public static final String DOWNLOAD_DATA_RESULT = "DOWNLOAD_DATA_RESULT";
 
     private final static String TAG = DownloadUtility.class
             .getCanonicalName();
@@ -69,6 +73,7 @@ public class DownloadUtility {
     private final static String classReturn  = "ClassReturn";
     private final static String otherInfo  = "OtherInfo";
     private final static String status  = "Status";
+
 
     private static DownloadUtility ourInstance = new DownloadUtility();
 
@@ -96,14 +101,21 @@ public class DownloadUtility {
         mListeners.remove(listener);
     }
 
-    public void notifyListeners(DownloadRequestSchema requestType, Object result) {
-        for (IRemoteDownloadDataListener listener : mListeners) {
-            listener.onDownloadDataFinished(requestType,result);
+    public void notifyListeners(final DownloadRequestSchema requestType,final ResultOperation result) {
+        for (final IRemoteDownloadDataListener listener : mListeners) {
+            if(listener instanceof Activity)
+                ((Activity)listener).runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        listener.onDownloadDataFinished(requestType,result);
+                    }
+                });
+
         }
     }
 
     public interface IRemoteDownloadDataListener {
-        public void onDownloadDataFinished(DownloadRequestSchema requestType, Object result);
+        public void onDownloadDataFinished(DownloadRequestSchema requestType, ResultOperation result);
     }
 
     public static enum DownloadRequestType
@@ -172,27 +184,30 @@ public class DownloadUtility {
 
 
     public static ResultOperation FetchingRemoteData(AndroidHttpClient client,
-                                             DownloadRequestSchema downloadRequestSchema) {
+                                             DownloadRequestSchema downloadRequestSchema, boolean translateRemoteData) {
         // Object that encapsulates the HTTP GET request to the
         // RDS Web service.
-        final String url = downloadRequestSchema.getDownloadRequestType().getWSCallName(downloadRequestSchema);
+        final DownloadRequestType requestType = downloadRequestSchema.getDownloadRequestType();
+        final String url = requestType.getWSCallName(downloadRequestSchema);
         HttpGet request = new HttpGet(url);
 
+
+        ResultOperation resOp = ResultOperation.newInstance();
         JSONResponseHandler responseHandler
-                = new JSONResponseHandler(downloadRequestSchema.getDownloadRequestType());
+                = new JSONResponseHandler(downloadRequestSchema.getDownloadRequestType(),translateRemoteData);
 
         try {
             // Get expanded acronyms from the Web service in JSON
             // format, parse data into a List of AcronymData, and
             // return the results.
-            return client.execute(request,
+            resOp = client.execute(request,
                     responseHandler);
         } catch (ClientProtocolException e) {
-            Log.i(TAG, "ClientProtocolException");
+            Log.w(TAG, "ClientProtocolException: " + e.getLocalizedMessage());
         } catch (IOException e) {
-            Log.i(TAG, "IOException");
+            Log.w(TAG, "IOException: " + e.getLocalizedMessage());
         }
-        return null;
+        return resOp;
     }
 
 
@@ -205,11 +220,12 @@ public class DownloadUtility {
 
     static class JSONResponseHandler implements ResponseHandler<ResultOperation>
     {
-        private DownloadRequestType mRequestType;
+        final private boolean mTranslateRemoteData;
+        final private DownloadRequestType mRequestType;
 
-        public JSONResponseHandler(DownloadRequestType requestType)
-        {
+        public JSONResponseHandler(DownloadRequestType requestType, boolean translateRemoteData) {
             mRequestType = requestType;
+            mTranslateRemoteData = translateRemoteData;
         }
 
         @Override
@@ -224,12 +240,11 @@ public class DownloadUtility {
             // Stores the processed results we get back from the
             // Web service.
             ArrayList result = null;
+            JSONArray jsonArray = null;
             try {
 
                 // Takes a JSON source string and extracts characters
                 // and tokens from it.
-                JSONArray jsonArray = null;
-
                 JSONTokener token = new JSONTokener(JSONResponse);
 
                 if(token.nextValue() instanceof JSONArray)
@@ -238,31 +253,16 @@ public class DownloadUtility {
                     resultOperation.setStatus(true);
                 }
                 else {
-                    resultOperation = getResultOperation(JSONResponse,resultOperation);
-                    jsonArray = (JSONArray) resultOperation.getClassReturn();
+                    resultOperation = DownloadUtility.buildResultOperation(JSONResponse, resultOperation);
+                    //jsonArray = (JSONArray) resultOperation.getClassReturn();
                 }
 
-                if(resultOperation.isStatus()) {
-                    switch (mRequestType) {
-
-                        case VEHICLE_DIAGNOSTIC:
-                        case VEHICLES_OWNED:
-                        case VEHICLE_NOT_TRUSTED:
-                            result = parseVehicles(jsonArray);
-                            break;
-                        case CUSTOMERS_LIST:
-                            result = parseCustomers(jsonArray);
-                            break;
-                        case CRDS_NOT_TRUSTED:
-                        case CRDS_OWNED:
-                            result = parseCRDS(jsonArray);
-                            break;
-                        case DRIVERS_OWNED:
-                        case DRIVERS_NOT_TRUSTED:
-                            result = parseDrivers(jsonArray);
-                            break;
-                        case MAIN_MENU:
-                            break;
+                if(mTranslateRemoteData){
+                    if(resultOperation.isStatus()) {
+                        jsonArray = new JSONArray(new String((byte[]) resultOperation.getClassReturn()));
+                        final DownloadRequestType requestType = mRequestType;
+                        result = parseJsonToRDSRemoteObject(jsonArray, requestType);
+                        resultOperation.setClassReturn(result);
                     }
                 }
             } catch (JSONException e) {
@@ -270,28 +270,82 @@ public class DownloadUtility {
                 resultOperation.setOtherInfo(String.format("Exception on getResponse:%s",e.getLocalizedMessage()));
                 e.printStackTrace();
             }
-            finally {
-                resultOperation.setClassReturn(result);
-            }
-            //return result;
+
             return resultOperation;
         }
     }
 
-    private static ResultOperation getResultOperation(String JSONResponse, ResultOperation resultOperationInstance) throws JSONException, IOException {
+    public static ArrayList parseJsonToRDSRemoteObject(JSONArray jsonArray, DownloadRequestType requestType) throws JSONException {
+        ArrayList result = null;
+        switch (requestType) {
+
+            case VEHICLE_DIAGNOSTIC:
+            case VEHICLES_OWNED:
+            case VEHICLE_NOT_TRUSTED:
+                result = parseVehicles(jsonArray);
+                break;
+            case CUSTOMERS_LIST:
+                result = parseCustomers(jsonArray);
+                break;
+            case CRDS_NOT_TRUSTED:
+            case CRDS_OWNED:
+                result = parseCRDS(jsonArray);
+                break;
+            case DRIVERS_OWNED:
+            case DRIVERS_NOT_TRUSTED:
+                result = parseDrivers(jsonArray);
+                break;
+            case MAIN_MENU:
+                break;
+        }
+        return result;
+    }
+
+    private static ResultOperation buildResultOperation(String JSONResponse,
+                                                        ResultOperation resultOperationInstance) throws JSONException, IOException {
         JSONArray jsonArray = null;
         JSONObject jsonObject = new JSONObject(JSONResponse);
+        byte[] streamDecompress = null;
         if (!jsonObject.isNull(classReturn)) {
-
             // get ClassReturn field
             jsonArray = jsonObject.getJSONArray(classReturn);
             if (Utils.GZIP_MAGICAL == jsonArray.getInt(0)) {
-                final ArrayList<Byte> arrayList = new ArrayList<Byte>();
-                for (int Idx = 0; Idx < jsonArray.length(); Idx++) {
-                    arrayList.add((byte) jsonArray.getInt(Idx));
-                }
-                byte[] jsonResArray = Utils.decompressFromGZip(new ByteArrayInputStream(Utils.convertToByteArray((arrayList))));
-                jsonArray = new JSONArray(new String(jsonResArray));
+                final byte[] streamCompress = DownloadUtility.getBytesFromJsonArray(jsonArray);
+                streamDecompress = DownloadUtility.decompressFromGZip(new ByteArrayInputStream(Utils.convertToByteArray((streamCompress))));
+
+                jsonArray = new JSONArray(new String(streamDecompress));
+            }
+            // get OtherInfo field
+            if(!jsonObject.isNull(otherInfo))
+                resultOperationInstance.setOtherInfo(jsonObject.getString(otherInfo));
+
+            // get Status field
+            if(!jsonObject.isNull(status))
+                resultOperationInstance.setStatus(jsonObject.getBoolean(status));
+        }
+        else
+        {
+            resultOperationInstance.setStatus(false);
+            resultOperationInstance.setOtherInfo("ResponseError::No ClassReturn Found");
+        }
+        //resultOperationInstance.setClassReturn(jsonArray);
+        resultOperationInstance.setClassReturn(streamDecompress);
+        return resultOperationInstance;
+    }
+
+
+    private static ResultOperation buildResultOperationEx(String JSONResponse,
+                                                        ResultOperation resultOperationInstance) throws JSONException, IOException {
+        JSONArray jsonArray = null;
+        JSONObject jsonObject = new JSONObject(JSONResponse);
+        if (!jsonObject.isNull(classReturn)) {
+            // get ClassReturn field
+            jsonArray = jsonObject.getJSONArray(classReturn);
+            if (Utils.GZIP_MAGICAL == jsonArray.getInt(0)) {
+                final byte[] streamCompress = DownloadUtility.getBytesFromJsonArray(jsonArray);
+                byte[] streamDecompress = DownloadUtility.decompressFromGZip(new ByteArrayInputStream(Utils.convertToByteArray((streamCompress))));
+
+                jsonArray = new JSONArray(new String(streamDecompress));
             }
             // get OtherInfo field
             if(!jsonObject.isNull(otherInfo))
@@ -308,6 +362,43 @@ public class DownloadUtility {
         }
         resultOperationInstance.setClassReturn(jsonArray);
         return resultOperationInstance;
+    }
+
+    public static byte[] getBytesFromJsonArray(JSONArray jsonArray) throws JSONException {
+
+        final byte[] streamCompress = new byte[jsonArray.length()];
+        for (int Idx = 0; Idx < jsonArray.length(); Idx++) {
+            streamCompress[Idx] = ((byte) jsonArray.getInt(Idx));
+        }
+        return streamCompress;
+    }
+
+    public byte[] makeBytesFromArray(ArrayList<Byte> arrayList)
+    {
+        ArrayList<Byte> in = arrayList;
+        int n = in.size();
+        byte[] out = new byte[n];
+        for (int i = 0; i < n; i++) {
+            out[i] = in.get(i);
+        }
+        return out;
+    }
+
+
+
+    public static byte[] decompressFromGZip(ByteArrayInputStream bytesIn) throws IOException {
+        GZIPInputStream in = new GZIPInputStream(bytesIn);
+        ByteArrayOutputStream contents = new ByteArrayOutputStream();
+        try {
+            byte[] buf = new byte[4096];
+            int len;
+            while ((len = in.read(buf)) > 0) {
+                contents.write(buf, 0, len);
+            }
+        } finally {
+            in.close();
+        }
+        return contents.toByteArray();
     }
 
     private static ArrayList parseCustomers(JSONArray customers) throws JSONException {
@@ -461,8 +552,18 @@ public class DownloadUtility {
                                          DownloadRequestSchema downloadRequestInfo) {
 
         this.addListener(clientDownloadDataListener);
-        DownloadDataTask downloadDataTask = new DownloadDataTask();
-        downloadDataTask.execute(downloadRequestInfo);
+        if(downloadRequestInfo.getDownloadRequestType().equals(DownloadRequestType.VEHICLE_NOT_TRUSTED))
+        {
+            try {
+                mRDSClientRequest.fetchRemoteData(mRDSServiceResponse,downloadRequestInfo);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+                Log.e(TAG,"RemoteException => mRDSClientRequest.fetchRemoteData: " + e.getLocalizedMessage());
+            }
+        } else {
+            DownloadDataTask downloadDataTask = new DownloadDataTask();
+            downloadDataTask.execute(downloadRequestInfo);
+        }
     }
 
     class DownloadDataTask extends AsyncTask<DownloadRequestSchema,Void,ResultOperation>
@@ -470,58 +571,25 @@ public class DownloadUtility {
         DownloadRequestSchema mRequestInfo;
         @Override
         protected ResultOperation doInBackground(DownloadRequestSchema... params) {
-            boolean mHasCacheData = false;
-            ResultOperation result = ResultOperation.newInstance(false,"",null);
+
             mRequestInfo = params[0];
+
+
+            ResultOperation result = ResultOperation.newInstance(false,"",null);
+
+            boolean mHasCacheData = false;
             final boolean mObtainCacheIfExist = mRequestInfo.getCacheOption();
             final DownloadRequestType requestType = mRequestInfo.getDownloadRequestType();
-            switch (requestType)
-            {
-                case VEHICLE_NOT_TRUSTED:
-                    if(mObtainCacheIfExist && (mHasCacheData = CacheDataManager.getInstance().hasVehiclesNotTrusted())){
-                        result.setClassReturn(CacheDataManager.getInstance().getVehicleNotTrusted());
-                    }
-                    break;
-                case CRDS_NOT_TRUSTED:
-                    if(mObtainCacheIfExist && (mHasCacheData = CacheDataManager.getInstance().hasCRDSNotTrusted())){
-                        result.setClassReturn(CacheDataManager.getInstance().getCRDSNotTrusted());
-                    }
-                    break;
-                case DRIVERS_OWNED:
-                    if(mObtainCacheIfExist && (mHasCacheData = CacheDataManager.getInstance().hasCustomerDrivers(mRequestInfo.getUniqueCustomerCode()))){
-                        result.setClassReturn(CacheDataManager.getInstance().getCustomerDrivers(mRequestInfo.getUniqueCustomerCode()));
-                    }
-                    break;
-                case CRDS_OWNED:
-                    if(mObtainCacheIfExist && (mHasCacheData = CacheDataManager.getInstance().hasCustomerCRDS(mRequestInfo.getUniqueCustomerCode()))){
-                        result.setClassReturn(CacheDataManager.getInstance().getCustomerCRDS(mRequestInfo.getUniqueCustomerCode()));
-                    }
-                    break;
-                case DRIVERS_NOT_TRUSTED:
-                    if(mObtainCacheIfExist && (mHasCacheData = CacheDataManager.getInstance().hasDriversNotTrusted())){
-                        result.setClassReturn(CacheDataManager.getInstance().getDriversNotTrusted());
-                    }
-                    break;
-                case CUSTOMERS_LIST:
-                    if(mObtainCacheIfExist && (mHasCacheData = CacheDataManager.getInstance().hasCustomers())){
-                        result.setClassReturn(CacheDataManager.getInstance().getCustomers(null));
-                    }
-                    break;
-                case VEHICLES_OWNED:
-                    if(mObtainCacheIfExist && (mHasCacheData = CacheDataManager.getInstance().hasCustomerVehicles(mRequestInfo.getUniqueCustomerCode()))){
-                        result.setClassReturn(CacheDataManager.getInstance().getCustomerVehicles(mRequestInfo.getUniqueCustomerCode()));
-                    }
-                    break;
-                case MAIN_MENU:
-                    break;
-                case VEHICLE_DIAGNOSTIC:
-                    //result = DownloadUtility.FetchingDiagnosticDataResults(mClient, mRequestInfo.getVehicleVIN());
-                    //result = ((List<VehicleCustom> )result).get(0).get_FileContent();
-                    break;
+
+            if(mObtainCacheIfExist){
+                mHasCacheData = CacheDataManager.checkedCachedDataPresence(result, mRequestInfo);
             }
-            if(result.getClassReturn() == null){
+            if(!mHasCacheData) {
+                result = DownloadUtility.FetchingRemoteData(mClient, mRequestInfo, true);
+
+                /* !! The following (commented) code snippet is only for testing service purpose !!
                 if(!requestType.equals(DownloadRequestType.VEHICLE_NOT_TRUSTED)){
-                    result = DownloadUtility.FetchingRemoteData(mClient, mRequestInfo);
+                    result = DownloadUtility.FetchingRemoteData(mClient, mRequestInfo,true);
                 }
                 else{
                     try {
@@ -534,8 +602,9 @@ public class DownloadUtility {
                         result.setOtherInfo(e.getLocalizedMessage());
                     }
                 }
-            }
+                */
 
+            }
 
             if((!mObtainCacheIfExist && (result.getClassReturn() != null))
                     || !mHasCacheData)
@@ -545,32 +614,46 @@ public class DownloadUtility {
                         " (" + mRequestInfo.getUniqueCustomerCode() + ")");
             }
             return result;
-
         }
+
         @Override
         protected void onPostExecute(ResultOperation result)
         {
-            notifyListeners(mRequestInfo,result.getClassReturn());
+            notifyListeners(mRequestInfo,result);
         }
     }
 
-    public synchronized void startRDService(Context context){
+    public void startRDService(Context context){
         // Launch the designated Bound Service if they aren't already
         // running via a call to bindService() Bind this activity to
         // the GeoNamesService* Services if they aren't already bound.
-        Debug.waitForDebugger();
+        //Debug.waitForDebugger();
         if (mRDSClientCall == null)
             context.bindService(RDSViewerServiceSync.makeIntent(context),
                     mRDSServiceSync,
                     context.BIND_AUTO_CREATE);
+
+        if (mRDSClientRequest == null)
+            context.bindService(RDSViewerServiceAsync.makeIntent(context),
+                    mRDSServiceAsync,
+                    context.BIND_AUTO_CREATE);
+
+
     }
 
-    public synchronized void stopRDSService(Context context){
+    public void stopRDSService(Context context){
 
-        Debug.waitForDebugger();
+        //Debug.waitForDebugger();
         // Unbind the Sync/Async Services if they are connected.
         if (mRDSClientCall != null)
             context.unbindService(mRDSServiceSync);
+
+        //Debug.waitForDebugger();
+        // Unbind the Sync/Async Services if they are connected.
+        if (mRDSClientRequest != null)
+            context.unbindService(mRDSServiceAsync);
+
+
     }
 
     /**
@@ -580,6 +663,7 @@ public class DownloadUtility {
      * connection to the Service.
      */
     IRDSGetCall mRDSClientCall = null;
+    IRDSClientRequest mRDSClientRequest = null;
 
     ServiceConnection mRDSServiceSync = new ServiceConnection() {
 
@@ -593,6 +677,42 @@ public class DownloadUtility {
         @Override
         public void onServiceDisconnected(ComponentName name) {
             mRDSClientCall = null;
+        }
+    };
+
+    ServiceConnection mRDSServiceAsync = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+
+            Log.d(TAG, "ComponentName: " + name);
+            mRDSClientRequest = IRDSClientRequest.Stub.asInterface(service);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mRDSClientRequest = null;
+        }
+    };
+
+    IRDSClientResponse.Stub mRDSServiceResponse = new IRDSClientResponse.Stub() {
+
+        @Override
+        public void sendRemoteDataResult(ResultOperation result, DownloadRequestSchema downloadRequest) throws RemoteException {
+
+            if(result.isStatus())
+            {
+                ArrayList data = null;
+                try {
+                    final JSONArray jsonArray  = new JSONArray(new String((byte[]) result.getClassReturn()));
+                    final DownloadRequestType requestType = downloadRequest.getDownloadRequestType();
+                    data = parseJsonToRDSRemoteObject(jsonArray, requestType);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                result.setClassReturn(data);
+                notifyListeners(downloadRequest,result);
+            }
         }
     };
 }

@@ -3,8 +3,10 @@ package com.viewer.rds.actia.rdsmobileviewer.utils;
 import android.content.Context;
 
 import com.viewer.rds.actia.rdsmobileviewer.CRDSCustom;
+import com.viewer.rds.actia.rdsmobileviewer.DownloadRequestSchema;
 import com.viewer.rds.actia.rdsmobileviewer.DriverCardData;
 import com.viewer.rds.actia.rdsmobileviewer.MainContractorData;
+import com.viewer.rds.actia.rdsmobileviewer.ResultOperation;
 import com.viewer.rds.actia.rdsmobileviewer.VehicleCustom;
 import com.viewer.rds.actia.rdsmobileviewer.db.RDSDBMapper;
 
@@ -202,5 +204,55 @@ public class CacheDataManager
                 break;
         }
         return result;
+    }
+
+
+
+    public static boolean checkedCachedDataPresence(ResultOperation result, DownloadRequestSchema requestInfo) {
+        boolean mHasCacheData = false;
+        switch (requestInfo.getDownloadRequestType())
+        {
+            case VEHICLE_NOT_TRUSTED:
+                if((mHasCacheData = CacheDataManager.getInstance().hasVehiclesNotTrusted())){
+                    result.setClassReturn(CacheDataManager.getInstance().getVehicleNotTrusted());
+                }
+                break;
+            case CRDS_NOT_TRUSTED:
+                if((mHasCacheData = CacheDataManager.getInstance().hasCRDSNotTrusted())){
+                    result.setClassReturn(CacheDataManager.getInstance().getCRDSNotTrusted());
+                }
+                break;
+            case DRIVERS_OWNED:
+                if((mHasCacheData = CacheDataManager.getInstance().hasCustomerDrivers(requestInfo.getUniqueCustomerCode()))){
+                    result.setClassReturn(CacheDataManager.getInstance().getCustomerDrivers(requestInfo.getUniqueCustomerCode()));
+                }
+                break;
+            case CRDS_OWNED:
+                if((mHasCacheData = CacheDataManager.getInstance().hasCustomerCRDS(requestInfo.getUniqueCustomerCode()))){
+                    result.setClassReturn(CacheDataManager.getInstance().getCustomerCRDS(requestInfo.getUniqueCustomerCode()));
+                }
+                break;
+            case DRIVERS_NOT_TRUSTED:
+                if((mHasCacheData = CacheDataManager.getInstance().hasDriversNotTrusted())){
+                    result.setClassReturn(CacheDataManager.getInstance().getDriversNotTrusted());
+                }
+                break;
+            case CUSTOMERS_LIST:
+                if((mHasCacheData = CacheDataManager.getInstance().hasCustomers())){
+                    result.setClassReturn(CacheDataManager.getInstance().getCustomers(null));
+                }
+                break;
+            case VEHICLES_OWNED:
+                if((mHasCacheData = CacheDataManager.getInstance().hasCustomerVehicles(requestInfo.getUniqueCustomerCode()))){
+                    result.setClassReturn(CacheDataManager.getInstance().getCustomerVehicles(requestInfo.getUniqueCustomerCode()));
+                }
+                break;
+            case MAIN_MENU:
+                break;
+            case VEHICLE_DIAGNOSTIC:
+                break;
+        }
+        result.setStatus(mHasCacheData);
+        return mHasCacheData;
     }
 }

@@ -5,12 +5,10 @@ import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.os.Debug;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.viewer.rds.actia.rdsmobileviewer.db.RDSDBMapper;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.BaseFragment;
@@ -20,7 +18,6 @@ import com.viewer.rds.actia.rdsmobileviewer.fragments.DownloadHandlingFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.DriversCardsFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.MainMenuCardsFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.VehiclesCardsFragment;
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadRequestSchema;
 import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadUtility;
 import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
 
@@ -120,6 +117,7 @@ public class MainMenuActivityExtended extends BaseActivity
         {
             removeExtraInfoFragment();
         }
+        hideProgressDialog();
     }
 
 
@@ -237,59 +235,59 @@ public class MainMenuActivityExtended extends BaseActivity
     }
 
     @Override
-    public void handleDownloadDataFinished(DownloadRequestSchema requestType, Object result) {
+    public void handleDownloadDataFinished(DownloadRequestSchema requestType, ResultOperation result) {
 
-        switch (requestType.getDownloadRequestType())
-        {
-            case VEHICLE_NOT_TRUSTED:
-                break;
-            case CRDS_NOT_TRUSTED:
-                break;
-            case DRIVERS_NOT_TRUSTED:
-                break;
-            case CUSTOMERS_LIST:
-                if(mDisplayOrientation.equals(PORTRAIT) // this should never happen
-                        && !getFragmentType(R.id.fragment_main).equals(DownloadUtility.DownloadRequestType.CUSTOMERS_LIST))
-                    replaceFragment(R.id.fragment_main, null, mCustomerListFragment, false);
-                PushDataToFragment(mCustomerListFragment,requestType,result);
-                mCustomerListFragment.OnUpdateData("",result,MainContractorData.class);
-                for(MainContractorData customer : (List<MainContractorData>)result)
-                {
-                    mRDSDBMapper.insertOrUpdateCustomerData(customer);
-                }
-                break;
-            case VEHICLES_OWNED:
-                if(getFragmentType(R.id.fragment_main).equals(DownloadUtility.DownloadRequestType.CUSTOMERS_LIST)) {
-                    if ((mDisplayOrientation.equals(LANDSCAPE)))
-                        replaceFragment(R.id.fragment_main_details, null, mVehiclesCustomerListFragment, false);
-                    else
-                        replaceFragment(R.id.fragment_main, null, mVehiclesCustomerListFragment, false);
-                }
-                mVehiclesCustomerListFragment.OnUpdateData(requestType.getUniqueCustomerCode(), result,VehicleCustom.class);
-                break;
-            case DRIVERS_OWNED:
-                if(getFragmentType(R.id.fragment_main).equals(DownloadUtility.DownloadRequestType.CUSTOMERS_LIST)) {
-                    if (mDisplayOrientation.equals(LANDSCAPE))
-                        replaceFragment(R.id.fragment_main_details, null, mDriversCustomerListFragment, false);
-                    else
-                        replaceFragment(R.id.fragment_main, null, mDriversCustomerListFragment, false);
-                }
-                mDriversCustomerListFragment.OnUpdateData(requestType.getUniqueCustomerCode(), result, DriverCardData.class);
-                break;
-            case CRDS_OWNED:
-                if(getFragmentType(R.id.fragment_main).equals(DownloadUtility.DownloadRequestType.CUSTOMERS_LIST)) {
-                    if (mDisplayOrientation.equals(LANDSCAPE))
-                        replaceFragment(R.id.fragment_main_details, null, mCRDCustomerCardsFragment, false);
-                    else
-                        replaceFragment(R.id.fragment_main, null, mCRDCustomerCardsFragment, false);
-                }
-                mCRDCustomerCardsFragment.OnUpdateData(requestType.getUniqueCustomerCode(),result,CRDSCustom.class);
-                break;
-            case MAIN_MENU:
-                break;
-            case VEHICLE_DIAGNOSTIC:
-                showTextFile(((List<VehicleCustom>)result).get(0).get_FileContent());
-                break;
+        if(result.isStatus()) {
+            switch (requestType.getDownloadRequestType()) {
+                case VEHICLE_NOT_TRUSTED:
+                    break;
+                case CRDS_NOT_TRUSTED:
+                    break;
+                case DRIVERS_NOT_TRUSTED:
+                    break;
+                case CUSTOMERS_LIST:
+                    if (mDisplayOrientation.equals(PORTRAIT) // this should never happen
+                            && !getFragmentType(R.id.fragment_main).equals(DownloadUtility.DownloadRequestType.CUSTOMERS_LIST))
+                        replaceFragment(R.id.fragment_main, null, mCustomerListFragment, false);
+                    PushDataToFragment(mCustomerListFragment, requestType, result.getClassReturn());
+                    mCustomerListFragment.OnUpdateData("", result.getClassReturn(), MainContractorData.class);
+                    for (MainContractorData customer : (List<MainContractorData>) result) {
+                        mRDSDBMapper.insertOrUpdateCustomerData(customer);
+                    }
+                    break;
+                case VEHICLES_OWNED:
+                    if (getFragmentType(R.id.fragment_main).equals(DownloadUtility.DownloadRequestType.CUSTOMERS_LIST)) {
+                        if ((mDisplayOrientation.equals(LANDSCAPE)))
+                            replaceFragment(R.id.fragment_main_details, null, mVehiclesCustomerListFragment, false);
+                        else
+                            replaceFragment(R.id.fragment_main, null, mVehiclesCustomerListFragment, false);
+                    }
+                    mVehiclesCustomerListFragment.OnUpdateData(requestType.getUniqueCustomerCode(), result.getClassReturn(), VehicleCustom.class);
+                    break;
+                case DRIVERS_OWNED:
+                    if (getFragmentType(R.id.fragment_main).equals(DownloadUtility.DownloadRequestType.CUSTOMERS_LIST)) {
+                        if (mDisplayOrientation.equals(LANDSCAPE))
+                            replaceFragment(R.id.fragment_main_details, null, mDriversCustomerListFragment, false);
+                        else
+                            replaceFragment(R.id.fragment_main, null, mDriversCustomerListFragment, false);
+                    }
+                    mDriversCustomerListFragment.OnUpdateData(requestType.getUniqueCustomerCode(), result.getClassReturn(), DriverCardData.class);
+                    break;
+                case CRDS_OWNED:
+                    if (getFragmentType(R.id.fragment_main).equals(DownloadUtility.DownloadRequestType.CUSTOMERS_LIST)) {
+                        if (mDisplayOrientation.equals(LANDSCAPE))
+                            replaceFragment(R.id.fragment_main_details, null, mCRDCustomerCardsFragment, false);
+                        else
+                            replaceFragment(R.id.fragment_main, null, mCRDCustomerCardsFragment, false);
+                    }
+                    mCRDCustomerCardsFragment.OnUpdateData(requestType.getUniqueCustomerCode(), result.getClassReturn(), CRDSCustom.class);
+                    break;
+                case MAIN_MENU:
+                    break;
+                case VEHICLE_DIAGNOSTIC:
+                    showTextFile(((List<VehicleCustom>) result.getClassReturn()).get(0).get_FileContent());
+                    break;
+            }
         }
     }
 

@@ -1,7 +1,9 @@
-package com.viewer.rds.actia.rdsmobileviewer.utils;
+package com.viewer.rds.actia.rdsmobileviewer;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadUtility;
 
 /**
  * Created by igaglioti on 16/07/2014.

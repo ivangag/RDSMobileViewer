@@ -1,7 +1,6 @@
 package com.viewer.rds.actia.rdsmobileviewer;
 
 import android.app.Activity;
-import android.app.ActionBar;
 import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,11 +9,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.os.Build;
 
-import com.viewer.rds.actia.rdsmobileviewer.R;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.DownloadHandlingFragment;
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadRequestSchema;
 import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadUtility;
 
 public class DownloadActivity extends Activity implements DownloadHandlingFragment.TaskDownloadCallbacks,
@@ -90,10 +86,11 @@ public class DownloadActivity extends Activity implements DownloadHandlingFragme
     }
 
     @Override
-    public void onDownloadDataFinished(DownloadRequestSchema requestType, Object result) {
+    public void onDownloadDataFinished(DownloadRequestSchema requestType, ResultOperation result) {
 
         Bundle args = new Bundle();
         args.putParcelable(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE, requestType);
+        args.putParcelable(DownloadUtility.DOWNLOAD_DATA_RESULT,result);
         Intent intent = new Intent();
         intent.putExtras(args);
         setResult(DownloadUtility.DOWNLOAD_RESULT_OK,intent);

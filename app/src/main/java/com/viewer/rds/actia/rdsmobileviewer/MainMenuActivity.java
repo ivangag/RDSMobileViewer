@@ -6,21 +6,17 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
-import android.os.Debug;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.SearchView;
 import android.widget.ShareActionProvider;
 import android.widget.TextView;
 
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadRequestSchema;
 import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadUtility;
 import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.BaseFragment;
@@ -259,39 +255,40 @@ public class MainMenuActivity extends Activity implements
     }
 
     @Override
-    public void onDownloadDataFinished(DownloadRequestSchema requestType, Object result) {
+    public void onDownloadDataFinished(DownloadRequestSchema requestType, ResultOperation result) {
 
         hideProgressDialog();
-        switch (requestType.getDownloadRequestType())
-        {
-            case VEHICLE_NOT_TRUSTED:
-                break;
-            case CRDS_NOT_TRUSTED:
-                break;
-            case DRIVERS_NOT_TRUSTED:
-                break;
-            case CUSTOMERS_LIST:
-                showNewFragment(mCustomerListFragment,FRAGMENT_CUSTOMERS_TAG,false);
-                //showNewFragment(mCustomerListFragment,FRAGMENT_CUSTOMERS_TAG);
-                mCustomerListFragment.OnUpdateData("",result,MainContractorData.class);
-                break;
-            case VEHICLES_OWNED:
-                showNewFragment(mVehiclesCustomerListFragment,FRAGMENT_VEHICLES_TAG,true);
-                mVehiclesCustomerListFragment.OnUpdateData(requestType.getUniqueCustomerCode(), result,VehicleCustom.class);
-                break;
-            case DRIVERS_OWNED:
-                showNewFragment(mHolderDriversCustomerListFragment,FRAGMENT_DRIVERS_TAG);
-                mHolderDriversCustomerListFragment.OnUpdateData(requestType.getUniqueCustomerCode(),result,DriverCardData.class);
-                break;
-            case CRDS_OWNED:
-                showNewFragment(mCRDCustomerCardsFragment,FRAGMENT_CRDS_TAG);
-                mCRDCustomerCardsFragment.OnUpdateData(requestType.getUniqueCustomerCode(),result,CRDSCustom.class);
-                break;
-            case MAIN_MENU:
-                break;
-            case VEHICLE_DIAGNOSTIC:
-                showTextFile(((List<VehicleCustom>)result).get(0).get_FileContent());
-                break;
+        if(result.isStatus()) {
+            switch (requestType.getDownloadRequestType()) {
+                case VEHICLE_NOT_TRUSTED:
+                    break;
+                case CRDS_NOT_TRUSTED:
+                    break;
+                case DRIVERS_NOT_TRUSTED:
+                    break;
+                case CUSTOMERS_LIST:
+                    showNewFragment(mCustomerListFragment, FRAGMENT_CUSTOMERS_TAG, false);
+                    //showNewFragment(mCustomerListFragment,FRAGMENT_CUSTOMERS_TAG);
+                    mCustomerListFragment.OnUpdateData("", result.getClassReturn(), MainContractorData.class);
+                    break;
+                case VEHICLES_OWNED:
+                    showNewFragment(mVehiclesCustomerListFragment, FRAGMENT_VEHICLES_TAG, true);
+                    mVehiclesCustomerListFragment.OnUpdateData(requestType.getUniqueCustomerCode(), result.getClassReturn(), VehicleCustom.class);
+                    break;
+                case DRIVERS_OWNED:
+                    showNewFragment(mHolderDriversCustomerListFragment, FRAGMENT_DRIVERS_TAG);
+                    mHolderDriversCustomerListFragment.OnUpdateData(requestType.getUniqueCustomerCode(), result.getClassReturn(), DriverCardData.class);
+                    break;
+                case CRDS_OWNED:
+                    showNewFragment(mCRDCustomerCardsFragment, FRAGMENT_CRDS_TAG);
+                    mCRDCustomerCardsFragment.OnUpdateData(requestType.getUniqueCustomerCode(), result.getClassReturn(), CRDSCustom.class);
+                    break;
+                case MAIN_MENU:
+                    break;
+                case VEHICLE_DIAGNOSTIC:
+                    showTextFile(((List<VehicleCustom>) result.getClassReturn()).get(0).get_FileContent());
+                    break;
+            }
         }
     }
 
