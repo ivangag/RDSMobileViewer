@@ -3,11 +3,19 @@ package com.viewer.rds.actia.rdsmobileviewer.utils;
 import android.content.Context;
 
 import com.viewer.rds.actia.rdsmobileviewer.R;
+import com.viewer.rds.actia.rdsmobileviewer.VehicleCustom;
+
+import org.codehaus.jackson.JsonFactory;
+import org.codehaus.jackson.JsonGenerator;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -22,7 +30,8 @@ public class Utils {
 
     static WeakReference<Context> mContext = null;
 
-    public final static Byte GZIP_MAGICAL = 0x1f;
+    public final static int GZIP_MAGICAL_1 = 0x1f;
+    public final static int GZIP_MAGICAL_2 = 0x8b;
     public final static String MAIN_MENU_KEY = "MAIN_MENU_KEY";
 
     public static enum MainMenuSectionItemType {
@@ -116,4 +125,6 @@ public class Utils {
         }
         return baos.toByteArray();
     }
+
+
 }

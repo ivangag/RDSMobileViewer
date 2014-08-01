@@ -21,7 +21,7 @@ import com.viewer.rds.actia.rdsmobileviewer.PlaceholderFragmentFactory;
 import com.viewer.rds.actia.rdsmobileviewer.R;
 import com.viewer.rds.actia.rdsmobileviewer.cards.CustomExpandCard;
 import com.viewer.rds.actia.rdsmobileviewer.cards.HeaderCard;
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadUtility;
+import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,6 +43,9 @@ public class DriversCardsFragment extends BaseFragment implements IFragmentNotif
     private List<DriverDataCardWrapper> mLastRetrievedItems = new ArrayList<DriverDataCardWrapper>();
     private List<DriverDataCardWrapper> mLastFilteredItems = new ArrayList<DriverDataCardWrapper>();
     CardArrayAdapter mCardArrayAdapter;
+
+
+
     int mTitleResourceId = R.string.drivers_title;
 
 
@@ -68,7 +71,7 @@ public class DriversCardsFragment extends BaseFragment implements IFragmentNotif
 
         if(mIsFirstVisualization) {
             mIsFirstVisualization = false;
-            DownloadUtility.DownloadRequestType type = DownloadUtility.DownloadRequestType.valueOf((String) getArguments().get(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE));
+            DownloadManager.DownloadRequestType type = DownloadManager.DownloadRequestType.valueOf((String) getArguments().get(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE));
             if(mListener != null)
                 mListener.onFirstFragmentVisualisation(this, type);
         }
@@ -106,13 +109,16 @@ public class DriversCardsFragment extends BaseFragment implements IFragmentNotif
     public void OnUpdateData(String UniqueCustomerCode, Object dataContentList, Class itemBaseType) {
 
         mUniqueCustomerCode = UniqueCustomerCode;
-        List<DriverCardData> data = (List<DriverCardData>) dataContentList;
+        if(getActivity() != null) {
+            List<DriverCardData> data = (List<DriverCardData>) dataContentList;
 
-        if(itemBaseType.equals(DriverCardData.class)) {
-            mCardArrayAdapter.clear();
-            mCardArrayAdapter.addAll(this.BuildCardBaseData(getActivity(), data));
+            if (itemBaseType.equals(DriverCardData.class)) {
+                mCardArrayAdapter.clear();
+                mCardArrayAdapter.addAll(this.BuildCardBaseData(getActivity(), data));
+            }
+            setTitle();
         }
-        setTitle();
+
     }
 
     @Override
@@ -158,7 +164,7 @@ public class DriversCardsFragment extends BaseFragment implements IFragmentNotif
     }
 
 
-    public static DriversCardsFragment newInstance(DownloadUtility.DownloadRequestType fragmentType,boolean setActionBarTitle) {
+    public static DriversCardsFragment newInstance(DownloadManager.DownloadRequestType fragmentType,boolean setActionBarTitle) {
 
         DriversCardsFragment fragment = new DriversCardsFragment();
         Bundle args = new Bundle();

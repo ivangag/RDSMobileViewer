@@ -107,7 +107,9 @@ public class ListBaseFragment extends BaseFragment implements IFragmentNotificat
 
     @Override
     public void OnUpdateData(String UniqueCode, Object dataContentList, Class itemBaseType) {
+        if(getActivity() != null) {
 
+        }
     }
 
     @Override

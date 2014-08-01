@@ -3,7 +3,7 @@ package com.viewer.rds.actia.rdsmobileviewer;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadUtility;
+import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
 
 /**
  * Created by igaglioti on 16/07/2014.
@@ -15,7 +15,7 @@ public class DownloadRequestSchema implements Parcelable {
 
     private String mVehicleVIN = "";
 
-    private DownloadUtility.DownloadRequestType mDownloadRequestType;
+    private DownloadManager.DownloadRequestType mDownloadRequestType;
 
     private String mUniqueCustomerCode = "";
 
@@ -30,11 +30,11 @@ public class DownloadRequestSchema implements Parcelable {
         in.readBooleanArray(val);
         mObtainCacheIfExist = val[0];
         mVehicleVIN = in.readString();
-        mDownloadRequestType = Enum.valueOf(DownloadUtility.DownloadRequestType.class,in.readString());
+        mDownloadRequestType = Enum.valueOf(DownloadManager.DownloadRequestType.class,in.readString());
         mUniqueCustomerCode = in.readString();
     }
 
-    public static DownloadRequestSchema newInstance(DownloadUtility.DownloadRequestType requestType,
+    public static DownloadRequestSchema newInstance(DownloadManager.DownloadRequestType requestType,
                                                     boolean obtainCacheIfExist) {
         DownloadRequestSchema schema = new DownloadRequestSchema();
         schema.setDownloadRequestType(requestType);
@@ -42,7 +42,7 @@ public class DownloadRequestSchema implements Parcelable {
         return schema;
     }
 
-    public static DownloadRequestSchema newInstance(DownloadUtility.DownloadRequestType requestType, String customerAncodice,
+    public static DownloadRequestSchema newInstance(DownloadManager.DownloadRequestType requestType, String customerAncodice,
                                                     String vehicleVIN, boolean obtainCacheIfExist)
     {
 
@@ -58,15 +58,15 @@ public class DownloadRequestSchema implements Parcelable {
     public void setCacheOption(boolean cacheOption) {
         this.mObtainCacheIfExist = cacheOption;
     }
-    public DownloadUtility.DownloadRequestType getDownloadRequestType() {
+    public DownloadManager.DownloadRequestType getDownloadRequestType() {
         return mDownloadRequestType;
     }
 
-    public void setDownloadRequestType(DownloadUtility.DownloadRequestType mDownloadRequestType) {
+    public void setDownloadRequestType(DownloadManager.DownloadRequestType mDownloadRequestType) {
         this.mDownloadRequestType = mDownloadRequestType;
     }
 
-    private DownloadRequestSchema(DownloadUtility.DownloadRequestType requestType) {
+    private DownloadRequestSchema(DownloadManager.DownloadRequestType requestType) {
         this.mDownloadRequestType = requestType;
     }
 

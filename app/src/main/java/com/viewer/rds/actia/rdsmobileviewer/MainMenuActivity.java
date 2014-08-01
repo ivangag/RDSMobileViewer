@@ -1,354 +1,178 @@
 package com.viewer.rds.actia.rdsmobileviewer;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.Menu;
+import android.os.Debug;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.SearchView;
-import android.widget.ShareActionProvider;
-import android.widget.TextView;
 
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadUtility;
-import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
+import com.viewer.rds.actia.rdsmobileviewer.db.RDSDBMapper;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.BaseFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.CRDSCardsFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.CustomersCardsFragment;
+import com.viewer.rds.actia.rdsmobileviewer.fragments.DownloadHandlingFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.DriversCardsFragment;
-import com.viewer.rds.actia.rdsmobileviewer.fragments.IFragmentNotification;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.MainMenuCardsFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.VehiclesCardsFragment;
+import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
+import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
+/**
+ * Created by igaglioti on 23/07/2014.
+ */
+public class MainMenuActivity extends BaseActivity
+        implements MainMenuCardsFragment.OnMainMenuInteractionListener, DownloadHandlingFragment.TaskDownloadCallbacks, FragmentManager.OnBackStackChangedListener {
 
-public class MainMenuActivity extends Activity implements
-        MainMenuCardsFragment.OnMainMenuInteractionListener,
-        DownloadUtility.IRemoteDownloadDataListener,BaseFragment.IFragmentsInteractionListener {
+    private static MainMenuCardsFragment mMenuCardsFragment;
+    private static CustomersCardsFragment mCustomerListFragment;
+    private static VehiclesCardsFragment mVehiclesCustomerListFragment;
+    private static CRDSCardsFragment mCRDCustomerCardsFragment;
+    private static DriversCardsFragment mDriversCustomerListFragment;
 
-    public final MainMenuCardsFragment mMenuCardsFragment = MainMenuCardsFragment.newInstance(DownloadUtility.DownloadRequestType.MAIN_MENU, true);
-    public final CustomersCardsFragment mCustomerListFragment = CustomersCardsFragment.newInstance(DownloadUtility.DownloadRequestType.CUSTOMERS_LIST, true);
-    public final VehiclesCardsFragment mVehiclesCustomerListFragment = VehiclesCardsFragment.newInstance(DownloadUtility.DownloadRequestType.VEHICLES_OWNED, true);
-    public final CRDSCardsFragment mCRDCustomerCardsFragment = CRDSCardsFragment.newInstance(DownloadUtility.DownloadRequestType.CRDS_OWNED, true);
-    public final DriversCardsFragment mDriversCustomerListFragment = DriversCardsFragment.newInstance(DownloadUtility.DownloadRequestType.DRIVERS_OWNED,true);
-    public final DriversHolderFragment mHolderDriversCustomerListFragment = DriversHolderFragment.newInstance(DownloadUtility.DownloadRequestType.DRIVERS_OWNED, true);
-    public final CRDSCardsFragment mHolderCRDCustomerCardsFragment = CRDSHolderFragment.newInstance();
-    public final VehiclesCardsFragment mHolderVehiclesCustomerListFragment = VehiclesHolderFragment.newInstance();
+    private DownloadManager.DownloadRequestType mCurrentPrimaryFragmentType;
+    private DownloadManager.DownloadRequestType mCurrentSecondaryFragmentType = null;
+    private RDSDBMapper mRDSDBMapper;
+    private static boolean isFragmentsInit = false;
+    private static String mLastAddedFragment = "";
+    private static int mTrackBackStackCount = 0;
 
-    private static final int MATCH_PARENT = LinearLayout.LayoutParams.MATCH_PARENT;
-    private static final int LANDSCAPE = Configuration.ORIENTATION_LANDSCAPE;
-    private static final int PORTRAIT = Configuration.ORIENTATION_PORTRAIT;
-    private FragmentManager mFragmentManager;
-    private final static DownloadUtility mDownloadUtility = DownloadUtility.getInstance();
-    private ShareActionProvider mShareActionProvider;
-    private boolean mIsShareIntentPending;
-
-    final private static String FRAGMENT_DRIVERS_TAG    = "DRIVERS_FRAGMENT";
-    final private static String FRAGMENT_VEHICLES_TAG   = "VEHICLES_FRAGMENT";
-    final private static String FRAGMENT_CRDS_TAG       = "CRDS_FRAGMENT";
-    final private static String FRAGMENT_MAIN_MENU_TAG  = "MAIN_MENU_FRAGMENT";
-    final private static String FRAGMENT_CUSTOMERS_TAG  = "CUSTOMERS_FRAGMENT";
-
-    private ArrayList<String> mFragmentTags;
-    Integer mDisplayOrientation;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        if(!isFragmentsInit)
+        {
+            mMenuCardsFragment = MainMenuCardsFragment.newInstance(DownloadManager.DownloadRequestType.MAIN_MENU, true);
+            mCustomerListFragment = CustomersCardsFragment.newInstance(DownloadManager.DownloadRequestType.CUSTOMERS_LIST, true);
+            mVehiclesCustomerListFragment = VehiclesCardsFragment.newInstance(DownloadManager.DownloadRequestType.VEHICLES_OWNED, true);
+            mCRDCustomerCardsFragment = CRDSCardsFragment.newInstance(DownloadManager.DownloadRequestType.CRDS_OWNED, true);
+            mDriversCustomerListFragment = DriversHolderFragment.newInstance(DownloadManager.DownloadRequestType.DRIVERS_OWNED, true);
+            isFragmentsInit = true;
+        }
         setActivityCustomersLayout(savedInstanceState);
+        mRDSDBMapper = RDSDBMapper.getInstance(this);
 
-        init();
+        mFragmentManager.addOnBackStackChangedListener(this);
     }
 
     private void setActivityCustomersLayout(Bundle savedInstanceState) {
+
         setContentView(R.layout.activity_main_menu);
-
-        findViewById(R.id.loadingPanel).setVisibility(View.GONE);
-
-        mFragmentManager = getFragmentManager();
-        mDisplayOrientation = getResources().getConfiguration().orientation;
+//        findViewById(R.id.loadingPanel).setVisibility(View.GONE);
 
 
         if (savedInstanceState == null) {
 
-            mFragmentManager.beginTransaction()
-                    .add(R.id.fragment_main, mMenuCardsFragment,FRAGMENT_MAIN_MENU_TAG)
-                    //.addToBackStack(null)
+            FragmentTransaction ft = mFragmentManager.beginTransaction();
+            mCurrentPrimaryFragmentType = DownloadManager.DownloadRequestType.MAIN_MENU;
+
+            ft.add(R.id.fragment_main, mMenuCardsFragment, FRAGMENT_MAIN_MENU_TAG)
+                    .add(R.id.fragment_handling_download, DownloadHandlingFragment.newIstance(null), FRAGMENT_DOWNLOAD_TAG)
                     .commit();
-            HideDetailsLayout();
-        }
-        else {
-            if(mFragmentManager.findFragmentById(R.id.fragment_main).getTag().equals(FRAGMENT_MAIN_MENU_TAG))
-            {
-                HideDetailsLayout();
-            }
-            if(mDisplayOrientation.equals(PORTRAIT))
-            {
-                removeDetailFragment();
-            }
-        }
-    }
 
-    private void HideDetailsLayout() {
-        View frameLayoutDetails =  findViewById(R.id.fragment_main_details);
-        View frameLayoutMain =  findViewById(R.id.fragment_main);
-        if(frameLayoutDetails != null) {
-            frameLayoutDetails.setVisibility(View.GONE);
-            frameLayoutDetails.setLayoutParams((new LinearLayout.LayoutParams(0,
-                    0, 0f)));
-        }
-        if(frameLayoutMain != null)
-        {
-            frameLayoutMain.setLayoutParams((new LinearLayout.LayoutParams(0,
-                    MATCH_PARENT, 3f)));
-        }
-    }
-
-    private void ShowDetailsLayout() {
-
-        View frameLayoutDetails =  findViewById(R.id.fragment_main_details);
-        View frameLayoutMain =  findViewById(R.id.fragment_main);
-        if(frameLayoutDetails != null) {
-            frameLayoutDetails.setVisibility(View.GONE);
-            frameLayoutDetails.setLayoutParams((new LinearLayout.LayoutParams(0,
-                    MATCH_PARENT, 2f)));
-        }
-        if(frameLayoutMain != null)
-        {
-            frameLayoutMain.setLayoutParams((new LinearLayout.LayoutParams(0,
-                    MATCH_PARENT, 1f)));
-        }
-    }
-
-    private void init()
-    {
-        mFragmentTags = new ArrayList<String>();
-        mFragmentTags.add(FRAGMENT_CRDS_TAG);
-        mFragmentTags.add(FRAGMENT_DRIVERS_TAG);
-        mFragmentTags.add(FRAGMENT_VEHICLES_TAG);
-        mFragmentTags.add(FRAGMENT_CUSTOMERS_TAG);
-        mFragmentTags.add(FRAGMENT_MAIN_MENU_TAG);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main_menu, menu);
-
-        setupMenuActions(menu);
-        return true;
-    }
-
-    private void setupMenuActions(Menu menu) {
-        MenuItem searchItem = menu.findItem(R.id.action_search);
-        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
-        MenuItem shareItem = menu.findItem(R.id.action_share);
-        mShareActionProvider = (ShareActionProvider)shareItem.getActionProvider();
-        mShareActionProvider.setShareHistoryFileName(ShareActionProvider.DEFAULT_SHARE_HISTORY_FILE_NAME);
-
-        /*
-        mShareActionProvider.setShareIntent(getDefaultIntent());
-        if(mIsShareIntentPending)
-            updateShareIntentWithText();
-            */
-        mShareActionProvider.setOnShareTargetSelectedListener(new ShareActionProvider.OnShareTargetSelectedListener() {
-            @Override
-            public boolean onShareTargetSelected(ShareActionProvider source, Intent intent) {
-                return false;
-            }
-        });
-
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                //Toast.makeText(getActivity().getApplicationContext(), "onQueryTextSubmit:" + query, Toast.LENGTH_SHORT).show();
-                //mNetAdapter.update(query.toUpperCase());
-                IFragmentNotification notifier = getCurrentDisplayedFragment();
-                if(notifier != null)
-                    notifier.OnFilterData(query.toUpperCase());
-                return true;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                //Toast.makeText(getActivity().getApplicationContext(), "onQueryTextChange:" + newText,Toast.LENGTH_SHORT).show();
-                IFragmentNotification notifier = getCurrentDisplayedFragment();
-                if(notifier != null)
-                    notifier.OnFilterData(newText.toUpperCase());
-                return true;
-            }
-        });
-
-        searchItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
-            @Override
-            public boolean onMenuItemActionExpand(MenuItem item) {
-                return true;
-            }
-
-            @Override
-            public boolean onMenuItemActionCollapse(MenuItem item) {
-                //mNetAdapter.getFilter().filter(getResources().getString(R.string.filterALL));
-                return true;
-            }
-        });
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        switch (id) {
-            case R.id.action_settings:
-                return true;
-            case R.id.action_download_data:
-                if (mCustomerListFragment.isVisible()) {
-                    requireDataDownload(DownloadRequestSchema.newInstance(DownloadUtility.DownloadRequestType.CUSTOMERS_LIST, false));
-                }
-                else if (mVehiclesCustomerListFragment.isVisible()) {
-                    requireDataDownload(DownloadRequestSchema.newInstance(DownloadUtility.DownloadRequestType.VEHICLES_OWNED, mVehiclesCustomerListFragment.getUniqueCustomerCode(), "", false));
-                }
-                else if (mHolderDriversCustomerListFragment.isVisible()) {
-                    requireDataDownload(DownloadRequestSchema.newInstance(DownloadUtility.DownloadRequestType.DRIVERS_OWNED, mHolderDriversCustomerListFragment.getUniqueCustomerCode(), "", false));
-                }
-                else if (mCRDCustomerCardsFragment.isVisible()) {
-                    requireDataDownload(DownloadRequestSchema.newInstance(DownloadUtility.DownloadRequestType.CRDS_OWNED, mCRDCustomerCardsFragment.getUniqueCustomerCode(), "", false));
-                 }
-                return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onMenuSectionSelected(Utils.MainMenuSectionItemType subMenuSelected) {
-        switch (subMenuSelected)
-        {
-            case CUSTOMERS:
-                ShowDetailsLayout();
-                showNewFragment(mCustomerListFragment,FRAGMENT_CUSTOMERS_TAG);
-                break;
-            case ITEMS_NOT_TRUSTED:
-                showItemNotTrustedSection(subMenuSelected);
-        }
-
-    }
-
-    private void showItemNotTrustedSection(Utils.MainMenuSectionItemType requestType) {
-
-        Intent launchDetailsIntent = new Intent(MainMenuActivity.this,DetailsMainMenuActivity.class);
-        Bundle data = new Bundle();
-        data.putString(Utils.MAIN_MENU_KEY, String.valueOf(requestType));
-        startActivity(launchDetailsIntent);
-
-    }
-
-    @Override
-    public void onDownloadDataFinished(DownloadRequestSchema requestType, ResultOperation result) {
-
-        hideProgressDialog();
-        if(result.isStatus()) {
-            switch (requestType.getDownloadRequestType()) {
-                case VEHICLE_NOT_TRUSTED:
-                    break;
-                case CRDS_NOT_TRUSTED:
-                    break;
-                case DRIVERS_NOT_TRUSTED:
-                    break;
-                case CUSTOMERS_LIST:
-                    showNewFragment(mCustomerListFragment, FRAGMENT_CUSTOMERS_TAG, false);
-                    //showNewFragment(mCustomerListFragment,FRAGMENT_CUSTOMERS_TAG);
-                    mCustomerListFragment.OnUpdateData("", result.getClassReturn(), MainContractorData.class);
-                    break;
-                case VEHICLES_OWNED:
-                    showNewFragment(mVehiclesCustomerListFragment, FRAGMENT_VEHICLES_TAG, true);
-                    mVehiclesCustomerListFragment.OnUpdateData(requestType.getUniqueCustomerCode(), result.getClassReturn(), VehicleCustom.class);
-                    break;
-                case DRIVERS_OWNED:
-                    showNewFragment(mHolderDriversCustomerListFragment, FRAGMENT_DRIVERS_TAG);
-                    mHolderDriversCustomerListFragment.OnUpdateData(requestType.getUniqueCustomerCode(), result.getClassReturn(), DriverCardData.class);
-                    break;
-                case CRDS_OWNED:
-                    showNewFragment(mCRDCustomerCardsFragment, FRAGMENT_CRDS_TAG);
-                    mCRDCustomerCardsFragment.OnUpdateData(requestType.getUniqueCustomerCode(), result.getClassReturn(), CRDSCustom.class);
-                    break;
-                case MAIN_MENU:
-                    break;
-                case VEHICLE_DIAGNOSTIC:
-                    showTextFile(((List<VehicleCustom>) result.getClassReturn()).get(0).get_FileContent());
-                    break;
-            }
-        }
-    }
-
-    private boolean isProgressDialogVisible(){
-        return findViewById(R.id.loadingPanel).getVisibility() != View.GONE;
-    }
-
-
-    private void hideProgressDialog() {
-        findViewById(R.id.loadingPanel).setVisibility(View.GONE);
-        findViewById(R.id.fragment_main).setVisibility(View.VISIBLE);
-        View view = findViewById(R.id.fragment_main_details);
-        if(view != null)
-                view.setVisibility(View.VISIBLE);
-    }
-    private void showProgressDialog(String text) {
-        ((TextView)findViewById(R.id.txt_progress_loading)).setText(String.format(getString(R.string.progress_loading_text),text));
-        findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
-        findViewById(R.id.fragment_main).setVisibility(View.GONE);
-        View view = findViewById(R.id.fragment_main_details);
-        if(view != null)
-            view.setVisibility(View.GONE);
-    }
-
-    private void showTextFile(String text)
-    {
-        Intent intent = new Intent(Intent.ACTION_SEND);
-        intent.putExtra(Intent.EXTRA_TEXT, text).setType("text/plain");
-        startActivity(intent);
-    }
-
-    private IFragmentNotification getCurrentDisplayedFragment()
-    {
-        Fragment mFragment = null;
-        String tag;
-        Iterator<String> iteration = mFragmentTags.iterator();
-        while(iteration.hasNext()) {
-            tag = iteration.next();
-            mFragment = getFragmentManager().findFragmentByTag(tag);
-            if ((mFragment != null)
-                    && mFragment.isVisible()) {
-                // add your code here
-                break;
-            }
-        }
-        return mFragment != null ? (IFragmentNotification)mFragment: null;
-    }
-
-    private void showNewFragment(Fragment fragment, String tag) {
-        if(!fragment.isAdded())
-        {
-            FragmentTransaction fragmentTransaction = mFragmentManager
-                    .beginTransaction();
-            fragmentTransaction.replace(R.id.fragment_main,fragment,tag);
-            fragmentTransaction.addToBackStack(null);
-            fragmentTransaction.commit();
             mFragmentManager.executePendingTransactions();
+
+            hideProgressDialog();
+        }
+        else
+        {
+            handleOrientation(mDisplayOrientation);
         }
     }
-    private void removeDetailFragment() {
+
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        //setActivityCustomersLayout(new Bundle());
+
+        mDisplayOrientation = newConfig.orientation;
+        handleOrientation(mDisplayOrientation);
+    }
+
+    protected void handleOrientation(Integer newOrientation) {
+        mCurrentPrimaryFragmentType = getFragmentType(R.id.fragment_main);
+        mCurrentSecondaryFragmentType = getFragmentType(R.id.fragment_main_details);
+        if(newOrientation.equals(LANDSCAPE))
+        {
+            if(mCurrentPrimaryFragmentType == DownloadManager.DownloadRequestType.MAIN_MENU)
+            {
+
+            }
+            else if(mCurrentPrimaryFragmentType != DownloadManager.DownloadRequestType.CUSTOMERS_LIST)
+            {
+                // add customers on the place of extra info and put extra to secondary fragment place
+                final Fragment fragmentPrimary = getFragment(R.id.fragment_main);
+                removeFragment(fragmentPrimary,false);
+                replaceFragment(R.id.fragment_main, fragmentPrimary, mCustomerListFragment, true);
+                addFragment(R.id.fragment_main_details, fragmentPrimary);
+            }
+        }
+        else
+        {
+            //int layoutId =  getFragmentManager().getBackStackEntryAt(getFragmentManager().getBackStackEntryCount() - 1).getId();
+            if((getFragmentManager().findFragmentById(R.id.fragment_main_details) != null))
+                getFragmentManager().popBackStackImmediate();
+
+            removeExtraInfoFragment();
+        }
+        hideProgressDialog();
+    }
+
+
+    private void removeFragment(Fragment fragment,boolean popStack) {
+
+        if(popStack)
+            getFragmentManager().popBackStackImmediate();
+            //mFragmentManager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        FragmentTransaction fragmentTransaction = mFragmentManager
+                .beginTransaction();
+        fragmentTransaction.
+                remove(fragment).commit();
+        mFragmentManager.executePendingTransactions();
+
+    }
+
+    private void addFragment(int fragmentLayoutId, Fragment newFragment) {
+
+        FragmentTransaction fragmentTransaction = mFragmentManager
+                .beginTransaction();
+        fragmentTransaction
+                .add(fragmentLayoutId, newFragment)
+                .addToBackStack(null)
+                .commit();
+        mFragmentManager.executePendingTransactions();
+    }
+
+    private void replaceFragment(int fragmentLayoutId,Fragment oldFragment, Fragment newFragment, boolean executePopBackStack) {
+
+        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+        if(executePopBackStack)
+            getFragmentManager().popBackStackImmediate();
+            //getFragmentManager().popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        if(oldFragment != null) {
+            fragmentTransaction.remove(oldFragment).commit();
+            getFragmentManager().executePendingTransactions();
+        }
+        fragmentTransaction = getFragmentManager().beginTransaction();
+        if(executePopBackStack) {
+            fragmentTransaction.replace(fragmentLayoutId, newFragment).commit();
+        }
+        else
+        {
+            fragmentTransaction.replace(fragmentLayoutId, newFragment)
+                            .addToBackStack(String.valueOf(fragmentLayoutId)).commit();
+        }
+        getFragmentManager().executePendingTransactions();
+    }
+
+    private void removeExtraInfoFragment() {
 
         FragmentTransaction fragmentTransaction = mFragmentManager
                 .beginTransaction();
@@ -362,149 +186,249 @@ public class MainMenuActivity extends Activity implements
     }
 
 
-    private void showNewFragment(Fragment fragment, String tag, boolean isDetailsFragment ) {
-        if(mDisplayOrientation.equals(Configuration.ORIENTATION_LANDSCAPE)) {
-            if (!fragment.isAdded()) {
-                FragmentTransaction fragmentTransaction = mFragmentManager
-                        .beginTransaction();
-                if (!isDetailsFragment)
-                    fragmentTransaction.replace(R.id.fragment_main, fragment, tag);
-                else
-                    fragmentTransaction.replace(R.id.fragment_main_details, fragment, tag);
-                //fragmentTransaction.addToBackStack(null);
-                fragmentTransaction.commit();
-                mFragmentManager.executePendingTransactions();
-            }
-        }
-        else
-        {
-            showNewFragment(fragment,tag);
-        }
+    private void hideExtraLayout() {
+
+        LinearLayout frameLayout = (LinearLayout) findViewById(R.id.fragment_main_details_container);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0,MATCH_PARENT);
+        frameLayout.setLayoutParams(lp);
+
+        LinearLayout frameLayoutMain = (LinearLayout) findViewById(R.id.fragment_main_container);
+        LinearLayout.LayoutParams lpMain = new LinearLayout.LayoutParams(MATCH_PARENT,MATCH_PARENT,1f);
+        frameLayoutMain.setLayoutParams(lpMain);
+
+    }
+
+    private void showExtraLayout() {
+
+        LinearLayout frameLayout = (LinearLayout) findViewById(R.id.fragment_main_details_container);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(MATCH_PARENT,MATCH_PARENT,1f);
+        frameLayout.setLayoutParams(lp);
+
+        LinearLayout frameLayoutMain = (LinearLayout) findViewById(R.id.fragment_main_container);
+        LinearLayout.LayoutParams lpMain = new LinearLayout.LayoutParams(MATCH_PARENT,MATCH_PARENT,1f);
+        frameLayoutMain.setLayoutParams(lpMain);
     }
 
     @Override
-    public void onStart()   {
-        //DownloadUtility.getInstance().addListener(CacheDataManager.getInstance());
+    public void onStart() {
         super.onStart();
+        mRDSDBMapper.open();
+        DownloadManager.getInstance().addListener(this);
+        //DownloadUtility.getInstance().bindRDService(this);
+        //mRDSDBMapper.deleteDatabase();
+       // mRDSDBMapper.deleteTable(); //!!only for test!!
 
     }
 
-    @Override
-    public void onStop()   {
-        DownloadUtility.getInstance().removeAllListeners();
-        super.onStop();
 
+    @Override
+    public void onStop() {
+        super.onStop();
+        DownloadManager.getInstance().removeListener(this);
+        //DownloadUtility.getInstance().unbindRDSService(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        mRDSDBMapper.close();
+        super.onDestroy();
+    }
+
+    @Override
+    public void handleDownloadDataFinished(DownloadRequestSchema requestType, ResultOperation result) {
+
+        if(result.isStatus()) {
+            switch (requestType.getDownloadRequestType()) {
+                case VEHICLE_NOT_TRUSTED:
+                    break;
+                case CRDS_NOT_TRUSTED:
+                    break;
+                case DRIVERS_NOT_TRUSTED:
+                    break;
+                case CUSTOMERS_LIST:
+                    if (mDisplayOrientation.equals(PORTRAIT) // this should never happen
+                            && !getFragmentType(R.id.fragment_main).equals(DownloadManager.DownloadRequestType.CUSTOMERS_LIST))
+                        replaceFragment(R.id.fragment_main, null, mCustomerListFragment, false);
+
+                    //PushDataToFragment(mCustomerListFragment, requestType, result.getClassReturn());
+                    mCustomerListFragment.OnUpdateData("", result.getClassReturn(), MainContractorData.class);
+                    for (MainContractorData customer : (List<MainContractorData>) result.getClassReturn()) {
+                        mRDSDBMapper.insertOrUpdateCustomerData(customer);
+                    }
+                    break;
+                case VEHICLES_OWNED:
+                    handleDetailsFragmentViewOnUpdateData(mVehiclesCustomerListFragment);
+                    mVehiclesCustomerListFragment.OnUpdateData(requestType.getUniqueCustomerCode(), result.getClassReturn(), VehicleCustom.class);
+                    for (VehicleCustom vehicleCustom : (List<VehicleCustom>) result.getClassReturn()) {
+                        mRDSDBMapper.insertOrUpdateVehicleData(vehicleCustom, requestType.getUniqueCustomerCode(), true);
+                    }
+                    break;
+                case DRIVERS_OWNED:
+                    handleDetailsFragmentViewOnUpdateData(mDriversCustomerListFragment);
+                    mDriversCustomerListFragment.OnUpdateData(requestType.getUniqueCustomerCode(), result.getClassReturn(), DriverCardData.class);
+                    break;
+                case CRDS_OWNED:
+                    handleDetailsFragmentViewOnUpdateData(mCRDCustomerCardsFragment);
+                    mCRDCustomerCardsFragment.OnUpdateData(requestType.getUniqueCustomerCode(), result.getClassReturn(), CRDSCustom.class);
+                    break;
+                case MAIN_MENU:
+                    break;
+                case VEHICLE_DIAGNOSTIC:
+                    showTextFile(((List<VehicleCustom>) result.getClassReturn()).get(0).getFileContent());
+                    break;
+            }
+
+            if(mDisplayOrientation.equals(LANDSCAPE))
+                showExtraLayout();
+        }
+    }
+
+    public void handleDetailsFragmentViewOnUpdateData(BaseFragment fragment) {
+        if (getFragmentType(R.id.fragment_main).equals(DownloadManager.DownloadRequestType.CUSTOMERS_LIST)) {
+            int newLayoutId = R.id.fragment_main;
+            if (mDisplayOrientation.equals(LANDSCAPE))
+                newLayoutId = R.id.fragment_main_details;
+
+            if(((fragment.getId() != 0)
+                && fragment.getId() != newLayoutId)) {
+            }
+
+            replaceFragment(newLayoutId, null, fragment, false);
+
+        }
+    }
+
+    @Override
+    public void hideProgressDialog() {
+
+        if(mDisplayOrientation.equals(LANDSCAPE)){
+
+            LinearLayout frameLayout = (LinearLayout) findViewById(R.id.fragment_handling_download_container);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(MATCH_PARENT,0);
+            frameLayout.setLayoutParams(lp);
+        }
+        else{
+            FrameLayout frameLayout = (FrameLayout) findViewById(R.id.fragment_handling_download);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(MATCH_PARENT,0,0f);
+            frameLayout.setLayoutParams(lp);
+        }
+    }
+
+    @Override
+    public void showProgressDialog(String text) {
+
+        if(mDisplayOrientation.equals(LANDSCAPE)){
+
+            LinearLayout frameLayout = (LinearLayout) findViewById(R.id.fragment_handling_download_container);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(MATCH_PARENT,MATCH_PARENT);
+            frameLayout.setLayoutParams(lp);
+        }
+        else{
+            FrameLayout frameLayout = (FrameLayout) findViewById(R.id.fragment_handling_download);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(MATCH_PARENT,0,0.5f);
+            frameLayout.setLayoutParams(lp);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+        //item.getMenuInfo()
+        switch (id) {
+            case R.id.action_settings:
+                return true;
+            case R.id.action_download_data:
+                if(!(getFragmentType(R.id.fragment_main).equals(DownloadManager.DownloadRequestType.MAIN_MENU))) {
+                    DownloadRequestSchema downloadRequestSchema = DownloadRequestSchema.newInstance
+                            (getFragmentType(R.id.fragment_main),((BaseFragment) getFragment(R.id.fragment_main)).getUniqueCustomerCode(),"",false);
+                    makeDownloadRequest(downloadRequestSchema);
+                }
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+
+
+    @Override
+    public void onMenuSectionSelected(Utils.MainMenuSectionItemType subMenuSelected) {
+        switch (subMenuSelected)
+        {
+            case CUSTOMERS:
+                //showExtraLayout();
+                showNewFragment(mCustomerListFragment,FRAGMENT_CUSTOMERS_TAG);
+                break;
+            case ITEMS_NOT_TRUSTED:
+                showItemNotTrustedSection(subMenuSelected);
+        }
+
+    }
+
+    private void showItemNotTrustedSection(Utils.MainMenuSectionItemType requestType) {
+
+        Intent launchDetailsIntent = new Intent(MainMenuActivity.this,DetailsMainMenuActivity.class);
+        Bundle data = new Bundle();
+        data.putString(Utils.MAIN_MENU_KEY, String.valueOf(requestType));
+        launchDetailsIntent.putExtras(data);
+        startActivity(launchDetailsIntent);
     }
 
     @Override
     public void onBackPressed() {
+
+        boolean callBaseBackPressed = true;
         /*
-        if(isProgressDialogVisible())
-            hideProgressDialog();
-        else
+        if(mDisplayOrientation == Configuration.ORIENTATION_LANDSCAPE)
+        {
+            //when it's time return to main menu
+            DownloadUtility.DownloadRequestType fragmentPrimaryType = getFragmentType(R.id.fragment_main);
+            final int bsCount = mFragmentManager.getBackStackEntryCount();
+            if((bsCount == 0)
+                && !fragmentPrimaryType.equals(DownloadUtility.DownloadRequestType.MAIN_MENU))
+            {
+                replaceFragment(R.id.fragment_main, mFragmentManager.findFragmentById(R.id.fragment_main), getFragment(DownloadUtility.DownloadRequestType.MAIN_MENU), true);
+                callBaseBackPressed = false;
+            }
+            if(!fragmentPrimaryType.equals(DownloadUtility.DownloadRequestType.MAIN_MENU))
+            {
+                hideExtraLayout();
+            }
+        }
+        */
+        if(callBaseBackPressed)
             super.onBackPressed();
-            */
-        if(!mFragmentManager.findFragmentById(R.id.fragment_main).getTag().equals(FRAGMENT_MAIN_MENU_TAG))
-        {
-            HideDetailsLayout();
-        }
-        if(!isProgressDialogVisible())
-            super.onBackPressed();
+    }
 
-
+    @Override
+    public void onPreExecute() {
 
     }
 
     @Override
-    public void onCustomerSelected(String CustomerAncodice) {
+    public void onProgressUpdate(int percent) {
 
     }
 
     @Override
-    public void onCustomerVehiclesDataRequiredSelected(DownloadUtility.DownloadRequestType downloadRequestType,String CustomerAncodice,boolean cacheIfExist) {
-            requireDataDownload(DownloadRequestSchema.newInstance(DownloadUtility.DownloadRequestType.VEHICLES_OWNED, CustomerAncodice, "", cacheIfExist));
-    }
-
-    @Override
-    public void onCustomerDrivesDataRequiredSelected(DownloadUtility.DownloadRequestType downloadRequestType,String CustomerAncodice,boolean cacheIfExist) {
-            requireDataDownload(DownloadRequestSchema.newInstance(DownloadUtility.DownloadRequestType.DRIVERS_OWNED, CustomerAncodice, "", cacheIfExist));
-    }
-
-    @Override
-    public void onCustomerCRDSDataRequiredSelected(DownloadUtility.DownloadRequestType downloadRequestType,String CustomerAncodice,boolean cacheIfExist) {
-            requireDataDownload(DownloadRequestSchema.newInstance(DownloadUtility.DownloadRequestType.CRDS_OWNED, CustomerAncodice, "", cacheIfExist));
-    }
-
-
-    private void requireDataDownload(DownloadRequestSchema dataRequest)
-    {
-        showProgressDialog(dataRequest.getDownloadRequestType().getLocalizedName(this) + " "
-                + (dataRequest.getUniqueCustomerCode()  )
-        );
-        //Toast.makeText(this, "Fetching " + dataRequest.getDownloadRequestType().getLocalizedName(this), Toast.LENGTH_SHORT).show();
-        DownloadUtility.getInstance().RequireDownloadAsyncTask(this, dataRequest);
-    }
-
-    @Override
-    public void onFirstFragmentVisualisation(Fragment sender, DownloadUtility.DownloadRequestType requestType) {
+    public void onCancelled() {
 
     }
 
     @Override
-    public void onRequireVehicleDiagnosticData(String vehicleVIN, boolean cacheIfExist) {
-        requireDataDownload(DownloadRequestSchema.newInstance(DownloadUtility.DownloadRequestType.VEHICLE_DIAGNOSTIC, "", vehicleVIN, cacheIfExist));
+    public void onPostExecute() {
+
     }
 
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class PlaceholderFragment extends Fragment {
-
-        public PlaceholderFragment() {
+    @Override
+    public void onBackStackChanged() {
+        if(mDisplayOrientation.equals(LANDSCAPE)
+                && (getFragmentManager().findFragmentById(R.id.fragment_main_details) == null)){
+            hideExtraLayout();
         }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main_menu, container, false);
-            return rootView;
-        }
-    }
-
-    public static class DriversHolderFragment extends DriversCardsFragment{
-
-        public DriversHolderFragment() {
-        }
-
-
-        public static DriversHolderFragment newInstance(DownloadUtility.DownloadRequestType fragmentType, boolean setActionBarTitle)
-        {
-            DriversHolderFragment fragment = new DriversHolderFragment();
-            Bundle args = new Bundle();
-            args.putString(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE, fragmentType.toString());
-            args.putBoolean(PlaceholderFragmentFactory.ARG_SET_TITLE_ACTION_BAR, setActionBarTitle);
-            fragment.setArguments(args);
-            return fragment;
-        }
-    }
-
-    public static class VehiclesHolderFragment extends VehiclesCardsFragment{
-        public VehiclesHolderFragment() {
-        }
-
-        public static VehiclesHolderFragment newInstance()
-        {
-            return new VehiclesHolderFragment();
-        }
-    }
-
-    public static class CRDSHolderFragment extends CRDSCardsFragment{
-        public CRDSHolderFragment() {
-        }
-
-        public static CRDSHolderFragment newInstance()
-        {
-            return new CRDSHolderFragment();
-        }
+        mTrackBackStackCount = getFragmentManager().getBackStackEntryCount();
     }
 }

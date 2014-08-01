@@ -49,7 +49,7 @@
     <!-- Weather -->
     <color name="demoextra_card_line_weather_color">#E5E5E5</color>
     <color name="demoextra_card_weather_city_color">#A4A4A4</color>
-    <color name="demoextra_card_weather_temperature_color">#868686</color>
+    <color name="card_background_color_dark_gray">#868686</color>
     <!--override the listlayout background-->
     <color name="card_base_cardwithlist_background_list_color">@color/card_background</color>
     <color name="transparent">#00000000</color>

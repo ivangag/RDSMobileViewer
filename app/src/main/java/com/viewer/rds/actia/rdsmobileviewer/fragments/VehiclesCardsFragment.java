@@ -19,7 +19,7 @@ import com.viewer.rds.actia.rdsmobileviewer.PlaceholderFragmentFactory;
 import com.viewer.rds.actia.rdsmobileviewer.R;
 import com.viewer.rds.actia.rdsmobileviewer.cards.HeaderCard;
 import com.viewer.rds.actia.rdsmobileviewer.cards.CustomExpandCard;
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadUtility;
+import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
 import com.viewer.rds.actia.rdsmobileviewer.VehicleCustom;
 
 import java.util.ArrayList;
@@ -45,7 +45,7 @@ public class VehiclesCardsFragment extends BaseFragment implements IFragmentNoti
     private List<VehicleDataCardWrapper> mLastRetrievedItems = new ArrayList<VehicleDataCardWrapper>();
     private List<VehicleDataCardWrapper> mLastFilteredItems = new ArrayList<VehicleDataCardWrapper>();
     private IFragmentsInteractionListener mListener;
-    private DownloadUtility.DownloadRequestType fragmentRDSType;
+    private DownloadManager.DownloadRequestType fragmentRDSType;
 
     @Override
     public void onAttach(Activity activity) {
@@ -93,17 +93,18 @@ public class VehiclesCardsFragment extends BaseFragment implements IFragmentNoti
     public void OnUpdateData(String UniqueCustomerCode,Object dataContentList, Class itemBaseType) {
 
         mUniqueCustomerCode = UniqueCustomerCode;
-        List<VehicleCustom> data = (List<VehicleCustom>) dataContentList;
-
-        updateBaseCardAdapter(itemBaseType, data);
-        setTitle();
+        if(getActivity() != null) {
+            List<VehicleCustom> data = (List<VehicleCustom>) dataContentList;
+            updateBaseCardAdapter(itemBaseType, data);
+            setTitle();
+        }
     }
 
     private void updateBaseCardAdapter(Class itemBaseType, List<VehicleCustom> data) {
-        if(itemBaseType.equals(VehicleCustom.class)) {
-            mCardArrayAdapter.clear();
-            mCardArrayAdapter.addAll(this.BuildCardBaseData(getActivity(), data));
-        }
+            if (itemBaseType.equals(VehicleCustom.class)) {
+                mCardArrayAdapter.clear();
+                mCardArrayAdapter.addAll(this.BuildCardBaseData(getActivity(), data));
+            }
     }
 
     @Override
@@ -141,7 +142,7 @@ public class VehiclesCardsFragment extends BaseFragment implements IFragmentNoti
 
         if(mIsFirstVisualization) {
             mIsFirstVisualization = false;
-            fragmentRDSType = DownloadUtility.DownloadRequestType.valueOf((String) getArguments().get(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE));
+            fragmentRDSType = DownloadManager.DownloadRequestType.valueOf((String) getArguments().get(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE));
             if(mListener != null)
                 mListener.onFirstFragmentVisualisation(this, fragmentRDSType);
         }
@@ -164,7 +165,7 @@ public class VehiclesCardsFragment extends BaseFragment implements IFragmentNoti
     }
 
 
-    public static VehiclesCardsFragment newInstance(DownloadUtility.DownloadRequestType fragmentType, boolean setActionBarTitle) {
+    public static VehiclesCardsFragment newInstance(DownloadManager.DownloadRequestType fragmentType, boolean setActionBarTitle) {
 
         VehiclesCardsFragment fragment = new VehiclesCardsFragment();
         Bundle args = new Bundle();
@@ -208,10 +209,10 @@ public class VehiclesCardsFragment extends BaseFragment implements IFragmentNoti
 
         private void setLayout(VehicleCustom vehicleData, int elementCount) {
             if(!isHeaderColoredCard()) {
-                this.mTitleHeader = vehicleData.get_VIN();
-                this.mVRN = vehicleData.get_VRN();
-                this.mDiagnosticTime = vehicleData.get_DiagnosticDeviceTime();
-                this.mCustomerName = vehicleData.get_CustomerName();
+                this.mTitleHeader = vehicleData.getVIN();
+                this.mVRN = vehicleData.getVRN();
+                this.mDiagnosticTime = vehicleData.getDiagnosticDeviceTime();
+                this.mCustomerName = vehicleData.getCustomerName();
             }
             else
             {

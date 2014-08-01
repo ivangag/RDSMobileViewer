@@ -60,7 +60,7 @@ android:layout_height="64dp">
         android:text="Secondary Info" />-->
 
 
-    <!--&lt;!&ndash; Use same ID to use built-in features &ndash;&gt;-->
+    <!--&lt;!&ndash; Use same PRIMARY_CUSTOMER_ID to use built-in features &ndash;&gt;-->
    <TextView
         android:layout_toRightOf="@id/rds_menu_item_thumbnail_image"
         android:id="@+id/card_main_inner_simple_title"

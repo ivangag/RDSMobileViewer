@@ -4,7 +4,6 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.net.http.AndroidHttpClient;
-import android.os.Debug;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
@@ -13,7 +12,7 @@ import com.viewer.rds.actia.rdsmobileviewer.DownloadRequestSchema;
 import com.viewer.rds.actia.rdsmobileviewer.IRDSClientResponse;
 import com.viewer.rds.actia.rdsmobileviewer.IRDSClientRequest;
 import com.viewer.rds.actia.rdsmobileviewer.ResultOperation;
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadUtility;
+import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
 
 public class RDSViewerServiceAsync extends Service {
     public RDSViewerServiceAsync() {
@@ -32,9 +31,22 @@ public class RDSViewerServiceAsync extends Service {
     private final static AndroidHttpClient mClient
             = AndroidHttpClient.newInstance("");
 
+    /**
+     * Hook method called each time a Started Service is sent an
+     * Intent via startService().
+     */
+    public int onStartCommand(Intent intent,
+                              int flags,
+                              int startId) {
+
+        Log.i(TAG,"onStartCommand");
+        return Service.START_NOT_STICKY;
+    }
+
     @Override
     public IBinder onBind(Intent intent) {
         // TODO: Return the communication channel to the service.
+        Log.i(TAG,"onBind");
        return mRDSRequestImpl;
     }
 
@@ -52,7 +64,7 @@ public class RDSViewerServiceAsync extends Service {
             // possible expansions of the designated acronym.
             //Debug.waitForDebugger();
             ResultOperation resOp =
-                    DownloadUtility.FetchingRemoteData(mClient,
+                    DownloadManager.FetchingRemoteData(mClient,
                             downloadRequest, false);
 
             Log.d(TAG, "DownloadRequest: " + downloadRequest.getDownloadRequestType() + " Status: " + resOp.isStatus() + "OtherInfo: " + resOp.getOtherInfo() );
@@ -70,6 +82,7 @@ public class RDSViewerServiceAsync extends Service {
     }
 
     public void onDestroy() {
+        Log.i(TAG,"onDestroy");
         mClient.close();
         super.onDestroy();
     }

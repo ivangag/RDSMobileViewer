@@ -6,11 +6,12 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.viewer.rds.actia.rdsmobileviewer.PlaceholderFragmentFactory;
 import com.viewer.rds.actia.rdsmobileviewer.R;
 import com.viewer.rds.actia.rdsmobileviewer.DownloadRequestSchema;
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadUtility;
+import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
 
 /**
  * Created by igaglioti on 28/07/2014.
@@ -57,7 +58,14 @@ public class DownloadHandlingFragment extends Fragment{
 
     public void startDownloadRequest(DownloadRequestSchema downloadRequest) {
         if(downloadRequest != null) {
-            DownloadUtility.getInstance().RequireDownloadAsyncTask(null, downloadRequest);
+            /*
+            TextView txtLoading = (TextView) getActivity().findViewById(R.id.txt_progress_loading);
+            if(txtLoading != null){
+                txtLoading.setText(String.format(getResources().getString(R.string.progress_loading_text),
+                        downloadRequest.getDownloadRequestType().getLocalizedName(getActivity())));
+            }
+            */
+            DownloadManager.getInstance().RequireDownloadAsyncTask(null, downloadRequest);
         }
     }
 
@@ -72,8 +80,10 @@ public class DownloadHandlingFragment extends Fragment{
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         mCallbacks = (TaskDownloadCallbacks) activity;
-        if(activity instanceof DownloadUtility.IRemoteDownloadDataListener)
-            DownloadUtility.getInstance().addListener((DownloadUtility.IRemoteDownloadDataListener) activity);
+        /*
+        if(activity instanceof DownloadManager.IRemoteDownloadDataListener)
+            DownloadManager.getInstance().addListener((DownloadManager.IRemoteDownloadDataListener) activity);
+            */
     }
 
     /**

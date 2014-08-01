@@ -11,10 +11,10 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.viewer.rds.actia.rdsmobileviewer.fragments.DownloadHandlingFragment;
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadUtility;
+import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
 
 public class DownloadActivity extends Activity implements DownloadHandlingFragment.TaskDownloadCallbacks,
-        DownloadUtility.IRemoteDownloadDataListener{
+        DownloadManager.IRemoteDownloadDataListener{
 
     @Override
     protected void onStart() {
@@ -24,7 +24,7 @@ public class DownloadActivity extends Activity implements DownloadHandlingFragme
 
     @Override
     protected void onStop() {
-        DownloadUtility.getInstance().removeListener(this);
+        DownloadManager.getInstance().removeListener(this);
         super.onStop();
 
     }
@@ -90,10 +90,10 @@ public class DownloadActivity extends Activity implements DownloadHandlingFragme
 
         Bundle args = new Bundle();
         args.putParcelable(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE, requestType);
-        args.putParcelable(DownloadUtility.DOWNLOAD_DATA_RESULT,result);
+        args.putParcelable(DownloadManager.DOWNLOAD_DATA_RESULT,result);
         Intent intent = new Intent();
         intent.putExtras(args);
-        setResult(DownloadUtility.DOWNLOAD_RESULT_OK,intent);
+        setResult(DownloadManager.DOWNLOAD_RESULT_OK,intent);
         finish();
     }
 

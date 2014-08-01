@@ -3,7 +3,6 @@ package com.viewer.rds.actia.rdsmobileviewer.fragments;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -19,7 +18,7 @@ import android.widget.TextView;
 import com.viewer.rds.actia.rdsmobileviewer.MainContractorData;
 import com.viewer.rds.actia.rdsmobileviewer.PlaceholderFragmentFactory;
 import com.viewer.rds.actia.rdsmobileviewer.R;
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadUtility;
+import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
 import com.viewer.rds.actia.rdsmobileviewer.cards.CustomExpandCard;
 
 import java.util.ArrayList;
@@ -51,7 +50,7 @@ public class CustomersCardsFragment extends BaseFragment implements IFragmentNot
     private List<CustomerDataCardWrapper> mLastRetrievedItems = new ArrayList<CustomerDataCardWrapper>();
     private List<CustomerDataCardWrapper> mLastFilteredItems;
     private String mLastFilter;
-    private DownloadUtility.DownloadRequestType fragmentRDSType;
+    private DownloadManager.DownloadRequestType fragmentRDSType;
 
     @Override
     public boolean getIfHastToSetTitle() {
@@ -71,12 +70,14 @@ public class CustomersCardsFragment extends BaseFragment implements IFragmentNot
     @Override
     public void OnUpdateData(String UniqueCode, Object dataContentList, Class itemBaseType) {
 
-        List<MainContractorData> data = (List<MainContractorData>) dataContentList;
+        if(getActivity() != null) {
+            List<MainContractorData> data = (List<MainContractorData>) dataContentList;
 
-        if(itemBaseType.equals(MainContractorData.class)) {
-            mCardArrayAdapter.clear();
-            List<Card> mCustomerDataCardWrappers = this.BuildCardBaseData(getActivity(), data);
-            mCardArrayAdapter.addAll(mCustomerDataCardWrappers);
+            if (itemBaseType.equals(MainContractorData.class)) {
+                mCardArrayAdapter.clear();
+                List<Card> mCustomerDataCardWrappers = this.BuildCardBaseData(getActivity(), data);
+                mCardArrayAdapter.addAll(mCustomerDataCardWrappers);
+            }
         }
 
     }
@@ -126,7 +127,7 @@ public class CustomersCardsFragment extends BaseFragment implements IFragmentNot
 
         if(mIsFirstVisualization) {
             mIsFirstVisualization = false;
-            fragmentRDSType = DownloadUtility.DownloadRequestType.valueOf((String) getArguments().get(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE));
+            fragmentRDSType = DownloadManager.DownloadRequestType.valueOf((String) getArguments().get(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE));
             if(mListener != null)
                 mListener.onFirstFragmentVisualisation(this, fragmentRDSType);
         }
@@ -160,7 +161,7 @@ public class CustomersCardsFragment extends BaseFragment implements IFragmentNot
         }
     }
 
-    public static CustomersCardsFragment newInstance(DownloadUtility.DownloadRequestType fragmentType, boolean setActionBarTitle ) {
+    public static CustomersCardsFragment newInstance(DownloadManager.DownloadRequestType fragmentType, boolean setActionBarTitle ) {
         CustomersCardsFragment fragment = new CustomersCardsFragment();
         Bundle args = new Bundle();
         args.putBoolean(PlaceholderFragmentFactory.ARG_SET_TITLE_ACTION_BAR, setActionBarTitle);
@@ -283,13 +284,13 @@ public class CustomersCardsFragment extends BaseFragment implements IFragmentNot
                 public void onMenuItemClick(BaseCard card, MenuItem item) {
                     switch (item.getItemId()) {
                         case R.id.action_getVehicles:
-                            mListener.onCustomerVehiclesDataRequiredSelected(DownloadUtility.DownloadRequestType.VEHICLES_OWNED,((CustomerDataCardWrapper) card).mCustomerAncodice,true);
+                            mListener.onCustomerVehiclesDataRequiredSelected(DownloadManager.DownloadRequestType.VEHICLES_OWNED,((CustomerDataCardWrapper) card).mCustomerAncodice,true);
                             break;
                         case R.id.action_getDrivers:
-                            mListener.onCustomerDrivesDataRequiredSelected(DownloadUtility.DownloadRequestType.DRIVERS_OWNED,((CustomerDataCardWrapper) card).mCustomerAncodice,true);
+                            mListener.onCustomerDrivesDataRequiredSelected(DownloadManager.DownloadRequestType.DRIVERS_OWNED,((CustomerDataCardWrapper) card).mCustomerAncodice,true);
                             break;
                         case R.id.action_getCRDS:
-                            mListener.onCustomerCRDSDataRequiredSelected(DownloadUtility.DownloadRequestType.CRDS_OWNED,((CustomerDataCardWrapper) card).mCustomerAncodice,true);
+                            mListener.onCustomerCRDSDataRequiredSelected(DownloadManager.DownloadRequestType.CRDS_OWNED,((CustomerDataCardWrapper) card).mCustomerAncodice,true);
                             break;
                     }
                 }

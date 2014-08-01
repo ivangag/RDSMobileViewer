@@ -11,7 +11,7 @@
         android:label="@string/app_name"
         android:theme="@style/Theme.Ardis" >
         <activity
-            android:name=".MainMenuActivityExtended"
+            android:name=".MainMenuActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -35,7 +35,7 @@
             android:label="@string/title_activity_main_menu" >
         </activity>
         <activity
-            android:name=".DetailsMainMenuActivityExtended"
+            android:name=".DetailsMainMenuActivity"
             android:label="@string/title_activity_main_menu" >
         </activity>
         <activity

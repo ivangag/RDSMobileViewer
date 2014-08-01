@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteException;
 import android.util.Log;
 
 import com.viewer.rds.actia.rdsmobileviewer.MainContractorData;
+import com.viewer.rds.actia.rdsmobileviewer.VehicleCustom;
 
 import java.util.ArrayList;
 
@@ -52,7 +53,7 @@ public class RDSDBMapper {
 
     public ArrayList<MainContractorData> queryAllCustomers()
     {
-        Cursor cursor = query(RDSDBHelper.CUSTOMERS_TABLE,RDSDBHelper.columns,null, new String[]{},null);
+        Cursor cursor = query(RDSDBHelper.CUSTOMERS_TABLE,RDSDBHelper.columnsMainContractor,null, new String[]{},null);
         ArrayList<MainContractorData> res = new ArrayList<MainContractorData>();
         ContentValues values = new ContentValues();
         while (cursor.moveToNext()) {
@@ -90,15 +91,9 @@ public class RDSDBMapper {
         {
             try {
                 ContentValues values = MainContractorData.getCVFromCustomerData(customer);
-                /*
-                if(!this.isExistCustomer(customer.getAncodice()))
-                    res = mDB.insertOrThrow(RDSDBHelper.CUSTOMERS_TABLE, null, values);
-                else
-                    res = mDB.update(RDSDBHelper.CUSTOMERS_TABLE,values,null,null);
-                    */
-                int id = (int) mDB.insertWithOnConflict(RDSDBHelper.CUSTOMERS_TABLE, null, values, SQLiteDatabase.CONFLICT_IGNORE);
-                if (id == -1) {
-                    mDB.update(RDSDBHelper.CUSTOMERS_TABLE, values, "AnCodice=?", new String[] {String.valueOf(customer.getAncodice())});
+                res = (int) mDB.insertWithOnConflict(RDSDBHelper.CUSTOMERS_TABLE, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+                if (res == -1) {
+                    res = mDB.update(RDSDBHelper.CUSTOMERS_TABLE, values, "AnCodice=?", new String[] {String.valueOf(customer.getAncodice())});
                 }
                 Log.i(LOG_TAG, "insertOrUpdateCustomerData new_index:" + res);
             }
@@ -114,13 +109,63 @@ public class RDSDBMapper {
         return  res;
     }
 
-    public boolean isExistCustomer(String customerAnCodice) {
+    public synchronized long insertOrUpdateVehicleData(VehicleCustom vehicle, String CustomerAnCodice, boolean isAssociated)
+    {
+        long res;
+        res = -1;
+        String TABLE = "";
+        int primary_customer_key = -1;
+        if(mDB.isOpen())
+        {
+
+            if(isAssociated)
+                TABLE = RDSDBHelper.VEHICLES_ASSOCIATED_TABLE;
+
+            if((primary_customer_key = getExistingCustomer(CustomerAnCodice)) != -1) {
+                try {
+                    ContentValues values = VehicleCustom.getCVFromData(vehicle);
+                    values.put(RDSDBHelper.FOREIGN_CUSTOMER_ID,primary_customer_key);
+                    res = (int) mDB.insertWithOnConflict(TABLE, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+                    if (res == -1) {
+                        res = mDB.update(TABLE, values, "VIN=?", new String[]{String.valueOf(vehicle.getVIN())});
+                    }
+                    Log.i(LOG_TAG, "insertOrUpdateVehicleData new_index:" + res);
+                } catch (SQLException e) {
+                    Log.e(LOG_TAG, "insertOrUpdateVehicleData failed::" + e.getMessage());
+                }
+            }
+        }
+        else
+        {
+            Log.w(LOG_TAG, "db is not open");
+        }
+        return  res;
+    }
+
+    public synchronized boolean isExistCustomer(String customerAnCodice) {
         Cursor c = mDB.rawQuery("SELECT 1 FROM "+
                 RDSDBHelper.CUSTOMERS_TABLE
                 +" WHERE "+ RDSDBHelper.ANCODICE +"=?", new String[] {customerAnCodice});
         boolean exists = c.moveToFirst();
         c.close();
         return exists;
+    }
+
+    /*
+    * Checks if customer exists
+    * returns unique primary key id
+     */
+    public int getExistingCustomer(String customerAnCodice) {
+        int res = -1;
+        Cursor cursor = mDB.rawQuery("SELECT * FROM "+
+                RDSDBHelper.CUSTOMERS_TABLE
+                +" WHERE "+ RDSDBHelper.ANCODICE +"=?", new String[] {customerAnCodice});
+        if(cursor.moveToFirst())
+        {
+            res = cursor.getInt(cursor.getColumnIndex(RDSDBHelper.PRIMARY_CUSTOMER_ID));
+        }
+        cursor.close();
+        return res;
     }
 
     public synchronized void close()
@@ -138,7 +183,7 @@ public class RDSDBMapper {
             mDBHelper.deleteDataBase();
     }
 
-    public synchronized void deleteAllCustomers()
+    public synchronized void deleteTable(String tableName)
     {
         if((null != mDB)
                 && mDB.isOpen())

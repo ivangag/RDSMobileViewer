@@ -2,7 +2,7 @@ package com.viewer.rds.actia.rdsmobileviewer;
 
 import android.app.Application;
 
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadUtility;
+import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
 
 /**
  * Created by igaglioti on 29/07/2014.
@@ -13,13 +13,14 @@ public final class ApplicationEntry extends Application {
 
     @Override
     public void onTerminate() {
-        DownloadUtility.getInstance().stopRDSService(this);
+        DownloadManager.getInstance().unbindRDSService(this);
         super.onTerminate();
     }
 
     @Override
     public void onCreate() {
-        DownloadUtility.getInstance().startRDService(this);
+        //DownloadManager.getInstance().startRDService(this);
+        DownloadManager.getInstance().bindRDService(this);
         super.onCreate();
     }
 }

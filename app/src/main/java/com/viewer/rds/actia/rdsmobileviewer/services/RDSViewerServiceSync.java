@@ -12,7 +12,7 @@ import com.viewer.rds.actia.rdsmobileviewer.ResultOperation;
 import com.viewer.rds.actia.rdsmobileviewer.DownloadRequestSchema;
 import com.viewer.rds.actia.rdsmobileviewer.VehicleCustom;
 import com.viewer.rds.actia.rdsmobileviewer.IRDSGetCall;
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadUtility;
+import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
 
 import java.util.List;
 
@@ -74,8 +74,8 @@ public class RDSViewerServiceSync extends Service {
             // Call the Acronym Web service to get the list of
             // possible expansions of the designated acronym.
            ResultOperation resOp =
-                   DownloadUtility.FetchingRemoteData(mClient,
-                           DownloadRequestSchema.newInstance(DownloadUtility.DownloadRequestType.VEHICLE_NOT_TRUSTED, false),
+                   DownloadManager.FetchingRemoteData(mClient,
+                           DownloadRequestSchema.newInstance(DownloadManager.DownloadRequestType.VEHICLE_NOT_TRUSTED, false),
                            true);
 
             final List<VehicleCustom> res = (List<VehicleCustom>) resOp.getClassReturn();

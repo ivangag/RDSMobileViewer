@@ -21,7 +21,7 @@ import com.viewer.rds.actia.rdsmobileviewer.PlaceholderFragmentFactory;
 import com.viewer.rds.actia.rdsmobileviewer.R;
 import com.viewer.rds.actia.rdsmobileviewer.cards.CustomExpandCard;
 import com.viewer.rds.actia.rdsmobileviewer.cards.HeaderCard;
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadUtility;
+import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -71,7 +71,7 @@ public class CRDSCardsFragment extends BaseFragment implements IFragmentNotifica
 
         if(mIsFirstVisualization) {
             mIsFirstVisualization = false;
-            DownloadUtility.DownloadRequestType type = DownloadUtility.DownloadRequestType.valueOf((String) getArguments().get(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE));
+            DownloadManager.DownloadRequestType type = DownloadManager.DownloadRequestType.valueOf((String) getArguments().get(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE));
             if(mListener != null)
                 mListener.onFirstFragmentVisualisation(this, type);
         }
@@ -107,13 +107,15 @@ public class CRDSCardsFragment extends BaseFragment implements IFragmentNotifica
     public void OnUpdateData(String UniqueCustomerCode, Object dataContentList, Class itemBaseType) {
 
         mUniqueCustomerCode = UniqueCustomerCode;
-        List<CRDSCustom> data = (List<CRDSCustom>) dataContentList;
+        if(getActivity() != null) {
+            List<CRDSCustom> data = (List<CRDSCustom>) dataContentList;
 
-        if(itemBaseType.equals(CRDSCustom.class)) {
-            mCardArrayAdapter.clear();
-            mCardArrayAdapter.addAll(this.BuildCardBaseData(getActivity(), data));
+            if (itemBaseType.equals(CRDSCustom.class)) {
+                mCardArrayAdapter.clear();
+                mCardArrayAdapter.addAll(this.BuildCardBaseData(getActivity(), data));
+            }
+            setTitle();
         }
-        setTitle();
     }
 
     @Override
@@ -141,6 +143,10 @@ public class CRDSCardsFragment extends BaseFragment implements IFragmentNotifica
         initVehicles();
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+    }
 
 
     private void initVehicles() {
@@ -158,7 +164,7 @@ public class CRDSCardsFragment extends BaseFragment implements IFragmentNotifica
         }
     }
 
-    public static CRDSCardsFragment newInstance(DownloadUtility.DownloadRequestType fragmentType,boolean setActionBarTitle) {
+    public static CRDSCardsFragment newInstance(DownloadManager.DownloadRequestType fragmentType,boolean setActionBarTitle) {
 
         CRDSCardsFragment fragment = new CRDSCardsFragment();
         Bundle args = new Bundle();
@@ -256,7 +262,12 @@ public class CRDSCardsFragment extends BaseFragment implements IFragmentNotifica
         public CRDSDataCardWrapper(Context context, CRDSCustom crdsData) {
             super(context, R.layout.card_rds_item_simple_inner_content);
 
-            this.mTitleHeader =crdsData.getAppName();
+            DownloadManager.DownloadRequestType downloadRequestType = Enum.valueOf(DownloadManager.DownloadRequestType.class,
+                    CRDSCardsFragment.this.getArguments().getString(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE));
+            if(downloadRequestType.equals(DownloadManager.DownloadRequestType.CRDS_NOT_TRUSTED))
+                this.mTitleHeader =  crdsData.getAppName() + " (" + crdsData.getRagioneSociale() + ")";
+            else
+                this.mTitleHeader = crdsData.getAppName();
             this.mCRDSGuid =  crdsData.getCRDSId();
             this.mLastAliveSignal = crdsData.getLastLifeSignal();
             this.mCustomerName = crdsData.getRagioneSociale();

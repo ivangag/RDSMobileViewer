@@ -1,75 +1,49 @@
 package com.viewer.rds.actia.rdsmobileviewer;
 
-import java.util.Locale;
-
-import android.app.Activity;
 import android.app.ActionBar;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.content.Intent;
-import android.support.v13.app.FragmentPagerAdapter;
 import android.os.Bundle;
+import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
-import android.widget.SearchView;
-import android.widget.ShareActionProvider;
-import android.widget.Toast;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
-import com.viewer.rds.actia.rdsmobileviewer.utils.CacheDataManager;
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadUtility;
+import com.viewer.rds.actia.rdsmobileviewer.fragments.BaseFragment;
+import com.viewer.rds.actia.rdsmobileviewer.fragments.DownloadHandlingFragment;
+import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
 import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
-import com.viewer.rds.actia.rdsmobileviewer.fragments.IFragmentNotification;
-import com.viewer.rds.actia.rdsmobileviewer.fragments.VehiclesCardsFragment;
 
+import java.util.Locale;
 
-public class DetailsMainMenuActivity extends Activity implements ActionBar.TabListener,
-        DownloadUtility.IRemoteDownloadDataListener,
-        VehiclesCardsFragment.IFragmentsInteractionListener {
+/**
+ * Created by igaglioti on 23/07/2014.
+ */
+public class DetailsMainMenuActivity extends BaseActivity implements ActionBar.TabListener,DownloadHandlingFragment.TaskDownloadCallbacks {
 
-    /**
-     * The {@link android.support.v4.view.PagerAdapter} that will provide
-     * fragments for each of the sections. We use a
-     * {@link FragmentPagerAdapter} derivative, which will keep every
-     * loaded fragment in memory. If this becomes too memory intensive, it
-     * may be best to switch to a
-     * {@link android.support.v13.app.FragmentStatePagerAdapter}.
-     */
-    SectionsPagerAdapter mSectionsPagerAdapter;
-    Fragment mCurrentFragment;
-
-    DownloadUtility mDownloadUtility;
-
-    final private static String FRAGMENT_DRIVERS_TAG    = "DRIVERS_FRAGMENT";
-    final private static String FRAGMENT_VEHICLES_TAG   = "VEHICLES_FRAGMENT";
-    final private static String FRAGMENT_CRDS_TAG       = "CRDS_FRAGMENT";
-    final private static String FRAGMENT_MAIN_MENU_TAG  = "MAIN_MENU_FRAGMENT";
-    final private static String FRAGMENT_CUSTOMERS_TAG  = "CUSTOMERS_FRAGMENT";
-
-    /**
-     * The {@link ViewPager} that will host the section contents.
-     */
-    ViewPager mViewPager;
-    private ShareActionProvider mShareActionProvider;
+    private SectionsPagerAdapter mSectionsPagerAdapter;
+    private ViewPager mViewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
+        if(savedInstanceState == null){
+            FragmentTransaction ft = mFragmentManager.beginTransaction();
 
-        setContentView(R.layout.activity_main);
-
-        Utils.Init(this);
-
-        mDownloadUtility = DownloadUtility.getInstance();
+            ft.add(R.id.fragment_handling_download, DownloadHandlingFragment.newIstance(null), FRAGMENT_DOWNLOAD_TAG)
+                    .commit();
+        }
         setActivityDetailsLayout();
-
-
+        hideProgressDialog();
     }
 
     private void setActivityDetailsLayout() {
+        setContentView(R.layout.activity_details_extended);
         // Set up the action bar.
         final ActionBar actionBar = getActionBar();
 
@@ -104,191 +78,50 @@ public class DetailsMainMenuActivity extends Activity implements ActionBar.TabLi
                             .setText(mSectionsPagerAdapter.getPageTitle(i))
                             .setTabListener(this));
         }
+
+
+
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.details_menu, menu);
-        setupMenuActions(menu);
-
-        return true;
-    }
-    private void setupMenuActions(Menu menu) {
-        MenuItem searchItem = menu.findItem(R.id.action_search);
-        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
-        MenuItem shareItem = menu.findItem(R.id.action_share);
-        mShareActionProvider = (ShareActionProvider)shareItem.getActionProvider();
-        mShareActionProvider.setShareHistoryFileName(ShareActionProvider.DEFAULT_SHARE_HISTORY_FILE_NAME);
-
-        /*
-        mShareActionProvider.setShareIntent(getDefaultIntent());
-        if(mIsShareIntentPending)
-            updateShareIntentWithText();
-            */
-        mShareActionProvider.setOnShareTargetSelectedListener(new ShareActionProvider.OnShareTargetSelectedListener() {
-            @Override
-            public boolean onShareTargetSelected(ShareActionProvider source, Intent intent) {
-                return false;
-            }
-        });
-
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                //Toast.makeText(getActivity().getApplicationContext(), "onQueryTextSubmit:" + query, Toast.LENGTH_SHORT).show();
-                //mNetAdapter.update(query.toUpperCase());
-                IFragmentNotification notifier = getCurrentDisplayedFragment();
-                if(notifier != null)
-                    notifier.OnFilterData(query.toUpperCase());
-                return true;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                //Toast.makeText(getActivity().getApplicationContext(), "onQueryTextChange:" + newText,Toast.LENGTH_SHORT).show();
-                IFragmentNotification notifier = getCurrentDisplayedFragment();
-                if(notifier != null)
-                    notifier.OnFilterData(newText.toUpperCase());
-                return true;
-            }
-        });
-
-        searchItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
-            @Override
-            public boolean onMenuItemActionExpand(MenuItem item) {
-                return true;
-            }
-
-            @Override
-            public boolean onMenuItemActionCollapse(MenuItem item) {
-                //mNetAdapter.getFilter().filter(getResources().getString(R.string.filterALL));
-                return true;
-            }
-        });
-    }
-    private IFragmentNotification getCurrentDisplayedFragment()
-    {
-        return mCurrentFragment != null ? (IFragmentNotification)mCurrentFragment: null;
-    }
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        switch (id) {
-            case R.id.action_settings:
-                return true;
-            case R.id.action_download_data:
-                launchDownloadRequest(false);
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    private void launchDownloadRequest(boolean cacheIfExist) {
-        DownloadRequestSchema requestType = getDownloadRequestSchema(cacheIfExist);
-        mDownloadUtility.RequireDownloadAsyncTask(this, requestType);
-        Toast.makeText(this, String.valueOf(requestType.getDownloadRequestType()) + " Fetching...", Toast.LENGTH_SHORT).show();
-    }
-
-    private DownloadRequestSchema getDownloadRequestSchema(boolean cacheIfExist) {
-        DownloadRequestSchema requestType = DownloadRequestSchema.newInstance();
-        DownloadUtility.DownloadRequestType fragmentType = DownloadUtility.DownloadRequestType.valueOf(mCurrentFragment.getArguments().getString(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE));
-        requestType.setDownloadRequestType(fragmentType);
-        requestType.setCacheOption(cacheIfExist);
-        return requestType;
-    }
-
-    @Override
-    public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
+    public void onTabSelected(ActionBar.Tab tab, FragmentTransaction ft) {
         // When the given tab is selected, switch to the corresponding page in
         // the ViewPager.
         mViewPager.setCurrentItem(tab.getPosition());
     }
 
     @Override
-    public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
-    }
-
-    @Override
-    public void onTabReselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
-    }
-
-    @Override
-    public void onDownloadDataFinished(DownloadRequestSchema requestType, ResultOperation result) {
-        if(result.isStatus()) {
-            PushDataToFragment(mCurrentFragment, requestType, result.getClassReturn());
-        }
-    }
-
-    private void PushDataToFragment(Fragment fragment, DownloadRequestSchema requestType, Object result) {
-        if(fragment.isVisible()) {
-            switch (requestType.getDownloadRequestType()) {
-                case VEHICLE_NOT_TRUSTED:
-                    ((IFragmentNotification)fragment).OnUpdateData(requestType.getUniqueCustomerCode(), result, VehicleCustom.class);
-                    break;
-                case CRDS_NOT_TRUSTED:
-                    ((IFragmentNotification)fragment).OnUpdateData(requestType.getUniqueCustomerCode(), result, CRDSCustom.class);
-                    break;
-                case DRIVERS_NOT_TRUSTED:
-                    ((IFragmentNotification)fragment).OnUpdateData(requestType.getUniqueCustomerCode(), result, DriverCardData.class);
-                    break;
-            }
-        }
-    }
-
-    @Override
-    public void onFirstFragmentVisualisation(Fragment sender, DownloadUtility.DownloadRequestType requestType) {
-        Object result = null;
-        switch (requestType)
-        {
-            case VEHICLE_NOT_TRUSTED:
-                result = CacheDataManager.getInstance().getVehicleNotTrusted();
-                break;
-            case CRDS_NOT_TRUSTED:
-                result = CacheDataManager.getInstance().getCRDSNotTrusted();
-                break;
-            case DRIVERS_NOT_TRUSTED:
-                result = CacheDataManager.getInstance().getDriversNotTrusted();
-                break;
-        }
-        PushDataToFragment(sender,DownloadRequestSchema.newInstance(requestType, false),result);
-    }
-
-    @Override
-    public void onRequireVehicleDiagnosticData(String vehicleVIN, boolean cacheIfExist) {
+    public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction ft) {
+        int i = tab.getPosition();
 
     }
 
     @Override
-    public void onCustomerSelected(String CustomerAncodice) {
+    public void onTabReselected(ActionBar.Tab tab, FragmentTransaction ft) {
+        int i = tab.getPosition();
 
     }
 
     @Override
-    public void onCustomerVehiclesDataRequiredSelected(DownloadUtility.DownloadRequestType downloadRequestType,String CustomerAncodice,boolean cacheIfExist) {
-        launchDownloadRequest(cacheIfExist);
+    public void onPreExecute() {
+
     }
 
     @Override
-    public void onCustomerDrivesDataRequiredSelected(DownloadUtility.DownloadRequestType downloadRequestType,String CustomerAncodice,boolean cacheIfExist) {
-        launchDownloadRequest(cacheIfExist);
+    public void onProgressUpdate(int percent) {
+
     }
 
     @Override
-    public void onCustomerCRDSDataRequiredSelected(DownloadUtility.DownloadRequestType downloadRequestType,String CustomerAncodice,boolean cacheIfExist) {
+    public void onCancelled() {
 
-        launchDownloadRequest(cacheIfExist);
     }
 
+    @Override
+    public void onPostExecute() {
 
-    /**
-     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
-     * one of the sections/tabs/pages.
-     */
+    }
+
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
         public SectionsPagerAdapter(FragmentManager fm) {
@@ -306,8 +139,8 @@ public class DetailsMainMenuActivity extends Activity implements ActionBar.TabLi
 
         @Override
         public void setPrimaryItem(ViewGroup container, int position, Object object) {
-            if (mCurrentFragment != object) {
-                mCurrentFragment = (Fragment) object;
+            if (mCurrentTabFragment != object) {
+                mCurrentTabFragment = (Fragment) object;
             }
             super.setPrimaryItem(container, position, object);
         }
@@ -337,12 +170,115 @@ public class DetailsMainMenuActivity extends Activity implements ActionBar.TabLi
             return title;
         }
     }
+
+/*
+    @Override
+    public void hideProgressDialog() {
+        findViewById(R.id.loadingPanel).setVisibility(View.GONE);
+        findViewById(R.id.pager).setVisibility(View.VISIBLE);
+        View view = findViewById(R.id.fragment_main_details);
+        if(view != null)
+            view.setVisibility(View.VISIBLE);
+    }
+    @Override
+    public void showProgressDialog(String text) {
+        ((TextView)findViewById(R.id.txt_progress_loading)).setText(String.format(getString(R.string.progress_loading_text),text));
+        findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
+        findViewById(R.id.pager).setVisibility(View.GONE);
+        View view = findViewById(R.id.fragment_main_details);
+        if(view != null)
+            view.setVisibility(View.GONE);
+    }
+*/
+
+    @Override
+    public void hideProgressDialog() {
+
+        if(mDisplayOrientation.equals(LANDSCAPE)){
+
+            FrameLayout frameLayout = (FrameLayout) findViewById(R.id.fragment_handling_download);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(MATCH_PARENT,0);
+            frameLayout.setLayoutParams(lp);
+        }
+        else{
+            FrameLayout frameLayout = (FrameLayout) findViewById(R.id.fragment_handling_download);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(MATCH_PARENT,0,0f);
+            frameLayout.setLayoutParams(lp);
+        }
+    }
+
+    @Override
+    public void showProgressDialog(String text) {
+
+        if(mDisplayOrientation.equals(LANDSCAPE)){
+
+            //LinearLayout frameLayout = (LinearLayout) findViewById(R.id.fragment_handling_download_container);
+            FrameLayout frameLayout = (FrameLayout) findViewById(R.id.fragment_handling_download);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(MATCH_PARENT,MATCH_PARENT);
+            frameLayout.setLayoutParams(lp);
+        }
+        else{
+            FrameLayout frameLayout = (FrameLayout) findViewById(R.id.fragment_handling_download);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT,2.5f);
+            frameLayout.setLayoutParams(lp);
+        }
+    }
+
     @Override
     public void onStop() {
-        // Inflate the menu; this adds items to the action bar if it is present.
         super.onStop();
+        DownloadManager.getInstance().removeListener(this);
+     //   DownloadUtility.getInstance().unbindRDSService(this);
+    }
+
+    @Override
+    public void onStart() {
+       super.onStart();
+        DownloadManager.getInstance().addListener(this);
+   //    DownloadUtility.getInstance().bindRDService(this);
 
     }
 
-}
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
 
+        switch (id) {
+            case R.id.action_settings:
+                return true;
+            case R.id.action_download_data:
+                //launchDownloadRequest(false);
+                //requireDataDownload(makeDownloadRequestSchema(false));
+                DownloadManager.DownloadRequestType fragmentType =
+                        DownloadManager.DownloadRequestType.valueOf(mCurrentTabFragment.getArguments().
+                        getString(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE));
+                DownloadRequestSchema downloadRequestSchema = DownloadRequestSchema.newInstance
+                        (fragmentType,((BaseFragment) mCurrentTabFragment).getUniqueCustomerCode(),"",false);
+                makeDownloadRequest(downloadRequestSchema);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private DownloadRequestSchema makeDownloadRequestSchema(boolean cacheIfExist) {
+
+        DownloadRequestSchema requestType = DownloadRequestSchema.newInstance();
+        DownloadManager.DownloadRequestType fragmentType = DownloadManager.DownloadRequestType.valueOf(mCurrentTabFragment.getArguments().getString(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE));
+        requestType.setDownloadRequestType(fragmentType);
+        requestType.setCacheOption(cacheIfExist);
+        return requestType;
+    }
+
+   @Override
+    public void handleDownloadDataFinished(DownloadRequestSchema requestType, ResultOperation result)
+    {
+        if(result.isStatus()) {
+            PushDataToFragment(mCurrentTabFragment, requestType, result.getClassReturn());
+        }
+    }
+
+
+}

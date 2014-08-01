@@ -3,6 +3,9 @@
 buildscript {
     repositories {
         jcenter()
+        maven {
+            url "http://repository.codehaus.org/org/codehaus"
+        }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:0.12.+'

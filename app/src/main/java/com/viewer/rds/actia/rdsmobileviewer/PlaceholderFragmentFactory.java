@@ -7,7 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadUtility;
+import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
 import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.CRDSCardsFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.DriversCardsFragment;
@@ -35,13 +35,13 @@ public abstract class PlaceholderFragmentFactory extends ListFragment {
         final int sectionNumberActual = sectionNumber - 1;
         switch (sectionNumberActual) {
             case Utils.TAB_POSITION_VEHICLES:
-                fragment = VehiclesCardsFragment.newInstance(DownloadUtility.DownloadRequestType.VEHICLE_NOT_TRUSTED,false);
+                fragment = VehiclesCardsFragment.newInstance(DownloadManager.DownloadRequestType.VEHICLE_NOT_TRUSTED,false);
                 break;
             case Utils.TAB_POSITION_DRIVERS:
-                fragment = DriversCardsFragment.newInstance(DownloadUtility.DownloadRequestType.DRIVERS_NOT_TRUSTED, false);
+                fragment = DriversCardsFragment.newInstance(DownloadManager.DownloadRequestType.DRIVERS_NOT_TRUSTED, false);
                 break;
             case Utils.TAB_POSITION_CRDS:
-                fragment = CRDSCardsFragment.newInstance(DownloadUtility.DownloadRequestType.CRDS_NOT_TRUSTED,false);
+                fragment = CRDSCardsFragment.newInstance(DownloadManager.DownloadRequestType.CRDS_NOT_TRUSTED,false);
                 break;
             /*
             case GlobalConstants.MAIN_TAB_CUSTOMERS:

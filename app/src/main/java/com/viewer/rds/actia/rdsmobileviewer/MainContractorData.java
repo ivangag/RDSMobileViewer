@@ -43,6 +43,17 @@ public class MainContractorData implements Parcelable{
 
     public MainContractorData(Parcel in) {
 
+        mAncodice = in.readString();
+        mEmail = in.readString();
+        mFriendlyName = in.readString();
+        mInsertDate = in.readString();
+        mContractLeaseDuration = in.readInt();
+        boolean[] values = new boolean[4];
+        in.readBooleanArray(values);
+        mIsAutomaticDriverAssociationEnabled = values[0];
+        mIsEmailForwardServiceActive = values[1];
+        mIsFilePushingServiceActive = values[2];
+        mIsSuperCRDSServiceActive = values[3];
     }
 
     public MainContractorData() {
@@ -158,7 +169,7 @@ public class MainContractorData implements Parcelable{
         String res = String.format("Name:%s;AnCode:%s;InsertDate:%s;FilePush:%b;SuperCRDS:%b;EmailPush:%b;AutoDriver:%b",
                 mFriendlyName,mAncodice,mInsertDate,mIsFilePushingServiceActive,mIsSuperCRDSServiceActive,mIsEmailForwardServiceActive,mIsAutomaticDriverAssociationEnabled);
                 */
-        String res = String.format("Name:%s\t\nID:%d\t\nAnCodice:%s\t\nInsertDate:%s\t\nFilePush:%b\t\nSuperCRDS:%b\t\nEmailPush:%b\t\nAutoDriver:%b",
+        String res = String.format("Name:%s\t\nPRIMARY_CUSTOMER_ID:%d\t\nAnCodice:%s\t\nInsertDate:%s\t\nFilePush:%b\t\nSuperCRDS:%b\t\nEmailPush:%b\t\nAutoDriver:%b",
                 getFriendlyName(),getIdCustomer(),getAncodice(),getInsertDate(),
                 mIsFilePushingServiceActive,mIsSuperCRDSServiceActive,mIsEmailForwardServiceActive,mIsAutomaticDriverAssociationEnabled);
         return res;

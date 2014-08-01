@@ -9,7 +9,6 @@ import android.os.AsyncTask;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
-import android.view.View;
 
 import com.viewer.rds.actia.rdsmobileviewer.CRDSCustom;
 import com.viewer.rds.actia.rdsmobileviewer.DownloadRequestSchema;
@@ -32,21 +31,17 @@ import org.apache.http.impl.client.BasicResponseHandler;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.zip.GZIPInputStream;
 
 /**
  * Created by igaglioti on 09/07/2014.
  */
-public class DownloadUtility {
+public class DownloadManager {
 
     public final static int DOWNLOAD_DATA_REQUEST = 0;
 
@@ -55,7 +50,7 @@ public class DownloadUtility {
 
     public static final String DOWNLOAD_DATA_RESULT = "DOWNLOAD_DATA_RESULT";
 
-    private final static String TAG = DownloadUtility.class
+    private final static String TAG = DownloadManager.class
             .getCanonicalName();
     private final static String RDSRestFulURL = "http://iob.actiaitalia.com/ACTIA.ARDIS.RESTFul/Service.svc/json/";
 
@@ -75,12 +70,12 @@ public class DownloadUtility {
     private final static String status  = "Status";
 
 
-    private static DownloadUtility ourInstance = new DownloadUtility();
+    private static DownloadManager ourInstance = new DownloadManager();
 
-    public static DownloadUtility getInstance() {
+    public static DownloadManager getInstance() {
         return ourInstance;
     }
-    private DownloadUtility() {
+    private DownloadManager() {
     }
 
     private Set<IRemoteDownloadDataListener> mListeners = new HashSet<IRemoteDownloadDataListener>();
@@ -180,6 +175,25 @@ public class DownloadUtility {
             }
             return "";
         }
+
+        public Class<?> getRemoteDataType() {
+            switch (this)
+            {
+                case CRDS_OWNED:
+                case CRDS_NOT_TRUSTED:
+                    return CRDSCustom.class;
+                case DRIVERS_NOT_TRUSTED:
+                case DRIVERS_OWNED:
+                    return DriverCardData.class;
+                case CUSTOMERS_LIST:
+                    return MainContractorData.class;
+                case VEHICLE_NOT_TRUSTED:
+                case VEHICLES_OWNED:
+                case VEHICLE_DIAGNOSTIC:
+                    return VehicleCustom.class;
+            }
+            return null;
+        }
     }
 
 
@@ -239,23 +253,14 @@ public class DownloadUtility {
             ResultOperation resultOperation = ResultOperation.newInstance();
             // Stores the processed results we get back from the
             // Web service.
-            ArrayList result = null;
-            JSONArray jsonArray = null;
+            ArrayList result;
+            JSONArray jsonArray;
             try {
 
                 // Takes a JSON source string and extracts characters
                 // and tokens from it.
-                JSONTokener token = new JSONTokener(JSONResponse);
 
-                if(token.nextValue() instanceof JSONArray)
-                {
-                    jsonArray =  (JSONArray) new JSONTokener(JSONResponse).nextValue();
-                    resultOperation.setStatus(true);
-                }
-                else {
-                    resultOperation = DownloadUtility.buildResultOperation(JSONResponse, resultOperation);
-                    //jsonArray = (JSONArray) resultOperation.getClassReturn();
-                }
+                resultOperation = DownloadManager.buildResultOperation(JSONResponse, resultOperation);
 
                 if(mTranslateRemoteData){
                     if(resultOperation.isStatus()) {
@@ -282,18 +287,18 @@ public class DownloadUtility {
             case VEHICLE_DIAGNOSTIC:
             case VEHICLES_OWNED:
             case VEHICLE_NOT_TRUSTED:
-                result = parseVehicles(jsonArray);
+                result = ParserFactory.parseVehicles(jsonArray);
                 break;
             case CUSTOMERS_LIST:
-                result = parseCustomers(jsonArray);
+                result = ParserFactory.parseCustomers(jsonArray);
                 break;
             case CRDS_NOT_TRUSTED:
             case CRDS_OWNED:
-                result = parseCRDS(jsonArray);
+                result = ParserFactory.parseCRDS(jsonArray);
                 break;
             case DRIVERS_OWNED:
             case DRIVERS_NOT_TRUSTED:
-                result = parseDrivers(jsonArray);
+                result = ParserFactory.parseDrivers(jsonArray);
                 break;
             case MAIN_MENU:
                 break;
@@ -303,17 +308,17 @@ public class DownloadUtility {
 
     private static ResultOperation buildResultOperation(String JSONResponse,
                                                         ResultOperation resultOperationInstance) throws JSONException, IOException {
-        JSONArray jsonArray = null;
+        JSONArray jsonArray;
         JSONObject jsonObject = new JSONObject(JSONResponse);
         byte[] streamDecompress = null;
         if (!jsonObject.isNull(classReturn)) {
             // get ClassReturn field
             jsonArray = jsonObject.getJSONArray(classReturn);
-            if (Utils.GZIP_MAGICAL == jsonArray.getInt(0)) {
-                final byte[] streamCompress = DownloadUtility.getBytesFromJsonArray(jsonArray);
-                streamDecompress = DownloadUtility.decompressFromGZip(new ByteArrayInputStream(Utils.convertToByteArray((streamCompress))));
+            if (Utils.GZIP_MAGICAL_1 == jsonArray.getInt(0)) {
+                final byte[] streamCompress = ParserFactory.getBytesFromJsonArray(jsonArray);
+                streamDecompress = ParserFactory.decompressFromGZip(new ByteArrayInputStream(Utils.convertToByteArray((streamCompress))));
 
-                jsonArray = new JSONArray(new String(streamDecompress));
+                //jsonArray = new JSONArray(new String(streamDecompress));
             }
             // get OtherInfo field
             if(!jsonObject.isNull(otherInfo))
@@ -328,230 +333,22 @@ public class DownloadUtility {
             resultOperationInstance.setStatus(false);
             resultOperationInstance.setOtherInfo("ResponseError::No ClassReturn Found");
         }
-        //resultOperationInstance.setClassReturn(jsonArray);
         resultOperationInstance.setClassReturn(streamDecompress);
         return resultOperationInstance;
     }
 
 
-    private static ResultOperation buildResultOperationEx(String JSONResponse,
-                                                        ResultOperation resultOperationInstance) throws JSONException, IOException {
-        JSONArray jsonArray = null;
-        JSONObject jsonObject = new JSONObject(JSONResponse);
-        if (!jsonObject.isNull(classReturn)) {
-            // get ClassReturn field
-            jsonArray = jsonObject.getJSONArray(classReturn);
-            if (Utils.GZIP_MAGICAL == jsonArray.getInt(0)) {
-                final byte[] streamCompress = DownloadUtility.getBytesFromJsonArray(jsonArray);
-                byte[] streamDecompress = DownloadUtility.decompressFromGZip(new ByteArrayInputStream(Utils.convertToByteArray((streamCompress))));
-
-                jsonArray = new JSONArray(new String(streamDecompress));
-            }
-            // get OtherInfo field
-            if(!jsonObject.isNull(otherInfo))
-                resultOperationInstance.setOtherInfo(jsonObject.getString(otherInfo));
-
-            // get Status field
-            if(!jsonObject.isNull(status))
-                resultOperationInstance.setStatus(jsonObject.getBoolean(status));
-        }
-        else
-        {
-            resultOperationInstance.setStatus(false);
-            resultOperationInstance.setOtherInfo("ResponseError::No ClassReturn Found");
-        }
-        resultOperationInstance.setClassReturn(jsonArray);
-        return resultOperationInstance;
-    }
-
-    public static byte[] getBytesFromJsonArray(JSONArray jsonArray) throws JSONException {
-
-        final byte[] streamCompress = new byte[jsonArray.length()];
-        for (int Idx = 0; Idx < jsonArray.length(); Idx++) {
-            streamCompress[Idx] = ((byte) jsonArray.getInt(Idx));
-        }
-        return streamCompress;
-    }
-
-    public byte[] makeBytesFromArray(ArrayList<Byte> arrayList)
-    {
-        ArrayList<Byte> in = arrayList;
-        int n = in.size();
-        byte[] out = new byte[n];
-        for (int i = 0; i < n; i++) {
-            out[i] = in.get(i);
-        }
-        return out;
-    }
-
-
-
-    public static byte[] decompressFromGZip(ByteArrayInputStream bytesIn) throws IOException {
-        GZIPInputStream in = new GZIPInputStream(bytesIn);
-        ByteArrayOutputStream contents = new ByteArrayOutputStream();
-        try {
-            byte[] buf = new byte[4096];
-            int len;
-            while ((len = in.read(buf)) > 0) {
-                contents.write(buf, 0, len);
-            }
-        } finally {
-            in.close();
-        }
-        return contents.toByteArray();
-    }
-
-    private static ArrayList parseCustomers(JSONArray customers) throws JSONException {
-        ArrayList result;
-        result = new ArrayList<MainContractorData>();
-        // Get the JSON array of  results, marked with
-        // the 'lfs' name.
-        // For each option, create an object and add it
-        // to rValue.
-        for (int i = 0; i < customers.length(); i++) {
-            JSONObject jsonObject = customers.getJSONObject(i);
-            MainContractorData remoteItem = new MainContractorData();
-            if (!jsonObject.isNull("ancodice"))
-                remoteItem.setAncodice(jsonObject.getString("ancodice"));
-            if (!jsonObject.isNull("InsertDate"))
-                remoteItem.setInsertDate(jsonObject.getString("InsertDate"));
-            if (!jsonObject.isNull("FriendlyName"))
-                remoteItem.setFriendlyName(jsonObject.getString("FriendlyName"));
-            if (!jsonObject.isNull("IdCustomer"))
-                remoteItem.setIdCustomer(jsonObject.getInt("IdCustomer"));
-            if (!jsonObject.isNull("IsAutomaticDriverAssociationEnabled"))
-                remoteItem.setIsAutomaticDriverAssociationEnabled(jsonObject.getBoolean("IsAutomaticDriverAssociationEnabled"));
-            if (!jsonObject.isNull("IsFilePushingServiceActive"))
-                remoteItem.setIsFilePushingServiceActive(jsonObject.getBoolean("IsFilePushingServiceActive"));
-            if (!jsonObject.isNull("IsSuperCRDSServiceActive"))
-                remoteItem.setIsSuperCRDSServiceActive(jsonObject.getBoolean("IsSuperCRDSServiceActive"));
-            if (!jsonObject.isNull("IsEmailForwardServiceActive"))
-                remoteItem.setIsEmailForwardServiceActive(jsonObject.getBoolean("IsEmailForwardServiceActive"));
-            result.add(remoteItem);
-        }
-        return result;
-    }
-    private static ArrayList parseVehicles(JSONArray vehicles) throws JSONException {
-        ArrayList result;
-        result = new ArrayList<VehicleCustom>();
-        // Get the JSON array of  results
-        for (int i = 0; i < vehicles.length(); i++) {
-            JSONObject jsonObject = vehicles.getJSONObject(i);
-            VehicleCustom veh = new VehicleCustom();
-            veh.set_VIN(jsonObject.getString("VIN"));
-            veh.set_IMEI(jsonObject.getString("IMEI"));
-            veh.set_VRN(jsonObject.getString("VRN"));
-            veh.set_IdDevice(jsonObject.getString("IdDevice"));
-            veh.set_PhoneNumber(jsonObject.getString("PhoneNumber"));
-            if (!jsonObject.isNull("FileContent"))
-                veh.set_FileContent(jsonObject.getString("FileContent"));
-            if (!jsonObject.isNull("CustomerName"))
-                veh.set_CustomerName(jsonObject.getString("CustomerName"));
-            if (!jsonObject.isNull("Status"))
-                veh.set_Status(jsonObject.getString("Status"));
-            if (!jsonObject.isNull("LastDiag"))
-                veh.set_DiagnosticDeviceTime(jsonObject.getString("LastDiag"));
-            if (!jsonObject.isNull("DiagnosticDeviceTime"))
-                veh.set_DiagnosticDeviceTime(jsonObject.getString("DiagnosticDeviceTime"));
-            if (!jsonObject.isNull("SwName"))
-                veh.set_SwName(jsonObject.getString("SwName"));
-            if (!jsonObject.isNull("SwVersion"))
-                veh.setSwVersion(jsonObject.getString("SwVersion"));
-            if (!jsonObject.isNull("JourneyEnableDate"))
-                veh.set_JourneyEnableDate(jsonObject.getString("JourneyEnableDate"));
-            if (!jsonObject.isNull("StartDate"))
-                veh.set_StartDate(jsonObject.getString("StartDate"));
-            result.add(veh);
-        }
-        return result;
-    }
-    private static ArrayList parseDrivers(JSONArray drivers) throws JSONException {
-        ArrayList result;
-        result = new ArrayList<DriverCardData>();
-        // Get the JSON array of  results
-        for (int i = 0; i < drivers.length(); i++) {
-            JSONObject jsonObject = drivers.getJSONObject(i);
-            DriverCardData remoteItem = new DriverCardData();
-            if (!jsonObject.isNull("IdCard"))
-                remoteItem.setIdCard(jsonObject.getString("IdCard"));
-            if (!jsonObject.isNull("InsertDate"))
-                remoteItem.setInsertingDate(jsonObject.getString("InsertDate"));
-            if (!jsonObject.isNull("StartDate"))
-                remoteItem.setBindingDate(jsonObject.getString("StartDate"));
-            if (!jsonObject.isNull("IsActivated"))
-                remoteItem.setIsActivated(jsonObject.getBoolean("IsActivated"));
-            if (!jsonObject.isNull("Name"))
-                remoteItem.setName(jsonObject.getString("Name"));
-            if (!jsonObject.isNull("VehicleVIN"))
-                remoteItem.setDeviceAnnouncer(jsonObject.getString("VehicleVIN"));
-            if (!jsonObject.isNull("CustomerName"))
-                remoteItem.setCustomerName(jsonObject.getString("CustomerName"));
-            if (!jsonObject.isNull("Status"))
-                remoteItem.setStatus(jsonObject.getString("Status"));
-            result.add(remoteItem);
-        }
-        return result;
-    }
-    private static ArrayList parseCRDS(JSONArray crds) throws JSONException {
-        ArrayList result;
-        result = new ArrayList<CRDSCustom>();
-        // Get the JSON array of  results
-        for (int i = 0; i < crds.length(); i++) {
-            JSONObject jsonObject = crds.getJSONObject(i);
-            CRDSCustom crdsItem = new CRDSCustom();
-            if(!jsonObject.isNull("ActivationState"))
-                crdsItem.setActivationState(jsonObject.getString("ActivationState"));
-            if(!jsonObject.isNull("AppName"))
-                crdsItem.setAppName(jsonObject.getString("AppName"));
-            if(!jsonObject.isNull("AppType"))
-                crdsItem.setAppType(jsonObject.getString("AppType"));
-            if(!jsonObject.isNull("CAP"))
-                crdsItem.setCAP(jsonObject.getString("CAP"));
-            if(!jsonObject.isNull("Cellulare"))
-                crdsItem.setCellulare(jsonObject.getString("Cellulare"));
-            if(!jsonObject.isNull("Citta"))
-                crdsItem.setCitta(jsonObject.getString("Citta"));
-            if(!jsonObject.isNull("Culture"))
-                crdsItem.setCulture(jsonObject.getString("Culture"));
-            if(!jsonObject.isNull("DataRicezione"))
-                crdsItem.setDataRicezione(jsonObject.getString("DataRicezione"));
-            if(!jsonObject.isNull("DiagnosticAction"))
-                crdsItem.setDiagnosticAction(jsonObject.getString("DiagnosticAction"));
-            if(!jsonObject.isNull("Email"))
-                crdsItem.setEmail(jsonObject.getString("Email"));
-            if(!jsonObject.isNull("Fax"))
-                crdsItem.setFax(jsonObject.getString("Fax"));
-            if(!jsonObject.isNull("GUID"))
-                crdsItem.setCRDSId(jsonObject.getString("GUID"));
-            if(!jsonObject.isNull("Indirizzo"))
-                crdsItem.setIndirizzo(jsonObject.getString("Indirizzo"));
-            if(!jsonObject.isNull("LastLifeSignal"))
-                crdsItem.setLastLifeSignal(jsonObject.getString("LastLifeSignal"));
-            if(!jsonObject.isNull("ModoRicezioneCodice"))
-                crdsItem.setModoRicezioneCodice(jsonObject.getString("ModoRicezioneCodice"));
-            if(!jsonObject.isNull("Nazione"))
-                crdsItem.setNazione(jsonObject.getString("Nazione"));
-            if(!jsonObject.isNull("PartitaIva"))
-                crdsItem.setPartitaIva(jsonObject.getString("PartitaIva"));
-            if(!jsonObject.isNull("RagioneSociale"))
-                crdsItem.setRagioneSociale(jsonObject.getString("RagioneSociale"));
-            if(!jsonObject.isNull("Responsabile"))
-                crdsItem.setResponsabile(jsonObject.getString("Responsabile"));
-            if(!jsonObject.isNull("Telefono"))
-                crdsItem.setTelefono(jsonObject.getString("Telefono"));
-            if(!jsonObject.isNull("Versione"))
-                crdsItem.setVersione(jsonObject.getString("Versione"));
-            if(!jsonObject.isNull("XML"))
-                crdsItem.setXML(jsonObject.getString("XML"));
-            result.add(crdsItem);
-        }
-        return result;
-    }
 
     public void RequireDownloadAsyncTask(IRemoteDownloadDataListener clientDownloadDataListener,
                                          DownloadRequestSchema downloadRequestInfo) {
 
         this.addListener(clientDownloadDataListener);
+        try {
+            mRDSClientRequest.fetchRemoteData(mRDSServiceResponse,downloadRequestInfo);
+        } catch (RemoteException e) {
+            Log.e(TAG,"Exception: " + e.getLocalizedMessage());
+        }
+        /*
         if(downloadRequestInfo.getDownloadRequestType().equals(DownloadRequestType.VEHICLE_NOT_TRUSTED))
         {
             try {
@@ -564,6 +361,7 @@ public class DownloadUtility {
             DownloadDataTask downloadDataTask = new DownloadDataTask();
             downloadDataTask.execute(downloadRequestInfo);
         }
+        */
     }
 
     class DownloadDataTask extends AsyncTask<DownloadRequestSchema,Void,ResultOperation>
@@ -579,31 +377,13 @@ public class DownloadUtility {
 
             boolean mHasCacheData = false;
             final boolean mObtainCacheIfExist = mRequestInfo.getCacheOption();
-            final DownloadRequestType requestType = mRequestInfo.getDownloadRequestType();
+            //final DownloadRequestType requestType = mRequestInfo.getDownloadRequestType();
 
             if(mObtainCacheIfExist){
                 mHasCacheData = CacheDataManager.checkedCachedDataPresence(result, mRequestInfo);
             }
             if(!mHasCacheData) {
-                result = DownloadUtility.FetchingRemoteData(mClient, mRequestInfo, true);
-
-                /* !! The following (commented) code snippet is only for testing service purpose !!
-                if(!requestType.equals(DownloadRequestType.VEHICLE_NOT_TRUSTED)){
-                    result = DownloadUtility.FetchingRemoteData(mClient, mRequestInfo,true);
-                }
-                else{
-                    try {
-                        List<VehicleCustom> vehicleCustomList = (List<VehicleCustom>) mRDSClientCall.getVehiclesNotActivated();
-                        result.setClassReturn(vehicleCustomList);
-                    } catch (RemoteException e) {
-                        e.printStackTrace();
-                        Log.e(TAG,String.format("RDSServiceCall::ERROR:%s",e.getLocalizedMessage()));
-                        result.setStatus(false);
-                        result.setOtherInfo(e.getLocalizedMessage());
-                    }
-                }
-                */
-
+                result = DownloadManager.FetchingRemoteData(mClient, mRequestInfo, true);
             }
 
             if((!mObtainCacheIfExist && (result.getClassReturn() != null))
@@ -628,20 +408,29 @@ public class DownloadUtility {
         // running via a call to bindService() Bind this activity to
         // the GeoNamesService* Services if they aren't already bound.
         //Debug.waitForDebugger();
+        Log.i(TAG,"Try to start RDSViewerServiceAsync Service...");
+        context.startService(RDSViewerServiceAsync.makeIntent(context));
+
+    }
+
+
+    public void bindRDService(Context context){
+        // Launch the designated Bound Service if they aren't already
+        // running via a call to bindService() Bind this activity to
+        // the GeoNamesService* Services if they aren't already bound.
+        //Debug.waitForDebugger();
         if (mRDSClientCall == null)
             context.bindService(RDSViewerServiceSync.makeIntent(context),
                     mRDSServiceSync,
-                    context.BIND_AUTO_CREATE);
+                    Context.BIND_AUTO_CREATE);
 
         if (mRDSClientRequest == null)
             context.bindService(RDSViewerServiceAsync.makeIntent(context),
                     mRDSServiceAsync,
-                    context.BIND_AUTO_CREATE);
-
-
+                    Context.BIND_AUTO_CREATE);
     }
 
-    public void stopRDSService(Context context){
+    public void unbindRDSService(Context context){
 
         //Debug.waitForDebugger();
         // Unbind the Sync/Async Services if they are connected.
@@ -704,7 +493,13 @@ public class DownloadUtility {
             {
                 ArrayList data = null;
                 try {
-                    final JSONArray jsonArray  = new JSONArray(new String((byte[]) result.getClassReturn()));
+                    final String jsonRaw = new String((byte[]) result.getClassReturn());
+                    final JSONArray jsonArray  = new JSONArray(jsonRaw);
+                    try {
+                        SerializerFactory.convertJSONtoDataObject(jsonArray.get(0).toString(),downloadRequest.getDownloadRequestType().getRemoteDataType());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     final DownloadRequestType requestType = downloadRequest.getDownloadRequestType();
                     data = parseJsonToRDSRemoteObject(jsonArray, requestType);
                 } catch (JSONException e) {

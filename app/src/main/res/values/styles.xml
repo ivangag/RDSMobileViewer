@@ -95,7 +95,7 @@
 
     <style name="GenericProgressBackground" parent="@android:style/Theme.Translucent">
         <item name="android:windowIsTranslucent">true</item>
-        <item name="android:background">@color/card_background_color_green</item>
+        <item name="android:background">@color/card_background_color_dark_gray</item>
         <item name="android:layout_width">fill_parent</item>
         <item name="android:layout_height">fill_parent</item>
         <item name ="android:windowBackground">@color/transparent</item>

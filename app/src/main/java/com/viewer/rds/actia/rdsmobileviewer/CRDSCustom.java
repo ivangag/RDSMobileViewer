@@ -5,83 +5,87 @@ import android.os.Parcelable;
 
 import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
 
+import org.codehaus.jackson.annotate.JsonProperty;
+
 /**
  * Created by igaglioti on 09/07/2014.
  */
 public class CRDSCustom implements Parcelable {
 
-    private String mActivationState;
+
+    private String activationState;
 
 
-    private String mAppName;
+    private String appName;
 
 
-    private String mAppType;
+    private String appType;
 
 
-    private String mCAP;
+    private String cap;
 
 
-    private String mCellulare;
+    private String cellulare;
 
 
-    private String mCitta;
+    private String citta;
 
 
-    private String mCulture;
+    private String culture;
 
 
-    private String mDataRicezione;
+    private String dataRicezione;
 
 
-    private String mDiagnosticAction;
+    private String diagnosticAction;
 
 
-    private String mEmail;
+    private String email;
 
 
-    private String mFax;
+    private String fax;
 
 
-    private String mIndirizzo;
+    private String indirizzo;
 
 
-    private String mLastLifeSignal;
+    private String lastLifeSignal;
 
 
-    private String mModoRicezioneCodice;
+    private String modoRicezioneCodice;
 
 
-    private String mNazione;
+    @JsonProperty("Nazione")
+    private String nazione;
 
 
-    private String mPartitaIva;
+    private String partitaIva;
 
 
-    private String mPassword;
+    private String password;
 
 
-    private String mRagioneSociale;
+    private String ragioneSociale;
 
 
-    private String mResponsabile;
+    private String responsabile;
 
 
-    private String mTelefono;
+    private String telefono;
 
 
-    private String mVersione;
+    private String versione;
 
-    private String mXML;
+    private String xml;
 
-    private String mCRDSId;
+    private String crdsid;
 
     public CRDSCustom(Parcel in) {
 
     }
 
     public CRDSCustom(String CRDSGuid) {
-        mCRDSId = CRDSGuid;
+        crdsid = CRDSGuid;
     }
 
     public CRDSCustom() {
@@ -110,187 +114,187 @@ public class CRDSCustom implements Parcelable {
     };
 
     public String getCRDSId() {
-        return mCRDSId;
+        return crdsid;
     }
 
     public void setCRDSId(String mCRDSId) {
-        this.mCRDSId = mCRDSId;
+        this.crdsid = mCRDSId;
     }
 
     public String getActivationState() {
-        return mActivationState;
+        return activationState;
     }
 
     public void setActivationState(String mActivationState) {
-        this.mActivationState = mActivationState;
+        this.activationState = mActivationState;
     }
 
     public String getAppName() {
-        return mAppName;
+        return appName;
     }
 
     public void setAppName(String mAppName) {
-        this.mAppName = mAppName;
+        this.appName = mAppName;
     }
 
     public String getAppType() {
-        return mAppType;
+        return appType;
     }
 
     public void setAppType(String mAppType) {
-        this.mAppType = mAppType;
+        this.appType = mAppType;
     }
 
     public String getCAP() {
-        return mCAP;
+        return cap;
     }
 
     public void setCAP(String mCAP) {
-        this.mCAP = mCAP;
+        this.cap = mCAP;
     }
 
     public String getCellulare() {
-        return mCellulare;
+        return cellulare;
     }
 
     public void setCellulare(String mCellulare) {
-        this.mCellulare = mCellulare;
+        this.cellulare = mCellulare;
     }
 
     public String getCitta() {
-        return mCitta;
+        return citta;
     }
 
     public void setCitta(String mCitta) {
-        this.mCitta = mCitta;
+        this.citta = mCitta;
     }
 
     public String getCulture() {
-        return mCulture;
+        return culture;
     }
 
     public void setCulture(String mCulture) {
-        this.mCulture = mCulture;
+        this.culture = mCulture;
     }
 
     public String getDataRicezione() {
-        return mDataRicezione;
+        return dataRicezione;
     }
 
     public void setDataRicezione(String mDataRicezione) {
-        this.mDataRicezione = Utils.getDateTimeFromTicks(mDataRicezione);
+        this.dataRicezione = Utils.getDateTimeFromTicks(mDataRicezione);
     }
 
     public String getDiagnosticAction() {
-        return mDiagnosticAction;
+        return diagnosticAction;
     }
 
     public void setDiagnosticAction(String mDiagnosticAction) {
-        this.mDiagnosticAction = Utils.getDateTimeFromTicks(mDiagnosticAction);
+        this.diagnosticAction = Utils.getDateTimeFromTicks(mDiagnosticAction);
     }
 
     public String getEmail() {
-        return mEmail;
+        return email;
     }
 
     public void setEmail(String mEmail) {
-        this.mEmail = mEmail;
+        this.email = mEmail;
     }
 
     public String getFax() {
-        return mFax;
+        return fax;
     }
 
     public void setFax(String mFax) {
-        this.mFax = mFax;
+        this.fax = mFax;
     }
 
     public String getIndirizzo() {
-        return mIndirizzo;
+        return indirizzo;
     }
 
     public void setIndirizzo(String mIndirizzo) {
-        this.mIndirizzo = mIndirizzo;
+        this.indirizzo = mIndirizzo;
     }
 
     public String getLastLifeSignal() {
-        return mLastLifeSignal;
+        return lastLifeSignal;
     }
 
     public void setLastLifeSignal(String mLastLifeSignal) {
-        this.mLastLifeSignal = Utils.getDateTimeFromTicks(mLastLifeSignal);
+        this.lastLifeSignal = Utils.getDateTimeFromTicks(mLastLifeSignal);
     }
 
     public String getModoRicezioneCodice() {
-        return mModoRicezioneCodice;
+        return modoRicezioneCodice;
     }
 
     public void setModoRicezioneCodice(String mModoRicezioneCodice) {
-        this.mModoRicezioneCodice = mModoRicezioneCodice;
+        this.modoRicezioneCodice = mModoRicezioneCodice;
     }
 
     public String getNazione() {
-        return mNazione;
+        return nazione;
     }
 
     public void setNazione(String mNazione) {
-        this.mNazione = mNazione;
+        this.nazione = mNazione;
     }
 
     public String getPartitaIva() {
-        return mPartitaIva;
+        return partitaIva;
     }
 
     public void setPartitaIva(String mPartitaIva) {
-        this.mPartitaIva = mPartitaIva;
+        this.partitaIva = mPartitaIva;
     }
 
     public String getPassword() {
-        return mPassword;
+        return password;
     }
 
     public void setPassword(String mPassword) {
-        this.mPassword = mPassword;
+        this.password = mPassword;
     }
 
     public String getRagioneSociale() {
-        return mRagioneSociale;
+        return ragioneSociale;
     }
 
     public void setRagioneSociale(String mRagioneSociale) {
-        this.mRagioneSociale = mRagioneSociale;
+        this.ragioneSociale = mRagioneSociale;
     }
 
     public String getResponsabile() {
-        return mResponsabile;
+        return responsabile;
     }
 
     public void setResponsabile(String mResponsabile) {
-        this.mResponsabile = mResponsabile;
+        this.responsabile = mResponsabile;
     }
 
     public String getTelefono() {
-        return mTelefono;
+        return telefono;
     }
 
     public void setTelefono(String mTelefono) {
-        this.mTelefono = mTelefono;
+        this.telefono = mTelefono;
     }
 
     public String getVersione() {
-        return mVersione;
+        return versione;
     }
 
     public void setVersione(String mVersione) {
-        this.mVersione = mVersione;
+        this.versione = mVersione;
     }
 
     public String getXML() {
-        return mXML;
+        return xml;
     }
 
     public void setXML(String mXML) {
-        this.mXML = mXML;
+        this.xml = mXML;
     }
 
 
@@ -298,7 +302,7 @@ public class CRDSCustom implements Parcelable {
     public String toString()
     {
         String res = String.format("GUID:%s\t\nRagioneSociale:%s\t\nResp:%s\t\nEmail:%s\t\nCittà:%s\t\nDataRicezione:%s\t\nApplicazione:%s(V%s)",
-                mCRDSId,mRagioneSociale,mResponsabile,mEmail,mCitta,mDataRicezione,mAppName,mVersione);
+                crdsid, ragioneSociale, responsabile, email, citta, dataRicezione, appName, versione);
         return res;
     }
 }

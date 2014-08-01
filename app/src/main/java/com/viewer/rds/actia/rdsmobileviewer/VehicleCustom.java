@@ -1,8 +1,10 @@
 package com.viewer.rds.actia.rdsmobileviewer;
 
+import android.content.ContentValues;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.viewer.rds.actia.rdsmobileviewer.db.RDSDBHelper;
 import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
 
 /**
@@ -54,94 +56,94 @@ public class VehicleCustom implements Parcelable {
         _VRN = in.readString();
     }
 
-    public String get_CustomerName() {
+    public String getCustomerName() {
         return _CustomerName;
     }
 
-    public void set_CustomerName(String customerName) {
+    public void setCustomerName(String customerName) {
         this._CustomerName = customerName;
     }
 
-    public String get_DiagnosticDeviceTime() {
+    public String getDiagnosticDeviceTime() {
         return _DiagnosticDeviceTime;
     }
 
 
-    public void set_DiagnosticDeviceTime(String diagnosticDeviceTime) {
+    public void setDiagnosticDeviceTime(String diagnosticDeviceTime) {
         this._DiagnosticDeviceTime = Utils.getDateTimeFromTicks(diagnosticDeviceTime);
     }
 
 
 
-    public String get_FileContent() {
+    public String getFileContent() {
         return _FileContent;
     }
 
-    public void set_FileContent(String fileContent) {
+    public void setFileContent(String fileContent) {
         this._FileContent = fileContent;
     }
 
-    public String get_IMEI() {
+    public String getIMEI() {
         return _IMEI;
     }
 
-    public void set_IMEI(String imei) {
+    public void setIMEI(String imei) {
         this._IMEI = imei;
     }
 
-    public String get_IdDevice() {
+    public String getIdDevice() {
         return _IdDevice;
     }
 
-    public void set_IdDevice(String idDevice) {
+    public void setIdDevice(String idDevice) {
         this._IdDevice = idDevice;
     }
 
-    public String get_JourneyEnableDate() {
+    public String getJourneyEnableDate() {
         return _JourneyEnableDate;
     }
 
-    public void set_JourneyEnableDate(String journeyEnableDate) {
+    public void setJourneyEnableDate(String journeyEnableDate) {
         this._JourneyEnableDate = journeyEnableDate;
     }
 
-    public String get_PhoneNumber() {
+    public String getPhoneNumber() {
         return _PhoneNumber;
     }
 
-    public void set_PhoneNumber(String phoneNumber) {
+    public void setPhoneNumber(String phoneNumber) {
         this._PhoneNumber = phoneNumber;
     }
 
-    public String get_StartDate() {
+    public String getStartDate() {
         return _StartDate;
     }
 
-    public void set_StartDate(String startDate) {
+    public void setStartDate(String startDate) {
         this._StartDate = Utils.getDateTimeFromTicks(startDate);
     }
 
-    public String get_Status() {
+    public String getStatus() {
         return _Status;
     }
 
-    public void set_Status(String status) {
+    public void setStatus(String status) {
         this._Status = status;
     }
 
-    public String get_VIN() {
+    public String getVIN() {
         return _VIN;
     }
 
-    public void set_VIN(String vin) {
+    public void setVIN(String vin) {
         this._VIN = vin;
     }
 
-    public String get_VRN() {
+    public String getVRN() {
         return _VRN;
     }
 
-    public void set_VRN(String vrn) {
+    public void setVRN(String vrn) {
         this._VRN = vrn;
     }
 
@@ -154,7 +156,7 @@ public class VehicleCustom implements Parcelable {
         return mSwVersion;
     }
 
-    public void set_SwName(String swName) {
+    public void setSwName(String swName) {
         this._SwName = swName;
     }
 
@@ -204,5 +206,43 @@ public class VehicleCustom implements Parcelable {
         String res = String.format("VIN:%s\t\nVRN:%s\t\nIMEI:%s\t\nPhoneNumber:%s\t\nSwName:%s\t\nSwVersion:%s\t\nDiagnosticDeviceTime:%s",
                 _VIN,_VRN,_IMEI,_PhoneNumber,_SwName, mSwVersion,_DiagnosticDeviceTime);
         return res;
+    }
+
+    public static VehicleCustom getDataFromContentValues(ContentValues values) {
+        VehicleCustom customerData = new VehicleCustom();
+
+        customerData.setVRN(values.getAsString(RDSDBHelper.VRN));
+        customerData.setVIN(values.getAsString(RDSDBHelper.VIN));
+        customerData.setCustomerName(values.getAsString(RDSDBHelper.CUSTOMER_NAME));
+        customerData.setStartDate(RDSDBHelper.START_DATE);
+        customerData.setDiagnosticDeviceTime(values.getAsString(RDSDBHelper.DIAG_TIME));
+        customerData.setFileContent(RDSDBHelper.FILE_CONTENT);
+        customerData.setIdDevice(RDSDBHelper.ID_DEVICE);
+        customerData.setIMEI(RDSDBHelper.IMEI);
+        customerData.setStatus(RDSDBHelper.STATUS);
+        customerData.setPhoneNumber(RDSDBHelper.PHONE_NUMBER);
+        customerData.setSwName(RDSDBHelper.SW_NAME);
+        customerData.setSwVersion(RDSDBHelper.SW_VERSION);
+        customerData.setJourneyEnableDate(values.getAsString(RDSDBHelper.JOURNEY_ENBL_DATE));
+
+        return customerData;
+    }
+
+    public static ContentValues getCVFromData(VehicleCustom vehicle) {
+        ContentValues cv = new ContentValues();
+        cv.put(RDSDBHelper.VRN, vehicle.getVRN());
+        cv.put(RDSDBHelper.VIN, vehicle.getVIN());
+        cv.put(RDSDBHelper.CUSTOMER_NAME,vehicle.getCustomerName());
+        cv.put(RDSDBHelper.DIAG_TIME, vehicle.getDiagnosticDeviceTime());
+        cv.put(RDSDBHelper.FILE_CONTENT,vehicle.getFileContent());
+        cv.put(RDSDBHelper.IMEI, vehicle.getIMEI());
+        cv.put(RDSDBHelper.PHONE_NUMBER,vehicle.getPhoneNumber());
+        cv.put(RDSDBHelper.STATUS, vehicle.getStatus());
+        cv.put(RDSDBHelper.SW_NAME,vehicle.getSwName());
+        cv.put(RDSDBHelper.SW_VERSION,vehicle.getSwVersion());
+        cv.put(RDSDBHelper.ID_DEVICE,vehicle.getIdDevice());
+        cv.put(RDSDBHelper.START_DATE,vehicle.getStartDate());
+        cv.put(RDSDBHelper.JOURNEY_ENBL_DATE,vehicle.getJourneyEnableDate());
+        return cv;
     }
 }
