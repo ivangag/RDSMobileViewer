@@ -12,8 +12,7 @@ public class RDSDBHelper extends SQLiteOpenHelper {
 
     final String LOG_TAG = RDSDBHelper.class.getCanonicalName();
 
-    public final static String PRIMARY_CUSTOMER_ID = "_id";
-    public final static String PRIMARY_VEHCILE_ID = "_id";
+    public final static String PRIMARY_ID = "_id";
 
     Context mContext;
     //* MainContractor Columns Name *//
@@ -43,16 +42,21 @@ public class RDSDBHelper extends SQLiteOpenHelper {
     public final static String SW_NAME = "SW_NAME";
     public final static String FOREIGN_CUSTOMER_ID = "FOREIGN_CUSTOMER_ID";
 
+    //* Download Repository Report Columns Name *//
+    public final static String UUID_DWNLD = "DOWNLOAD_UUID";
+    public final static String CONTENT_DWNLD = "DOWNLOAD_CONTENT"; // json-based representing remote download stream
 
     final static String CUSTOMERS_TABLE = "tb_customers";
     final static String VEHICLES_ASSOCIATED_TABLE = "tb_vehicles_associated";
-    final static String[] columnsMainContractor = {PRIMARY_CUSTOMER_ID, NAME, ANCODICE,ID_CUSTOMER,INSERT_DATE,EMAIL,AUTO_DRIVER,EMAIL_FORWARD,SUPER_CRDS,FILE_PUSH};
-    final static String[] columnsVehicleAssociated = {PRIMARY_CUSTOMER_ID, DIAG_TIME, FILE_CONTENT,IMEI,ID_DEVICE,JOURNEY_ENBL_DATE,
+    final static String DOWNLOAD_REPOSITORY_TABLE = "tb_download_repository";
+    final static String[] columnsMainContractor = {PRIMARY_ID, NAME, ANCODICE,ID_CUSTOMER,INSERT_DATE,EMAIL,AUTO_DRIVER,EMAIL_FORWARD,SUPER_CRDS,FILE_PUSH};
+    final static String[] columnsDownloadRepository = {PRIMARY_ID, UUID_DWNLD, CONTENT_DWNLD};
+    final static String[] columnsVehicleAssociated = {PRIMARY_ID, DIAG_TIME, FILE_CONTENT,IMEI,ID_DEVICE,JOURNEY_ENBL_DATE,
             PHONE_NUMBER,START_DATE,STATUS,VIN,VRN,SW_VERSION,SW_NAME,FOREIGN_CUSTOMER_ID};
 
     private static final String DATABASE_CREATE_CUSTOMERS = "create table "
             + CUSTOMERS_TABLE + " (" // start table
-            + PRIMARY_CUSTOMER_ID + " integer primary key autoincrement, " // setup
+            + PRIMARY_ID + " integer primary key autoincrement, " // setup
             // auto-inc.
             + NAME + " TEXT ," //
             + ANCODICE + " TEXT unique," //
@@ -65,9 +69,17 @@ public class RDSDBHelper extends SQLiteOpenHelper {
             + INSERT_DATE + " TEXT " //
             + " );"; // end table
 
+    private static final String DATABASE_CREATE_DOWNLOAD_REPOSITORY_TABLE = "create table "
+            + DOWNLOAD_REPOSITORY_TABLE + " (" // start table
+            + PRIMARY_ID + " integer primary key autoincrement, " // setup
+            // auto-inc.
+            + UUID_DWNLD + " TEXT unique," //
+            + CONTENT_DWNLD + " TEXT " //
+            + " );"; // end table
+
     private static final String DATABASE_CREATE_VEHICLES_ASSOCIATED = "create table "
             + VEHICLES_ASSOCIATED_TABLE + " (" // start table
-            + PRIMARY_VEHCILE_ID + " integer primary key autoincrement, " // setup
+            + PRIMARY_ID + " integer primary key autoincrement, " // setup
             // auto-inc.
             + CUSTOMER_NAME + " TEXT ," //
             + VIN + " TEXT unique," //
@@ -84,12 +96,12 @@ public class RDSDBHelper extends SQLiteOpenHelper {
             + SW_VERSION + " TEXT ," //
             + SW_NAME + " TEXT ," //
             + FOREIGN_CUSTOMER_ID + " integer ," //
-            + "FOREIGN KEY(" + PRIMARY_VEHCILE_ID + ")" + " REFERENCES " + CUSTOMERS_TABLE + "(" + PRIMARY_CUSTOMER_ID + ")"
+            + "FOREIGN KEY(" + PRIMARY_ID + ")" + " REFERENCES " + CUSTOMERS_TABLE + "(" + PRIMARY_ID + ")"
             + " );"; // end table
 
 
     final static String DATABASE_NAME = "rds_mobileviewer_db";
-    final static  int DATABASE_VERSION = 2;
+    final static  int DATABASE_VERSION = 3;
 
     public RDSDBHelper(Context context, SQLiteDatabase.CursorFactory factory) {
         super(context, DATABASE_NAME, factory, DATABASE_VERSION);
@@ -101,6 +113,7 @@ public class RDSDBHelper extends SQLiteOpenHelper {
         Log.i(LOG_TAG, "db onCreate");
         db.execSQL(DATABASE_CREATE_CUSTOMERS);
         db.execSQL(DATABASE_CREATE_VEHICLES_ASSOCIATED);
+        db.execSQL(DATABASE_CREATE_DOWNLOAD_REPOSITORY_TABLE);
     }
 
     @Override
@@ -115,6 +128,7 @@ public class RDSDBHelper extends SQLiteOpenHelper {
         // ST:dropTableIfExists:start
         db.execSQL("DROP TABLE IF EXISTS " + CUSTOMERS_TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + VEHICLES_ASSOCIATED_TABLE);
+        db.execSQL("DROP TABLE IF EXISTS " + DOWNLOAD_REPOSITORY_TABLE);
         //db.execSQL("DROP TABLE IF EXISTS " + DATABASE_TABLE_TAGS);
         // ST:dropTableIfExists:finish
 

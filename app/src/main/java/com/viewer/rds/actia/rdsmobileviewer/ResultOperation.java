@@ -12,6 +12,7 @@ public class ResultOperation implements Parcelable{
     private String mOtherInfo;
     private Object mClassReturn;
     private int mClassReturnSize;
+    private String mClassReturnType = null;
 
     private ResultOperation() {
 
@@ -56,6 +57,10 @@ public class ResultOperation implements Parcelable{
         this.mClassReturn = mClassReturn;
     }
 
+    public String getClassReturnType(){
+        return mClassReturnType;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -67,7 +72,15 @@ public class ResultOperation implements Parcelable{
         dest.writeString(mOtherInfo);
         setClassReturnSize();
         dest.writeInt(mClassReturnSize);
-        dest.writeByteArray((byte[])mClassReturn);
+        if (mClassReturn instanceof String) {
+            mClassReturnType = "String";
+            dest.writeString(mClassReturnType);
+            dest.writeString((String) mClassReturn);
+        } else {
+            mClassReturnType = "bytes";
+            dest.writeString(mClassReturnType);
+            dest.writeByteArray((byte[]) mClassReturn);
+        }
     }
 
 
@@ -77,9 +90,15 @@ public class ResultOperation implements Parcelable{
         mStatus = val[0];
         mOtherInfo = in.readString();
         mClassReturnSize = in.readInt();
-        byte[] classResStream = new byte[mClassReturnSize];
-        in.readByteArray(classResStream);
-        mClassReturn = classResStream;
+        mClassReturnType = in.readString();
+        if(mClassReturnType.equals("bytes")) {
+            byte[] classResStream = new byte[mClassReturnSize];
+            in.readByteArray(classResStream);
+            mClassReturn = classResStream;
+        }
+        else{
+            mClassReturn = in.readString();
+        }
     }
 
 

@@ -149,14 +149,14 @@ public abstract class BaseActivity extends Activity implements
     public void onDownloadDataFinished(DownloadRequestSchema requestType, ResultOperation result) {
 
         handleDownloadDataFinished(requestType,result);
-        hideProgressDialog();
+        hideDownloadProgressDialog();
     }
 
     private boolean isProgressDialogVisible(){
         return findViewById(R.id.loadingPanel).getVisibility() != View.GONE;
     }
 
-    public abstract void hideProgressDialog();
+    public abstract void hideDownloadProgressDialog();
     public abstract void showProgressDialog(String text);
 
     protected void showTextFile(String text)
@@ -281,7 +281,7 @@ public abstract class BaseActivity extends Activity implements
         {
             if(resultCode == DownloadManager.DOWNLOAD_RESULT_OK) {
                 DownloadRequestSchema downloadRequestSchema = data.getExtras().getParcelable(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE);
-                handleDownloadDataFinished(downloadRequestSchema, ResultOperation.newInstance(true,"",CacheDataManager.getInstance().getValue(downloadRequestSchema)));
+                handleDownloadDataFinished(downloadRequestSchema, ResultOperation.newInstance(true, "", CacheDataManager.getInstance().getValue(downloadRequestSchema)));
             }
         }
     }
@@ -295,11 +295,7 @@ public abstract class BaseActivity extends Activity implements
         final Fragment downloadFragment = getFragmentManager().findFragmentByTag(FRAGMENT_DOWNLOAD_TAG);
         if(downloadFragment != null)
         {
-            TextView txtLoading = (TextView)downloadFragment.getActivity().findViewById(R.id.txt_progress_loading);
-            if(txtLoading != null){
-                txtLoading.setText(String.format(getResources().getString(R.string.progress_loading_text),
-                        request.getDownloadRequestType().getLocalizedName(this)));
-            }
+            //setTextMsgDownloadFragment(request, downloadFragment);
             showProgressDialog("");
             ((DownloadHandlingFragment)(downloadFragment)).startDownloadRequest(request);
         }
@@ -325,6 +321,14 @@ public abstract class BaseActivity extends Activity implements
             requireDataDownload(request);
         }
 
+    }
+
+    protected void setTextMsgDownloadFragment(DownloadRequestSchema request, Fragment downloadFragment) {
+        TextView txtLoading = (TextView)downloadFragment.getActivity().findViewById(R.id.txt_progress_loading);
+        if(txtLoading != null){
+            txtLoading.setText(String.format(getResources().getString(R.string.progress_loading_text),
+                    request.getDownloadRequestType().getLocalizedName(this)));
+        }
     }
 
     /**

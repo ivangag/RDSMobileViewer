@@ -2,6 +2,7 @@ package com.viewer.rds.actia.rdsmobileviewer;
 
 import android.app.Application;
 
+import com.viewer.rds.actia.rdsmobileviewer.utils.CacheDataManager;
 import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
 
 /**
@@ -21,6 +22,7 @@ public final class ApplicationEntry extends Application {
     public void onCreate() {
         //DownloadManager.getInstance().startRDService(this);
         DownloadManager.getInstance().bindRDService(this);
+        CacheDataManager.getInstance().setContext(this);
         super.onCreate();
     }
 }

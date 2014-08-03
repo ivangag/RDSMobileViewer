@@ -105,6 +105,9 @@ public class DownloadManager {
                         listener.onDownloadDataFinished(requestType,result);
                     }
                 });
+            else {
+                listener.onDownloadDataFinished(requestType,result);
+            }
 
         }
     }
@@ -489,25 +492,32 @@ public class DownloadManager {
         @Override
         public void sendRemoteDataResult(ResultOperation result, DownloadRequestSchema downloadRequest) throws RemoteException {
 
-            if(result.isStatus())
-            {
+            if(result.isStatus()){
                 ArrayList data = null;
                 try {
-                    final String jsonRaw = new String((byte[]) result.getClassReturn());
+                    String jsonRaw = "";
+                    if(result.getClassReturnType().equals("bytes")) {
+                        jsonRaw = new String((byte[]) result.getClassReturn());
+                    }
+                    else{
+                        jsonRaw = CacheDataManager.getInstance().getDownloadRepository((String)result.getClassReturn());
+                    }
                     final JSONArray jsonArray  = new JSONArray(jsonRaw);
+                    /*
                     try {
                         SerializerFactory.convertJSONtoDataObject(jsonArray.get(0).toString(),downloadRequest.getDownloadRequestType().getRemoteDataType());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                    */
                     final DownloadRequestType requestType = downloadRequest.getDownloadRequestType();
                     data = parseJsonToRDSRemoteObject(jsonArray, requestType);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
                 result.setClassReturn(data);
-                notifyListeners(downloadRequest,result);
             }
+            notifyListeners(downloadRequest,result);
         }
     };
 }

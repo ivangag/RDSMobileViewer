@@ -6,7 +6,6 @@ import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.os.Debug;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -64,9 +63,6 @@ public class MainMenuActivity extends BaseActivity
     private void setActivityCustomersLayout(Bundle savedInstanceState) {
 
         setContentView(R.layout.activity_main_menu);
-//        findViewById(R.id.loadingPanel).setVisibility(View.GONE);
-
-
         if (savedInstanceState == null) {
 
             FragmentTransaction ft = mFragmentManager.beginTransaction();
@@ -78,7 +74,7 @@ public class MainMenuActivity extends BaseActivity
 
             mFragmentManager.executePendingTransactions();
 
-            hideProgressDialog();
+            hideDownloadProgressDialog();
         }
         else
         {
@@ -122,7 +118,7 @@ public class MainMenuActivity extends BaseActivity
 
             removeExtraInfoFragment();
         }
-        hideProgressDialog();
+        hideDownloadProgressDialog();
     }
 
 
@@ -299,18 +295,26 @@ public class MainMenuActivity extends BaseActivity
     }
 
     @Override
-    public void hideProgressDialog() {
+    public void hideDownloadProgressDialog() {
 
-        if(mDisplayOrientation.equals(LANDSCAPE)){
-
-            LinearLayout frameLayout = (LinearLayout) findViewById(R.id.fragment_handling_download_container);
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(MATCH_PARENT,0);
-            frameLayout.setLayoutParams(lp);
+        boolean showInfo = false;
+        final Fragment downloadFragment = getFragmentManager().findFragmentByTag(FRAGMENT_DOWNLOAD_TAG);
+        if((null != downloadFragment)
+            && (downloadFragment instanceof DownloadHandlingFragment))
+        {
+            showInfo = (((DownloadHandlingFragment)(downloadFragment)).getDownloadRequestCountPending() > 0);
         }
-        else{
-            FrameLayout frameLayout = (FrameLayout) findViewById(R.id.fragment_handling_download);
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(MATCH_PARENT,0,0f);
-            frameLayout.setLayoutParams(lp);
+        if(!showInfo) {
+            if (mDisplayOrientation.equals(LANDSCAPE)) {
+
+                LinearLayout frameLayout = (LinearLayout) findViewById(R.id.fragment_handling_download_container);
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(MATCH_PARENT, 0);
+                frameLayout.setLayoutParams(lp);
+            } else {
+                FrameLayout frameLayout = (FrameLayout) findViewById(R.id.fragment_handling_download);
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(MATCH_PARENT, 0, 0f);
+                frameLayout.setLayoutParams(lp);
+            }
         }
     }
 

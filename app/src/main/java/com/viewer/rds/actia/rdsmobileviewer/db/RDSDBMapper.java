@@ -12,6 +12,7 @@ import com.viewer.rds.actia.rdsmobileviewer.MainContractorData;
 import com.viewer.rds.actia.rdsmobileviewer.VehicleCustom;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 /**
  * Created by igaglioti on 03/04/14.
@@ -83,6 +84,7 @@ public class RDSDBMapper {
 
         return cursor;
     }
+
     public synchronized long insertOrUpdateCustomerData(MainContractorData customer)
     {
         long res;
@@ -142,6 +144,32 @@ public class RDSDBMapper {
         return  res;
     }
 
+    public synchronized String saveDownloadToRepository(String jsonStream){
+        String uuid_res = "";
+        int res = -1;
+        if(mDB.isOpen()){
+                try {
+                    String uuid = UUID.randomUUID().toString();
+                    ContentValues values = new ContentValues();
+                    values.put(RDSDBHelper.CONTENT_DWNLD,jsonStream);
+                    values.put(RDSDBHelper.UUID_DWNLD,uuid);
+                    res = (int) mDB.insertWithOnConflict(RDSDBHelper.DOWNLOAD_REPOSITORY_TABLE,
+                            null, values, SQLiteDatabase.CONFLICT_IGNORE);
+                    if (res != -1) {
+                        uuid_res = uuid;
+                    }
+                    Log.i(LOG_TAG, "saveDownloadToRepository new_index:" + res + "uuid_res:" + uuid_res);
+                } catch (SQLException e) {
+                    Log.e(LOG_TAG, "saveDownloadToRepository failed::" + e.getMessage());
+                }
+        }else {
+            Log.w(LOG_TAG, "db is not open");
+        }
+        return  uuid_res;
+    }
+
+
+
     public synchronized boolean isExistCustomer(String customerAnCodice) {
         Cursor c = mDB.rawQuery("SELECT 1 FROM "+
                 RDSDBHelper.CUSTOMERS_TABLE
@@ -149,6 +177,24 @@ public class RDSDBMapper {
         boolean exists = c.moveToFirst();
         c.close();
         return exists;
+    }
+
+    /*
+* Checks if customer exists
+* returns unique primary key id
+ */
+    public String getDownloadRepository(String uuid) {
+        int res = -1;
+        String content = "";
+        Cursor cursor = mDB.rawQuery("SELECT * FROM "+
+                RDSDBHelper.DOWNLOAD_REPOSITORY_TABLE
+                +" WHERE "+ RDSDBHelper.UUID_DWNLD +"=?", new String[] {uuid});
+        if(cursor.moveToFirst())
+        {
+            content = cursor.getString(cursor.getColumnIndex(RDSDBHelper.CONTENT_DWNLD));
+        }
+        cursor.close();
+        return content;
     }
 
     /*
@@ -162,7 +208,7 @@ public class RDSDBMapper {
                 +" WHERE "+ RDSDBHelper.ANCODICE +"=?", new String[] {customerAnCodice});
         if(cursor.moveToFirst())
         {
-            res = cursor.getInt(cursor.getColumnIndex(RDSDBHelper.PRIMARY_CUSTOMER_ID));
+            res = cursor.getInt(cursor.getColumnIndex(RDSDBHelper.PRIMARY_ID));
         }
         cursor.close();
         return res;

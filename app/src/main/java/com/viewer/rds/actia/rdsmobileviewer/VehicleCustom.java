@@ -203,9 +203,17 @@ public class VehicleCustom implements Parcelable {
     @Override
     public String toString()
     {
-        String res = String.format("VIN:%s\t\nVRN:%s\t\nIMEI:%s\t\nPhoneNumber:%s\t\nSwName:%s\t\nSwVersion:%s\t\nDiagnosticDeviceTime:%s",
-                _VIN,_VRN,_IMEI,_PhoneNumber,_SwName, mSwVersion,_DiagnosticDeviceTime);
-        return res;
+        StringBuilder sb = new StringBuilder();
+        return  sb.append("VIN:").append(_VIN).append("\t\n")
+        .append("Plate:").append(_VRN).append("\t\n")
+        .append("IMEI:").append(_IMEI).append("\t\n")
+        .append("Phone:").append(_PhoneNumber).append("\t\n")
+        .append("Sw:").append(_SwName).append("\t\n")
+        .append("SwVersion:").append(mSwVersion).append("\t\n")
+        .append("DiagTime:").append(_DiagnosticDeviceTime).toString();
+        //String res = String.format("VIN:%s\t\nVRN:%s\t\nIMEI:%s\t\nPhoneNumber:%s\t\nSwName:%s\t\nSwVersion:%s\t\nDiagnosticDeviceTime:%s",
+         //       _VIN,_VRN,_IMEI,_PhoneNumber,_SwName, mSwVersion,_DiagnosticDeviceTime);
+        //return res;
     }
 
     public static VehicleCustom getDataFromContentValues(ContentValues values) {

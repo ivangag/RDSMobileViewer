@@ -1,5 +1,6 @@
 package com.viewer.rds.actia.rdsmobileviewer.utils;
 
+import android.content.ContentValues;
 import android.content.Context;
 
 import com.viewer.rds.actia.rdsmobileviewer.CRDSCustom;
@@ -10,6 +11,7 @@ import com.viewer.rds.actia.rdsmobileviewer.ResultOperation;
 import com.viewer.rds.actia.rdsmobileviewer.VehicleCustom;
 import com.viewer.rds.actia.rdsmobileviewer.db.RDSDBMapper;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,6 +24,7 @@ import java.util.Map;
 public class CacheDataManager
         /*implements DownloadUtility.IRemoteDownloadDataListener*/{
 
+    WeakReference<Context> mContext = null;
     private static CacheDataManager ourInstance = new CacheDataManager();
 
     public static CacheDataManager getInstance() {
@@ -31,6 +34,13 @@ public class CacheDataManager
     private CacheDataManager() {
 
     }
+
+    public void setContext(Context context){
+        if(mContext == null)
+            mContext = new WeakReference<Context>(context);
+    }
+
+
 
     private Map<String,List<VehicleCustom>> mCachedCustomersVehicles        = new HashMap<String, List<VehicleCustom>>();
     private Map<String,List<DriverCardData>> mCachedCustomersDrivers        = new HashMap<String, List<DriverCardData>>();
@@ -254,5 +264,9 @@ public class CacheDataManager
         }
         result.setStatus(mHasCacheData);
         return mHasCacheData;
+    }
+
+    public String getDownloadRepository(String uuidDownload) {
+        return RDSDBMapper.getInstance(mContext.get()).getDownloadRepository(uuidDownload);
     }
 }

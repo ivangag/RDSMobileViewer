@@ -11,15 +11,26 @@ import android.widget.TextView;
 import com.viewer.rds.actia.rdsmobileviewer.PlaceholderFragmentFactory;
 import com.viewer.rds.actia.rdsmobileviewer.R;
 import com.viewer.rds.actia.rdsmobileviewer.DownloadRequestSchema;
+import com.viewer.rds.actia.rdsmobileviewer.ResultOperation;
 import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
 
 /**
  * Created by igaglioti on 28/07/2014.
  */
-public class DownloadHandlingFragment extends Fragment{
+public class DownloadHandlingFragment extends Fragment implements DownloadManager.IRemoteDownloadDataListener{
 
     private TaskDownloadCallbacks mCallbacks;
-    private DownloadRequestSchema mDownloadRequest;
+    private DownloadRequestSchema mDownloadRequest = null;
+    private int mDownloadRequestCountPending = 0;
+
+    @Override
+    public void onDownloadDataFinished(DownloadRequestSchema requestType, ResultOperation result) {
+        --mDownloadRequestCountPending;
+    }
+
+    public int getDownloadRequestCountPending() {
+        return mDownloadRequestCountPending;
+    }
 
 
     /**
@@ -37,6 +48,7 @@ public class DownloadHandlingFragment extends Fragment{
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_download, container, false);
+        super.onCreateView(inflater,container,savedInstanceState);
         return rootView;
     }
 
@@ -50,25 +62,34 @@ public class DownloadHandlingFragment extends Fragment{
 
         // Retain this fragment across configuration changes.
         setRetainInstance(true);
-
-        // Create and execute the background task.
-        //final DownloadRequestSchema downloadRequest = getArguments().getParcelable(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE);
-        //startDownloadRequest(downloadRequest);
+        DownloadManager.getInstance().addListener(this);
     }
 
     public void startDownloadRequest(DownloadRequestSchema downloadRequest) {
-        if(downloadRequest != null) {
-            /*
-            TextView txtLoading = (TextView) getActivity().findViewById(R.id.txt_progress_loading);
-            if(txtLoading != null){
-                txtLoading.setText(String.format(getResources().getString(R.string.progress_loading_text),
-                        downloadRequest.getDownloadRequestType().getLocalizedName(getActivity())));
-            }
-            */
-            DownloadManager.getInstance().RequireDownloadAsyncTask(null, downloadRequest);
+        mDownloadRequest = downloadRequest;
+        if(mDownloadRequest != null) {
+
+            setDownloadMsg();
+
+            DownloadManager.getInstance().RequireDownloadAsyncTask(null, mDownloadRequest);
+            ++mDownloadRequestCountPending;
         }
     }
 
+    private void setDownloadMsg() {
+        TextView txtLoading = (TextView) getActivity().findViewById(R.id.txt_progress_loading);
+        if((txtLoading != null) && (mDownloadRequest != null)){
+            txtLoading.setText(String.format(getResources().getString(R.string.progress_loading_text),
+                    mDownloadRequest.getDownloadRequestType().getLocalizedName(getActivity())));
+        }
+    }
+
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        setDownloadMsg();
+    }
 
     /**
      * Hold a reference to the parent Activity so we can report the
@@ -84,6 +105,24 @@ public class DownloadHandlingFragment extends Fragment{
         if(activity instanceof DownloadManager.IRemoteDownloadDataListener)
             DownloadManager.getInstance().addListener((DownloadManager.IRemoteDownloadDataListener) activity);
             */
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        DownloadManager.getInstance().removeListener(this);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
     }
 
     /**

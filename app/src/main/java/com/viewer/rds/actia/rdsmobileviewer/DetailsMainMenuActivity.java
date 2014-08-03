@@ -8,11 +8,9 @@ import android.os.Bundle;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.viewer.rds.actia.rdsmobileviewer.fragments.BaseFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.DownloadHandlingFragment;
@@ -39,7 +37,7 @@ public class DetailsMainMenuActivity extends BaseActivity implements ActionBar.T
                     .commit();
         }
         setActivityDetailsLayout();
-        hideProgressDialog();
+        hideDownloadProgressDialog();
     }
 
     private void setActivityDetailsLayout() {
@@ -173,7 +171,7 @@ public class DetailsMainMenuActivity extends BaseActivity implements ActionBar.T
 
 /*
     @Override
-    public void hideProgressDialog() {
+    public void hideDownloadProgressDialog() {
         findViewById(R.id.loadingPanel).setVisibility(View.GONE);
         findViewById(R.id.pager).setVisibility(View.VISIBLE);
         View view = findViewById(R.id.fragment_main_details);
@@ -192,7 +190,7 @@ public class DetailsMainMenuActivity extends BaseActivity implements ActionBar.T
 */
 
     @Override
-    public void hideProgressDialog() {
+    public void hideDownloadProgressDialog() {
 
         if(mDisplayOrientation.equals(LANDSCAPE)){
 
