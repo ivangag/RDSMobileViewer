@@ -319,7 +319,7 @@ public class DownloadManager {
             jsonArray = jsonObject.getJSONArray(classReturn);
             if (Utils.GZIP_MAGICAL_1 == jsonArray.getInt(0)) {
                 final byte[] streamCompress = ParserFactory.getBytesFromJsonArray(jsonArray);
-                streamDecompress = ParserFactory.decompressFromGZip(new ByteArrayInputStream(Utils.convertToByteArray((streamCompress))));
+                streamDecompress = ParserFactory.decompressFromGZip(new ByteArrayInputStream(streamCompress));
 
                 //jsonArray = new JSONArray(new String(streamDecompress));
             }
@@ -346,12 +346,13 @@ public class DownloadManager {
                                          DownloadRequestSchema downloadRequestInfo) {
 
         this.addListener(clientDownloadDataListener);
+        /*
         try {
             mRDSClientRequest.fetchRemoteData(mRDSServiceResponse,downloadRequestInfo);
         } catch (RemoteException e) {
-            Log.e(TAG,"Exception: " + e.getLocalizedMessage());
+            Log.e(TAG,"RemoteException => mRDSClientRequest.fetchRemoteData: " + e.getLocalizedMessage());
         }
-        /*
+         */
         if(downloadRequestInfo.getDownloadRequestType().equals(DownloadRequestType.VEHICLE_NOT_TRUSTED))
         {
             try {
@@ -364,7 +365,7 @@ public class DownloadManager {
             DownloadDataTask downloadDataTask = new DownloadDataTask();
             downloadDataTask.execute(downloadRequestInfo);
         }
-        */
+
     }
 
     class DownloadDataTask extends AsyncTask<DownloadRequestSchema,Void,ResultOperation>
@@ -373,6 +374,7 @@ public class DownloadManager {
         @Override
         protected ResultOperation doInBackground(DownloadRequestSchema... params) {
 
+            final boolean isResultTranslated = false;
             mRequestInfo = params[0];
 
 
@@ -386,8 +388,28 @@ public class DownloadManager {
                 mHasCacheData = CacheDataManager.checkedCachedDataPresence(result, mRequestInfo);
             }
             if(!mHasCacheData) {
-                result = DownloadManager.FetchingRemoteData(mClient, mRequestInfo, true);
+                result = DownloadManager.FetchingRemoteData(mClient, mRequestInfo, isResultTranslated);
             }
+
+
+
+            if(!isResultTranslated){
+                final String jsonRaw = new String((byte[]) result.getClassReturn());
+                JSONArray jsonArray = null;
+                try {
+                    jsonArray = new JSONArray(jsonRaw);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                final DownloadRequestType requestType = mRequestInfo.getDownloadRequestType();
+                try {
+                    result.setClassReturn(parseJsonToRDSRemoteObject(jsonArray, requestType));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                CacheDataManager.getInstance().saveDownloadRepository(mRequestInfo,jsonRaw);
+            }
+
 
             if((!mObtainCacheIfExist && (result.getClassReturn() != null))
                     || !mHasCacheData)

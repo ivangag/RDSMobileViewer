@@ -10,6 +10,7 @@ import android.util.Log;
  */
 public class RDSDBHelper extends SQLiteOpenHelper {
 
+
     final String LOG_TAG = RDSDBHelper.class.getCanonicalName();
 
     public final static String PRIMARY_ID = "_id";
@@ -45,12 +46,21 @@ public class RDSDBHelper extends SQLiteOpenHelper {
     //* Download Repository Report Columns Name *//
     public final static String UUID_DWNLD = "DOWNLOAD_UUID";
     public final static String CONTENT_DWNLD = "DOWNLOAD_CONTENT"; // json-based representing remote download stream
+    public final static String CONTENT_DWNLD_TYPE = "CONTENT_DWNLD_TYPE"; // type of download (e.g. vehicles, drivers, crds,...)
+    public static final String VEHICLED_ID = "VEHICLED_ID";
+    public static final String DRIVER_ID = "DRIVER_ID";
+    public static final String CRDS_ID = "CRDS_ID";
 
     final static String CUSTOMERS_TABLE = "tb_customers";
     final static String VEHICLES_ASSOCIATED_TABLE = "tb_vehicles_associated";
-    final static String DOWNLOAD_REPOSITORY_TABLE = "tb_download_repository";
+    final static String REPOSITORY_DOWNLOAD_TRUSTED_TABLE = "tb_download_trusted_repo";
+    final static String REPOSITORY_DOWNLOAD_NOT_TRUSTED_TABLE = "tb_download_not_trusted_repo";
+
     final static String[] columnsMainContractor = {PRIMARY_ID, NAME, ANCODICE,ID_CUSTOMER,INSERT_DATE,EMAIL,AUTO_DRIVER,EMAIL_FORWARD,SUPER_CRDS,FILE_PUSH};
-    final static String[] columnsDownloadRepository = {PRIMARY_ID, UUID_DWNLD, CONTENT_DWNLD};
+
+    final static String[] columnsDownloadTrustedRepository = {PRIMARY_ID, UUID_DWNLD,ANCODICE, CONTENT_DWNLD_TYPE, CONTENT_DWNLD};
+    final static String[] columnsDownloadNotTrustedRepository = {PRIMARY_ID,UUID_DWNLD, CONTENT_DWNLD_TYPE, CONTENT_DWNLD};
+
     final static String[] columnsVehicleAssociated = {PRIMARY_ID, DIAG_TIME, FILE_CONTENT,IMEI,ID_DEVICE,JOURNEY_ENBL_DATE,
             PHONE_NUMBER,START_DATE,STATUS,VIN,VRN,SW_VERSION,SW_NAME,FOREIGN_CUSTOMER_ID};
 
@@ -69,13 +79,19 @@ public class RDSDBHelper extends SQLiteOpenHelper {
             + INSERT_DATE + " TEXT " //
             + " );"; // end table
 
-    private static final String DATABASE_CREATE_DOWNLOAD_REPOSITORY_TABLE = "create table "
-            + DOWNLOAD_REPOSITORY_TABLE + " (" // start table
+    private static final String DATABASE_CREATE_DOWNLOAD_TRUSTED_REPOSITORY_TABLE = "create table "
+            + REPOSITORY_DOWNLOAD_TRUSTED_TABLE + " (" // start table
             + PRIMARY_ID + " integer primary key autoincrement, " // setup
             // auto-inc.
             + UUID_DWNLD + " TEXT unique," //
-            + CONTENT_DWNLD + " TEXT " //
+            + ANCODICE + " TEXT," //
+            + VEHICLED_ID + " TEXT," //
+            + DRIVER_ID + " TEXT," //
+            + CRDS_ID + " TEXT," //
+            + CONTENT_DWNLD_TYPE + " TEXT," //
+            + CONTENT_DWNLD + " BLOB " //
             + " );"; // end table
+
 
     private static final String DATABASE_CREATE_VEHICLES_ASSOCIATED = "create table "
             + VEHICLES_ASSOCIATED_TABLE + " (" // start table
@@ -99,9 +115,8 @@ public class RDSDBHelper extends SQLiteOpenHelper {
             + "FOREIGN KEY(" + PRIMARY_ID + ")" + " REFERENCES " + CUSTOMERS_TABLE + "(" + PRIMARY_ID + ")"
             + " );"; // end table
 
-
     final static String DATABASE_NAME = "rds_mobileviewer_db";
-    final static  int DATABASE_VERSION = 3;
+    final static  int DATABASE_VERSION = 4;
 
     public RDSDBHelper(Context context, SQLiteDatabase.CursorFactory factory) {
         super(context, DATABASE_NAME, factory, DATABASE_VERSION);
@@ -113,7 +128,7 @@ public class RDSDBHelper extends SQLiteOpenHelper {
         Log.i(LOG_TAG, "db onCreate");
         db.execSQL(DATABASE_CREATE_CUSTOMERS);
         db.execSQL(DATABASE_CREATE_VEHICLES_ASSOCIATED);
-        db.execSQL(DATABASE_CREATE_DOWNLOAD_REPOSITORY_TABLE);
+        db.execSQL(DATABASE_CREATE_DOWNLOAD_TRUSTED_REPOSITORY_TABLE);
     }
 
     @Override
@@ -128,7 +143,8 @@ public class RDSDBHelper extends SQLiteOpenHelper {
         // ST:dropTableIfExists:start
         db.execSQL("DROP TABLE IF EXISTS " + CUSTOMERS_TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + VEHICLES_ASSOCIATED_TABLE);
-        db.execSQL("DROP TABLE IF EXISTS " + DOWNLOAD_REPOSITORY_TABLE);
+        db.execSQL("DROP TABLE IF EXISTS " + REPOSITORY_DOWNLOAD_NOT_TRUSTED_TABLE);
+        db.execSQL("DROP TABLE IF EXISTS " + REPOSITORY_DOWNLOAD_TRUSTED_TABLE);
         //db.execSQL("DROP TABLE IF EXISTS " + DATABASE_TABLE_TAGS);
         // ST:dropTableIfExists:finish
 

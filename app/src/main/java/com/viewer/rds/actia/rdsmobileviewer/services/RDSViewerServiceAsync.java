@@ -15,6 +15,7 @@ import com.viewer.rds.actia.rdsmobileviewer.IRDSClientResponse;
 import com.viewer.rds.actia.rdsmobileviewer.IRDSClientRequest;
 import com.viewer.rds.actia.rdsmobileviewer.ResultOperation;
 import com.viewer.rds.actia.rdsmobileviewer.db.RDSDBMapper;
+import com.viewer.rds.actia.rdsmobileviewer.utils.CacheDataManager;
 import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
 
 public class RDSViewerServiceAsync extends Service {
@@ -70,7 +71,7 @@ public class RDSViewerServiceAsync extends Service {
         public void fetchRemoteData(IRDSClientResponse callback, DownloadRequestSchema downloadRequest) throws RemoteException {
             // Call the Acronym Web service to get the list of
             // possible expansions of the designated acronym.
-            Log.d(TAG, "fetchRemoteData start..");
+            Log.d(TAG, "fetching remote data started..");
             //Debug.waitForDebugger();
             mRDSDBMapper = RDSDBMapper.getInstance(getApplicationContext());
 
@@ -78,7 +79,8 @@ public class RDSViewerServiceAsync extends Service {
                     DownloadManager.FetchingRemoteData(mClient,
                             downloadRequest, false);
 
-            Log.d(TAG, "fetchRemoteData finished..");
+            Log.d(TAG, "fetching remote data finished..");
+
             Parcel _data = Parcel.obtain();
             resOp.writeToParcel(_data, 0);
             downloadRequest.writeToParcel(_data, 0);
@@ -94,7 +96,8 @@ public class RDSViewerServiceAsync extends Service {
             if(resOp.isStatus()){
                 mRDSDBMapper.open();
                 final String jsonRaw = new String((byte[]) resOp.getClassReturn());
-                final String uuid = mRDSDBMapper.saveDownloadToRepository(jsonRaw);
+                final String uuid = mRDSDBMapper.saveDownloadToRepository(downloadRequest, jsonRaw);
+                //final String uuid = CacheDataManager.getInstance().saveDownloadRepository(downloadRequest, jsonRaw);
                 if(uuid != "")
                     resOp.setClassReturn(uuid);
                 else {
@@ -108,8 +111,7 @@ public class RDSViewerServiceAsync extends Service {
                 resOp.setClassReturn(null);
             }
 
-            // Invoke a one-way callback to send list of acronym
-            // expansions back to the AcronymActivity.
+            // Invoke a one-way callback to send remote data result info
             callback.sendRemoteDataResult(resOp,downloadRequest);
         }
     };
@@ -123,6 +125,7 @@ public class RDSViewerServiceAsync extends Service {
     public void onDestroy() {
         Log.i(TAG,"onDestroy");
         mClient.close();
+        mRDSDBMapper.close();
         super.onDestroy();
     }
 }

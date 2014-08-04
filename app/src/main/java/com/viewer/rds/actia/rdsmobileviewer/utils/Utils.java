@@ -116,6 +116,7 @@ public class Utils {
     }
 
 
+    /*
     public static byte[] convertToByteArray(byte[] list) throws IOException {
         // write to byte array
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -125,6 +126,6 @@ public class Utils {
         }
         return baos.toByteArray();
     }
-
+    */
 
 }

@@ -269,4 +269,9 @@ public class CacheDataManager
     public String getDownloadRepository(String uuidDownload) {
         return RDSDBMapper.getInstance(mContext.get()).getDownloadRepository(uuidDownload);
     }
+
+    public String saveDownloadRepository(DownloadRequestSchema downloadRequestSchema, String jsonStream) {
+
+        return RDSDBMapper.getInstance(mContext.get()).saveDownloadToRepository(downloadRequestSchema,jsonStream);
+    }
 }
