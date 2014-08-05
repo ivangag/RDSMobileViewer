@@ -54,7 +54,6 @@ public class RDSDBHelper extends SQLiteOpenHelper {
     final static String CUSTOMERS_TABLE = "tb_customers";
     final static String VEHICLES_ASSOCIATED_TABLE = "tb_vehicles_associated";
     final static String REPOSITORY_DOWNLOAD_TRUSTED_TABLE = "tb_download_trusted_repo";
-    final static String REPOSITORY_DOWNLOAD_NOT_TRUSTED_TABLE = "tb_download_not_trusted_repo";
 
     final static String[] columnsMainContractor = {PRIMARY_ID, NAME, ANCODICE,ID_CUSTOMER,INSERT_DATE,EMAIL,AUTO_DRIVER,EMAIL_FORWARD,SUPER_CRDS,FILE_PUSH};
 
@@ -143,7 +142,6 @@ public class RDSDBHelper extends SQLiteOpenHelper {
         // ST:dropTableIfExists:start
         db.execSQL("DROP TABLE IF EXISTS " + CUSTOMERS_TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + VEHICLES_ASSOCIATED_TABLE);
-        db.execSQL("DROP TABLE IF EXISTS " + REPOSITORY_DOWNLOAD_NOT_TRUSTED_TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + REPOSITORY_DOWNLOAD_TRUSTED_TABLE);
         //db.execSQL("DROP TABLE IF EXISTS " + DATABASE_TABLE_TAGS);
         // ST:dropTableIfExists:finish

@@ -48,7 +48,7 @@ public abstract class PlaceholderFragmentFactory extends ListFragment {
                 fragment = CustomerListFragment.newInstance(sectionNumberActual);
                 break;
             case GlobalConstants.MAIN_TAB_CARDS_TEST:
-                //fragment = ListBaseFragment.getInstance(sectionNumberActual);
+                //fragment = ListBaseFragment.get(sectionNumberActual);
                 fragment = MainMenuCardsFragment.newInstance();
                 break;
                 */

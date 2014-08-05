@@ -267,9 +267,7 @@ public class DownloadManager {
 
                 if(mTranslateRemoteData){
                     if(resultOperation.isStatus()) {
-                        jsonArray = new JSONArray(new String((byte[]) resultOperation.getClassReturn()));
-                        final DownloadRequestType requestType = mRequestType;
-                        result = parseJsonToRDSRemoteObject(jsonArray, requestType);
+                        result = ParserFactory.parseJsonToRDSRemoteEntity(new String((byte[]) resultOperation.getClassReturn()), mRequestType);
                         resultOperation.setClassReturn(result);
                     }
                 }
@@ -283,31 +281,6 @@ public class DownloadManager {
         }
     }
 
-    public static ArrayList parseJsonToRDSRemoteObject(JSONArray jsonArray, DownloadRequestType requestType) throws JSONException {
-        ArrayList result = null;
-        switch (requestType) {
-
-            case VEHICLE_DIAGNOSTIC:
-            case VEHICLES_OWNED:
-            case VEHICLE_NOT_TRUSTED:
-                result = ParserFactory.parseVehicles(jsonArray);
-                break;
-            case CUSTOMERS_LIST:
-                result = ParserFactory.parseCustomers(jsonArray);
-                break;
-            case CRDS_NOT_TRUSTED:
-            case CRDS_OWNED:
-                result = ParserFactory.parseCRDS(jsonArray);
-                break;
-            case DRIVERS_OWNED:
-            case DRIVERS_NOT_TRUSTED:
-                result = ParserFactory.parseDrivers(jsonArray);
-                break;
-            case MAIN_MENU:
-                break;
-        }
-        return result;
-    }
 
     private static ResultOperation buildResultOperation(String JSONResponse,
                                                         ResultOperation resultOperationInstance) throws JSONException, IOException {
@@ -346,13 +319,13 @@ public class DownloadManager {
                                          DownloadRequestSchema downloadRequestInfo) {
 
         this.addListener(clientDownloadDataListener);
-        /*
+
         try {
             mRDSClientRequest.fetchRemoteData(mRDSServiceResponse,downloadRequestInfo);
         } catch (RemoteException e) {
             Log.e(TAG,"RemoteException => mRDSClientRequest.fetchRemoteData: " + e.getLocalizedMessage());
         }
-         */
+        /*
         if(downloadRequestInfo.getDownloadRequestType().equals(DownloadRequestType.VEHICLE_NOT_TRUSTED))
         {
             try {
@@ -365,6 +338,7 @@ public class DownloadManager {
             DownloadDataTask downloadDataTask = new DownloadDataTask();
             downloadDataTask.execute(downloadRequestInfo);
         }
+         */
 
     }
 
@@ -376,16 +350,13 @@ public class DownloadManager {
 
             final boolean isResultTranslated = false;
             mRequestInfo = params[0];
-
-
             ResultOperation result = ResultOperation.newInstance(false,"",null);
-
             boolean mHasCacheData = false;
+
             final boolean mObtainCacheIfExist = mRequestInfo.getCacheOption();
-            //final DownloadRequestType requestType = mRequestInfo.getDownloadRequestType();
 
             if(mObtainCacheIfExist){
-                mHasCacheData = CacheDataManager.checkedCachedDataPresence(result, mRequestInfo);
+                mHasCacheData = CacheDataManager.existData(result, mRequestInfo);
             }
             if(!mHasCacheData) {
                 result = DownloadManager.FetchingRemoteData(mClient, mRequestInfo, isResultTranslated);
@@ -395,26 +366,19 @@ public class DownloadManager {
 
             if(!isResultTranslated){
                 final String jsonRaw = new String((byte[]) result.getClassReturn());
-                JSONArray jsonArray = null;
                 try {
-                    jsonArray = new JSONArray(jsonRaw);
+                    result.setClassReturn(ParserFactory.parseJsonToRDSRemoteEntity(jsonRaw, mRequestInfo.getDownloadRequestType()));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                final DownloadRequestType requestType = mRequestInfo.getDownloadRequestType();
-                try {
-                    result.setClassReturn(parseJsonToRDSRemoteObject(jsonArray, requestType));
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                CacheDataManager.getInstance().saveDownloadRepository(mRequestInfo,jsonRaw);
+                CacheDataManager.get().saveDownloadRepository(mRequestInfo, jsonRaw);
             }
 
 
             if((!mObtainCacheIfExist && (result.getClassReturn() != null))
                     || !mHasCacheData)
             {
-                CacheDataManager.getInstance().UpdateCache(mRequestInfo, result.getClassReturn());
+                CacheDataManager.get().UpdateCache(mRequestInfo, result.getClassReturn());
                 Log.i(TAG,"Cache Updated: " + mRequestInfo.getDownloadRequestType() +
                         " (" + mRequestInfo.getUniqueCustomerCode() + ")");
             }
@@ -522,9 +486,10 @@ public class DownloadManager {
                         jsonRaw = new String((byte[]) result.getClassReturn());
                     }
                     else{
-                        jsonRaw = CacheDataManager.getInstance().getDownloadRepository((String)result.getClassReturn());
+                        jsonRaw = CacheDataManager.get().getDownloadRepository((String)result.getClassReturn());
                     }
-                    final JSONArray jsonArray  = new JSONArray(jsonRaw);
+                    if(!jsonRaw.isEmpty()) {
+
                     /*
                     try {
                         SerializerFactory.convertJSONtoDataObject(jsonArray.get(0).toString(),downloadRequest.getDownloadRequestType().getRemoteDataType());
@@ -532,12 +497,20 @@ public class DownloadManager {
                         e.printStackTrace();
                     }
                     */
-                    final DownloadRequestType requestType = downloadRequest.getDownloadRequestType();
-                    data = parseJsonToRDSRemoteObject(jsonArray, requestType);
+                        data = ParserFactory.parseJsonToRDSRemoteEntity(jsonRaw, downloadRequest.getDownloadRequestType());
+                        result.setClassReturn(data);
+                        CacheDataManager.get().UpdateCache(downloadRequest, data);
+                    }
+                    else{
+                        result.setStatus(false);
+                    }
                 } catch (JSONException e) {
+                    result.setStatus(false);
+                    e.printStackTrace();
+                } catch (RDSEmptyDataException e) {
+                    result.setStatus(false);
                     e.printStackTrace();
                 }
-                result.setClassReturn(data);
             }
             notifyListeners(downloadRequest,result);
         }

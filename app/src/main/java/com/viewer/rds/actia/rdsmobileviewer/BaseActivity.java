@@ -7,6 +7,7 @@ import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -25,6 +26,7 @@ import com.viewer.rds.actia.rdsmobileviewer.fragments.IFragmentNotification;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.VehiclesCardsFragment;
 import com.viewer.rds.actia.rdsmobileviewer.utils.CacheDataManager;
 import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
+import com.viewer.rds.actia.rdsmobileviewer.utils.RDSEmptyDataException;
 import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
 
 import java.util.ArrayList;
@@ -225,7 +227,7 @@ public abstract class BaseActivity extends Activity implements
 
     @Override
     public void onStop()   {
-        //DownloadUtility.getInstance().removeAllListeners();
+        //DownloadUtility.get().removeAllListeners();
         super.onStop();
     }
 
@@ -281,16 +283,16 @@ public abstract class BaseActivity extends Activity implements
         {
             if(resultCode == DownloadManager.DOWNLOAD_RESULT_OK) {
                 DownloadRequestSchema downloadRequestSchema = data.getExtras().getParcelable(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE);
-                handleDownloadDataFinished(downloadRequestSchema, ResultOperation.newInstance(true, "", CacheDataManager.getInstance().getValue(downloadRequestSchema)));
+                try {
+                    handleDownloadDataFinished(downloadRequestSchema, ResultOperation.newInstance(true, "", CacheDataManager.get().getValue(downloadRequestSchema)));
+                } catch (RDSEmptyDataException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
-
-    //protected void makeDownloadRequest(DownloadManager.DownloadRequestType downloadRequestType,
-     //                                  String CustomerAncodice, boolean getCacheIfExists) {
         protected void makeDownloadRequest(DownloadRequestSchema request ) {
-//        DownloadRequestSchema request = DownloadRequestSchema.newInstance(downloadRequestType,
-//                CustomerAncodice, "", getCacheIfExists);
+
 
         final Fragment downloadFragment = getFragmentManager().findFragmentByTag(FRAGMENT_DOWNLOAD_TAG);
         if(downloadFragment != null)
@@ -387,35 +389,49 @@ public abstract class BaseActivity extends Activity implements
     @Override
     public void onFirstFragmentVisualisation(Fragment sender, DownloadManager.DownloadRequestType requestType) {
         Object result = null;
+        DownloadRequestSchema downloadRequestSchema = DownloadRequestSchema.newInstance(requestType,
+                ((BaseFragment) sender).getUniqueCustomerCode(),"",true);
+
+        try {
+            result = CacheDataManager.get().getValue(downloadRequestSchema);
+            PushDataToFragment(sender,DownloadRequestSchema.newInstance(requestType, false),result);
+        } catch (RDSEmptyDataException e) {
+            e.printStackTrace();
+        }
+
+
+        /*
         switch (requestType)
         {
             case VEHICLE_NOT_TRUSTED:
-                result = CacheDataManager.getInstance().getVehicleNotTrusted();
+                result = CacheDataManager.get().getValue(downloadRequestSchema);
                 break;
             case CRDS_NOT_TRUSTED:
-                result = CacheDataManager.getInstance().getCRDSNotTrusted();
+                result = CacheDataManager.get().getValue(downloadRequestSchema);
                 break;
             case CUSTOMERS_LIST:
-                result = CacheDataManager.getInstance().getCustomers(getApplicationContext());
+                //result = CacheDataManager.get().getCustomers(getApplicationContext());
+                result = CacheDataManager.get().getValue(downloadRequestSchema);
                 break;
             case VEHICLES_OWNED:
-                result = CacheDataManager.getInstance().getCustomerVehicles(((BaseFragment) sender).getUniqueCustomerCode());
+                result = CacheDataManager.get().getCustomerVehicles(((BaseFragment) sender).getUniqueCustomerCode());
                 break;
             case DRIVERS_OWNED:
-                result = CacheDataManager.getInstance().getCustomerDrivers(((BaseFragment) sender).getUniqueCustomerCode());
+                result = CacheDataManager.get().getCustomerDrivers(((BaseFragment) sender).getUniqueCustomerCode());
                 break;
             case CRDS_OWNED:
-                result = CacheDataManager.getInstance().getCustomerCRDS(((BaseFragment)sender).getUniqueCustomerCode());
+                result = CacheDataManager.get().getValue(downloadRequestSchema);
                 break;
             case DRIVERS_NOT_TRUSTED:
-                result = CacheDataManager.getInstance().getDriversNotTrusted();
+                result = CacheDataManager.get().getDriversNotTrusted();
                 break;
             case MAIN_MENU:
                 break;
             case VEHICLE_DIAGNOSTIC:
                 break;
         }
-        PushDataToFragment(sender,DownloadRequestSchema.newInstance(requestType, false),result);
+        */
+
     }
 
     protected void PushDataToFragment(Fragment fragment, DownloadRequestSchema requestType, Object result) {

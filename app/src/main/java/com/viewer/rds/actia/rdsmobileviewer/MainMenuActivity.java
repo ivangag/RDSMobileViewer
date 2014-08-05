@@ -55,7 +55,7 @@ public class MainMenuActivity extends BaseActivity
             isFragmentsInit = true;
         }
         setActivityCustomersLayout(savedInstanceState);
-        mRDSDBMapper = RDSDBMapper.getInstance(this);
+        mRDSDBMapper = RDSDBMapper.get(this);
 
         mFragmentManager.addOnBackStackChangedListener(this);
     }
@@ -210,7 +210,7 @@ public class MainMenuActivity extends BaseActivity
         super.onStart();
         mRDSDBMapper.open();
         DownloadManager.getInstance().addListener(this);
-        //DownloadUtility.getInstance().bindRDService(this);
+        //DownloadUtility.get().bindRDService(this);
         //mRDSDBMapper.deleteDatabase();
        // mRDSDBMapper.deleteTable(); //!!only for test!!
 
@@ -221,7 +221,7 @@ public class MainMenuActivity extends BaseActivity
     public void onStop() {
         super.onStop();
         DownloadManager.getInstance().removeListener(this);
-        //DownloadUtility.getInstance().unbindRDSService(this);
+        //DownloadUtility.get().unbindRDSService(this);
     }
 
     @Override

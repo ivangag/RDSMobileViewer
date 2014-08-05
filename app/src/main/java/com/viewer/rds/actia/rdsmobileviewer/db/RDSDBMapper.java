@@ -11,7 +11,6 @@ import android.util.Log;
 import com.viewer.rds.actia.rdsmobileviewer.DownloadRequestSchema;
 import com.viewer.rds.actia.rdsmobileviewer.MainContractorData;
 import com.viewer.rds.actia.rdsmobileviewer.VehicleCustom;
-import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -21,11 +20,11 @@ import java.util.UUID;
  */
 public class RDSDBMapper {
 
-    final String LOG_TAG = RDSDBMapper.class.getCanonicalName();
+    final String TAG = RDSDBMapper.class.getCanonicalName();
     Context mContext;
     private static  RDSDBMapper mRDSDBMapper = new RDSDBMapper();
 
-    public static RDSDBMapper getInstance(Context context) {
+    public static RDSDBMapper get(Context context) {
         if(mRDSDBMapper.getContext() == null)
             mRDSDBMapper.setContext(context);
         return mRDSDBMapper;
@@ -37,12 +36,12 @@ public class RDSDBMapper {
     {
         if(null == mDBHelper) {
             try {
-                Log.i(LOG_TAG, "db open");
+                Log.i(TAG, "db open");
                 mDBHelper = new RDSDBHelper(mContext, null);
                 mDB = mDBHelper.getWritableDatabase();
 
             } catch (SQLiteException e) {
-                Log.w(LOG_TAG, "db open in readable mode::" + e.getMessage());
+                Log.w(TAG, "db open in readable mode::" + e.getMessage());
                 mDB = mDBHelper.getReadableDatabase();
             }
         }
@@ -75,56 +74,38 @@ public class RDSDBMapper {
         return  res;
     }
 
-    public synchronized Cursor query(final String table, final String[] columns,
-                        final String selection, final String[] selectionArgs,
-                        final String sortOrder) {
-        Cursor cursor = null;
-        if(null != mDB)
-            cursor = mDB.query(table,columns,selection,selectionArgs,null,null,sortOrder);
-        else
-            Log.w(LOG_TAG, "query-> database is null");
-
-        return cursor;
-    }
 
     public synchronized long insertOrUpdateCustomerData(MainContractorData customer)
     {
         long res;
         res = -1;
-        if(mDB.isOpen())
-        {
+        if(mDB.isOpen()){
             try {
                 ContentValues values = MainContractorData.getCVFromCustomerData(customer);
                 res = (int) mDB.insertWithOnConflict(RDSDBHelper.CUSTOMERS_TABLE, null, values, SQLiteDatabase.CONFLICT_IGNORE);
                 if (res == -1) {
                     res = mDB.update(RDSDBHelper.CUSTOMERS_TABLE, values, "AnCodice=?", new String[] {String.valueOf(customer.getAncodice())});
                 }
-                Log.i(LOG_TAG, "insertOrUpdateCustomerData new_index:" + res);
+                Log.i(TAG, "insertOrUpdateCustomerData new_index:" + res);
             }
             catch (SQLException e)
             {
-                Log.e(LOG_TAG, "insertOrUpdateCustomerData failed::" + e.getMessage());
+                Log.e(TAG, "insertOrUpdateCustomerData failed::" + e.getMessage());
             }
-        }
-        else
-        {
-            Log.w(LOG_TAG, "db is not open");
+        }else{
+            Log.w(TAG, "db is not open");
         }
         return  res;
     }
 
     public synchronized long insertOrUpdateVehicleData(VehicleCustom vehicle, String CustomerAnCodice, boolean isAssociated)
     {
-        long res;
-        res = -1;
+        long res = -1;
         String TABLE = "";
         int primary_customer_key = -1;
-        if(mDB.isOpen())
-        {
-
+        if(mDB.isOpen()){
             if(isAssociated)
                 TABLE = RDSDBHelper.VEHICLES_ASSOCIATED_TABLE;
-
             if((primary_customer_key = getExistingCustomer(CustomerAnCodice)) != -1) {
                 try {
                     ContentValues values = VehicleCustom.getCVFromData(vehicle);
@@ -133,15 +114,13 @@ public class RDSDBMapper {
                     if (res == -1) {
                         res = mDB.update(TABLE, values, "VIN=?", new String[]{String.valueOf(vehicle.getVIN())});
                     }
-                    Log.i(LOG_TAG, "insertOrUpdateVehicleData new_index:" + res);
+                    Log.i(TAG, "insertOrUpdateVehicleData new_index:" + res);
                 } catch (SQLException e) {
-                    Log.e(LOG_TAG, "insertOrUpdateVehicleData failed::" + e.getMessage());
+                    Log.e(TAG, "insertOrUpdateVehicleData failed::" + e.getMessage());
                 }
             }
-        }
-        else
-        {
-            Log.w(LOG_TAG, "db is not open");
+        }else{
+            Log.w(TAG, "db is not open");
         }
         return  res;
     }
@@ -151,68 +130,61 @@ public class RDSDBMapper {
         int res = -1;
         if(mDB.isOpen()){
                 try {
+
                     String TABLE = RDSDBHelper.REPOSITORY_DOWNLOAD_TRUSTED_TABLE;
-                    String uuid = UUID.randomUUID().toString();
-                    ContentValues values = new ContentValues();
-                    values.put(RDSDBHelper.CONTENT_DWNLD,jsonStream.getBytes());
-                    values.put(RDSDBHelper.UUID_DWNLD,uuid);
-                    values.put(RDSDBHelper.CONTENT_DWNLD_TYPE,downloadRequest.getDownloadRequestType().toString());
-                    values.put(RDSDBHelper.ANCODICE,downloadRequest.getUniqueCustomerCode());
-                    values.put(RDSDBHelper.VEHICLED_ID,downloadRequest.getVehicleVIN());
-                    values.put(RDSDBHelper.DRIVER_ID,"TBD");
-                    values.put(RDSDBHelper.CRDS_ID,"TBD");
+                    String uuid = checkDownloadDataRepoPresence(downloadRequest);
 
-                    int isAlreadyPrimaryIdExistDownload = checkDownloadDataRepoPresence(downloadRequest);
-
-                    if(isAlreadyPrimaryIdExistDownload == -1) {
+                    if(uuid.isEmpty()) { // not existing data
+                        uuid = UUID.randomUUID().toString();
+                        ContentValues values = new ContentValues();
+                        values.put(RDSDBHelper.CONTENT_DWNLD,jsonStream.getBytes());
+                        values.put(RDSDBHelper.UUID_DWNLD,uuid);
+                        values.put(RDSDBHelper.CONTENT_DWNLD_TYPE,downloadRequest.getDownloadRequestType().toString());
+                        values.put(RDSDBHelper.ANCODICE,downloadRequest.getUniqueCustomerCode());
+                        values.put(RDSDBHelper.VEHICLED_ID,downloadRequest.getVehicleVIN());
+                        values.put(RDSDBHelper.DRIVER_ID,"TBD");
+                        values.put(RDSDBHelper.CRDS_ID,"TBD");
+                        Log.d(TAG, "insertWithOnConflict " + TABLE);
                         res = (int) mDB.insertWithOnConflict(TABLE,
                                 null, values, SQLiteDatabase.CONFLICT_IGNORE);
                     }else{
+                        Log.d(TAG, "update " + TABLE);
                         final String whereClause = makeClauseWhereUniqueDownloadRepo(downloadRequest,false);
                         ContentValues cvUpdate = new ContentValues();
                         cvUpdate.put(RDSDBHelper.CONTENT_DWNLD,jsonStream.getBytes());
                         res = mDB.update(TABLE,cvUpdate,whereClause,null);
-                        //res = updateDownloadRepo(downloadRequest, jsonStream.getBytes());
                     }
-                    if(res != -1)
+                    if(res > 0)
                         uuid_res = uuid;
 
-                    Log.i(LOG_TAG, "saveDownloadToRepository new_index:" + res + "uuid_res:" + uuid_res);
+                    Log.d(TAG, "saveDownloadToRepository new_index:" + res + "; uuid_res:" + uuid_res);
                 } catch (SQLException e) {
-                    Log.e(LOG_TAG, "saveDownloadToRepository failed::" + e.getMessage());
+                    Log.e(TAG, "saveDownloadToRepository failed::" + e.getMessage());
                 }
         }else {
-            Log.w(LOG_TAG, "db is not open");
+            Log.w(TAG, "db is not open");
         }
         return  uuid_res;
     }
 
-    public int updateDownloadRepo(DownloadRequestSchema downloadRequest, byte[] jsonStream) {
-        int res = -1;
-        final String whereClause = makeClauseWhereUniqueDownloadRepo(downloadRequest,true);
-        final String update_query = "UPDATE "
-                + RDSDBHelper.REPOSITORY_DOWNLOAD_TRUSTED_TABLE
-                + " SET " + RDSDBHelper.CONTENT_DWNLD + " = " + jsonStream
-                + " " + whereClause;
-        Cursor cursor = mDB.rawQuery(update_query,null);
-        if(cursor.moveToFirst())
-        {
-            res = cursor.getInt(cursor.getColumnIndex(RDSDBHelper.PRIMARY_ID));
-        }
-        return res;
-    }
+    private String checkDownloadDataRepoPresence(DownloadRequestSchema downloadRequest) {
 
-    private int checkDownloadDataRepoPresence(DownloadRequestSchema downloadRequest) {
-
-        int res = - 1;
+        String res = "";
         String whereUniqueClause = makeClauseWhereUniqueDownloadRepo(downloadRequest,true);
+        if(mDB.isOpen()) {
+            try {
 
-        Cursor cursor = mDB.rawQuery("SELECT * FROM "+
-                RDSDBHelper.REPOSITORY_DOWNLOAD_TRUSTED_TABLE + " " + whereUniqueClause,null);
+                Cursor cursor = mDB.rawQuery("SELECT * FROM " +
+                        RDSDBHelper.REPOSITORY_DOWNLOAD_TRUSTED_TABLE + " " + whereUniqueClause, null);
 
-        if(cursor.moveToFirst())
-        {
-            res = cursor.getInt(cursor.getColumnIndex(RDSDBHelper.PRIMARY_ID));
+                if (cursor.moveToFirst()) {
+                    res = cursor.getString(cursor.getColumnIndex(RDSDBHelper.UUID_DWNLD));
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "checkDownloadDataRepoPresence failed::" + e.getMessage());
+            }
+        }else {
+            Log.w(TAG, "db is not open");
         }
         return res;
     }
@@ -253,59 +225,88 @@ public class RDSDBMapper {
     * Checks if customer exists
     * returns unique primary key id
     */
-    public String getDownloadRepository(String uuid) {
-        int res = -1;
-        byte[] streamData = new byte[]{0x00};
-        Cursor cursor = mDB.rawQuery("SELECT * FROM "+
-                RDSDBHelper.REPOSITORY_DOWNLOAD_NOT_TRUSTED_TABLE
-                +" WHERE "+ RDSDBHelper.UUID_DWNLD +"=?", new String[] {uuid});
-        if(cursor.moveToFirst())
-        {
-            streamData = cursor.getBlob(cursor.getColumnIndex(RDSDBHelper.CONTENT_DWNLD));
+    public synchronized String getDownloadRepository(String uuid) {
+        String content = "";
+        byte[] streamData;
+        if(mDB.isOpen()) {
+            try {
+                Cursor cursor = mDB.rawQuery("SELECT * FROM " +
+                        RDSDBHelper.REPOSITORY_DOWNLOAD_TRUSTED_TABLE
+                        + " WHERE " + RDSDBHelper.UUID_DWNLD + "=?", new String[]{uuid});
+                if (cursor.moveToFirst()) {
+                    streamData = cursor.getBlob(cursor.getColumnIndex(RDSDBHelper.CONTENT_DWNLD));
+                    content = new String(streamData);
+                }
+                cursor.close();
+            } catch (Exception e) {
+
+            }
+        }else {
+            Log.w(TAG, "db is not open");
         }
-        cursor.close();
-        String content = new String(streamData);
         return content;
     }
+
+    /*
+* Checks if customer exists
+* returns unique primary key id
+*/
+    public synchronized String getDownloadRepository(DownloadRequestSchema downloadRequest) {
+        String content = "";
+        byte[] streamData;
+        if(mDB.isOpen()) {
+            try {
+                String whereClause = makeClauseWhereUniqueDownloadRepo(downloadRequest, true);
+                Cursor cursor = mDB.rawQuery("SELECT " + RDSDBHelper.CONTENT_DWNLD + " FROM " +
+                        RDSDBHelper.REPOSITORY_DOWNLOAD_TRUSTED_TABLE + " " + whereClause, null);
+                if (cursor.moveToFirst()) {
+                    streamData = cursor.getBlob(cursor.getColumnIndex(RDSDBHelper.CONTENT_DWNLD));
+                    content = new String(streamData);
+                }
+                cursor.close();
+            } catch (Exception e) {
+
+            }
+        }
+        else{
+            Log.w(TAG, "db is not open");
+        }
+
+        return content;
+    }
+
 
     /*
     * Checks if customer exists
     * returns unique primary key id
      */
-    private int getExistingCustomer(String customerAnCodice) {
+    private synchronized int getExistingCustomer(String customerAnCodice) {
         int res = -1;
-        Cursor cursor = mDB.rawQuery("SELECT * FROM "+
-                RDSDBHelper.CUSTOMERS_TABLE
-                +" WHERE "+ RDSDBHelper.ANCODICE +"=?", new String[] {customerAnCodice});
-        if(cursor.moveToFirst())
-        {
-            res = cursor.getInt(cursor.getColumnIndex(RDSDBHelper.PRIMARY_ID));
+        if(mDB.isOpen()) {
+            Cursor cursor = mDB.rawQuery("SELECT * FROM " +
+                    RDSDBHelper.CUSTOMERS_TABLE
+                    + " WHERE " + RDSDBHelper.ANCODICE + "=?", new String[]{customerAnCodice});
+            if (cursor.moveToFirst()) {
+                res = cursor.getInt(cursor.getColumnIndex(RDSDBHelper.PRIMARY_ID));
+            }
+            cursor.close();
+        }else{
+            Log.w(TAG, "db is not open");
         }
-        cursor.close();
         return res;
     }
 
+    public synchronized Cursor query(final String table, final String[] columns,
+                                     final String selection, final String[] selectionArgs,
+                                     final String sortOrder) {
+        Cursor cursor = null;
+        if(null != mDB)
+            cursor = mDB.query(table,columns,selection,selectionArgs,null,null,sortOrder);
+        else
+            Log.w(TAG, "query-> database is null");
 
-    public String getDownloadRepoTable(DownloadRequestSchema downloadRequest) {
-        String TABLE_TO_USE = "";
-        switch (downloadRequest.getDownloadRequestType()){
-
-            case VEHICLE_NOT_TRUSTED:
-            case CRDS_NOT_TRUSTED:
-            case DRIVERS_NOT_TRUSTED:
-            case CUSTOMERS_LIST:
-                TABLE_TO_USE = RDSDBHelper.REPOSITORY_DOWNLOAD_NOT_TRUSTED_TABLE;
-                break;
-            case VEHICLES_OWNED:
-            case DRIVERS_OWNED:
-            case CRDS_OWNED:
-            case VEHICLE_DIAGNOSTIC:
-                TABLE_TO_USE = RDSDBHelper.REPOSITORY_DOWNLOAD_TRUSTED_TABLE;
-                break;
-        }
-        return TABLE_TO_USE;
+        return cursor;
     }
-
 
     public synchronized void close()
     {

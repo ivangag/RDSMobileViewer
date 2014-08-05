@@ -226,14 +226,14 @@ public class DetailsMainMenuActivity extends BaseActivity implements ActionBar.T
     public void onStop() {
         super.onStop();
         DownloadManager.getInstance().removeListener(this);
-     //   DownloadUtility.getInstance().unbindRDSService(this);
+     //   DownloadUtility.get().unbindRDSService(this);
     }
 
     @Override
     public void onStart() {
        super.onStart();
         DownloadManager.getInstance().addListener(this);
-   //    DownloadUtility.getInstance().bindRDService(this);
+   //    DownloadUtility.get().bindRDService(this);
 
     }
 

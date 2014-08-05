@@ -17,6 +17,7 @@ import com.viewer.rds.actia.rdsmobileviewer.ResultOperation;
 import com.viewer.rds.actia.rdsmobileviewer.db.RDSDBMapper;
 import com.viewer.rds.actia.rdsmobileviewer.utils.CacheDataManager;
 import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
+import com.viewer.rds.actia.rdsmobileviewer.utils.RDSEmptyDataException;
 
 public class RDSViewerServiceAsync extends Service {
     private static RDSDBMapper mRDSDBMapper;
@@ -73,33 +74,46 @@ public class RDSViewerServiceAsync extends Service {
             // possible expansions of the designated acronym.
             Log.d(TAG, "fetching remote data started..");
             //Debug.waitForDebugger();
-            mRDSDBMapper = RDSDBMapper.getInstance(getApplicationContext());
+            mRDSDBMapper = RDSDBMapper.get(getApplicationContext());
+            mRDSDBMapper.open();
+            ResultOperation resOp = ResultOperation.newInstance();
 
-            ResultOperation resOp =
-                    DownloadManager.FetchingRemoteData(mClient,
-                            downloadRequest, false);
 
-            Log.d(TAG, "fetching remote data finished..");
+            final boolean mObtainCacheIfExist = downloadRequest.getCacheOption();
 
-            Parcel _data = Parcel.obtain();
-            resOp.writeToParcel(_data, 0);
-            downloadRequest.writeToParcel(_data, 0);
 
-            Log.d(TAG, "DownloadRequest: "
-                    + downloadRequest.getDownloadRequestType()
-                    + " Status: " + resOp.isStatus()
-                    + "OtherInfo: " + resOp.getOtherInfo()
-                    + "DataSizeRPC: " + String.valueOf(_data.dataSize())
-            );
+            boolean mHasCacheData = false;
+              /*
+            if(mObtainCacheIfExist){
+                Log.d(TAG, "mObtainCacheIfExist");
+                try {
+                   resOp.setClassReturn(CacheDataManager.get().getDownloadRepository(downloadRequest).getBytes());
+                } catch (RDSEmptyDataException e) {
+                    mHasCacheData = false;
+                    resOp.setStatus(false);
+                    e.printStackTrace();
+                }
+                Log.d(TAG, "mHasCacheData: " + mHasCacheData);
+            }
+            */
+            if(!mHasCacheData) {
+                Log.d(TAG, "mHasCacheData: " + mHasCacheData);
+                resOp = DownloadManager.FetchingRemoteData(mClient, downloadRequest, false);
+                Log.d(TAG, "FetchingRemoteData: " + resOp.isStatus());
+            }
 
+            Log.d(TAG, "fetching remote data finished..:" + resOp.isStatus());
+
+            //traceParcelDataSize(downloadRequest, resOp);
 
             if(resOp.isStatus()){
-                mRDSDBMapper.open();
                 final String jsonRaw = new String((byte[]) resOp.getClassReturn());
                 final String uuid = mRDSDBMapper.saveDownloadToRepository(downloadRequest, jsonRaw);
-                //final String uuid = CacheDataManager.getInstance().saveDownloadRepository(downloadRequest, jsonRaw);
-                if(uuid != "")
+                //final String uuid = CacheDataManager.get().saveDownloadRepository(downloadRequest, jsonRaw);
+                if(uuid != "") {
                     resOp.setClassReturn(uuid);
+                    Log.d(TAG,"saving json download data OK: " + uuid);
+                }
                 else {
                     resOp.setClassReturn(null);
                     resOp.setStatus(false);
@@ -115,6 +129,19 @@ public class RDSViewerServiceAsync extends Service {
             callback.sendRemoteDataResult(resOp,downloadRequest);
         }
     };
+
+    private void traceParcelDataSize(DownloadRequestSchema downloadRequest, ResultOperation resOp) {
+        Parcel _data = Parcel.obtain();
+        resOp.writeToParcel(_data, 0);
+        downloadRequest.writeToParcel(_data, 0);
+
+        Log.d(TAG, "DownloadRequest: "
+                        + downloadRequest.getDownloadRequestType()
+                        + " Status: " + resOp.isStatus()
+                        + "OtherInfo: " + resOp.getOtherInfo()
+                        + "DataSizeRPC: " + String.valueOf(_data.dataSize())
+        );
+    }
 
 
     public static Intent makeIntent(Context context) {

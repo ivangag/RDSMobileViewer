@@ -1,7 +1,7 @@
 package com.viewer.rds.actia.rdsmobileviewer.utils;
 
-import android.content.ContentValues;
 import android.content.Context;
+import android.util.Log;
 
 import com.viewer.rds.actia.rdsmobileviewer.CRDSCustom;
 import com.viewer.rds.actia.rdsmobileviewer.DownloadRequestSchema;
@@ -10,6 +10,8 @@ import com.viewer.rds.actia.rdsmobileviewer.MainContractorData;
 import com.viewer.rds.actia.rdsmobileviewer.ResultOperation;
 import com.viewer.rds.actia.rdsmobileviewer.VehicleCustom;
 import com.viewer.rds.actia.rdsmobileviewer.db.RDSDBMapper;
+
+import org.json.JSONException;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -23,11 +25,13 @@ import java.util.Map;
 
 public class CacheDataManager
         /*implements DownloadUtility.IRemoteDownloadDataListener*/{
+    private final static String TAG = CacheDataManager.class
+            .getCanonicalName();
 
     WeakReference<Context> mContext = null;
     private static CacheDataManager ourInstance = new CacheDataManager();
 
-    public static CacheDataManager getInstance() {
+    public static CacheDataManager get() {
         return ourInstance;
     }
 
@@ -85,9 +89,21 @@ public class CacheDataManager
         this.mCachedCRDSNotTrusted = result;
     }
 
-    public List<MainContractorData> getCachedCustomerListData()
-    {
-        return mCachedMainContractors;
+    private List<MainContractorData> getCustomers() {
+
+        // try to refresh data from db
+        List<MainContractorData> res = null;
+        String jsonStream = RDSDBMapper.get(mContext.get()).getDownloadRepository(DownloadRequestSchema.newInstance().
+                setDownloadRequestType(DownloadManager.DownloadRequestType.CUSTOMERS_LIST));
+        try {
+            res  = ParserFactory.parseJsonToRDSRemoteEntity(jsonStream, DownloadManager.DownloadRequestType.CUSTOMERS_LIST);
+            mCachedMainContractors = res;
+        } catch (JSONException e) {
+            Log.e(TAG,"Error: " + e.getLocalizedMessage());
+            e.printStackTrace();
+        }
+
+        return res;
     }
 
     private void setCachedCustomerListData(List<MainContractorData> data)
@@ -99,12 +115,34 @@ public class CacheDataManager
         mCachedVehiclesNotTrusted = data;
     }
 
-    public List<VehicleCustom> getVehicleNotTrusted() {
-      return mCachedVehiclesNotTrusted;
+    private List<VehicleCustom> getVehicleNotTrusted() {
+        // try to refresh data from db
+        List<VehicleCustom> res = null;
+        String jsonStream = RDSDBMapper.get(mContext.get()).getDownloadRepository(DownloadRequestSchema.newInstance().
+                setDownloadRequestType(DownloadManager.DownloadRequestType.VEHICLE_NOT_TRUSTED));
+        try {
+            res = ParserFactory.parseJsonToRDSRemoteEntity(jsonStream, DownloadManager.DownloadRequestType.VEHICLE_NOT_TRUSTED);
+            mCachedVehiclesNotTrusted = res;
+        } catch (JSONException e) {
+            Log.e(TAG,"Error: " + e.getLocalizedMessage());
+            e.printStackTrace();
+        }
+      return res;
     }
 
-    public List<CRDSCustom> getCRDSNotTrusted() {
-        return mCachedCRDSNotTrusted;
+    private List<CRDSCustom> getCRDSNotTrusted() {
+        // try to refresh data from db
+        List<CRDSCustom> res = null;
+        String jsonStream = RDSDBMapper.get(mContext.get()).getDownloadRepository(DownloadRequestSchema.newInstance().
+                setDownloadRequestType(DownloadManager.DownloadRequestType.CRDS_NOT_TRUSTED));
+        try {
+            res = ParserFactory.parseJsonToRDSRemoteEntity(jsonStream, DownloadManager.DownloadRequestType.CRDS_NOT_TRUSTED);
+            mCachedCRDSNotTrusted = res;
+        } catch (JSONException e) {
+            Log.e(TAG,"Error: " + e.getLocalizedMessage());
+            e.printStackTrace();
+        }
+        return res;
     }
 
     private void setCRDSNotTrusted(List<CRDSCustom> mCRDSNotTrusted) {
@@ -112,42 +150,77 @@ public class CacheDataManager
     }
 
 
-    public List<DriverCardData> getDriversNotTrusted() {
-        return mCachedDriversNotTrusted;
-    }
-
-    public List<MainContractorData> getCustomers(Context context) {
-
-        return RDSDBMapper.getInstance(context).queryAllCustomers();
-        //return mCachedMainContractors;
-    }
-
-
-    public List<CRDSCustom> getCustomerCRDS(String Ancodice) {
-        List<CRDSCustom> res = new ArrayList<CRDSCustom>();
-        if (mCachedCustomersCRDS.containsKey(Ancodice))
-            res = mCachedCustomersCRDS.get(Ancodice);
+    private List<DriverCardData> getDriversNotTrusted() {
+        // try to refresh data from db
+        List<DriverCardData> res = null;
+        String jsonStream = RDSDBMapper.get(mContext.get()).getDownloadRepository(DownloadRequestSchema.newInstance().
+                setDownloadRequestType(DownloadManager.DownloadRequestType.DRIVERS_NOT_TRUSTED));
+        try {
+            res = ParserFactory.parseJsonToRDSRemoteEntity(jsonStream, DownloadManager.DownloadRequestType.DRIVERS_NOT_TRUSTED);
+            mCachedDriversNotTrusted = res;
+        } catch (JSONException e) {
+            Log.e(TAG,"Error: " + e.getLocalizedMessage());
+            e.printStackTrace();
+        }
         return res;
     }
 
-    public List<VehicleCustom> getCustomerVehicles(String Ancodice) {
-        List<VehicleCustom> res = new ArrayList<VehicleCustom>();
-        if (mCachedCustomersVehicles.containsKey(Ancodice))
-            res = mCachedCustomersVehicles.get(Ancodice);
+
+    private List<CRDSCustom> getCustomerCRDS(String Ancodice) {
+
+        List<CRDSCustom> res = null;
+        // try to refresh data from db
+        Log.d(TAG, "getCustomerCRDS. mContext:" + (mContext.get() != null));
+        DownloadRequestSchema downloadRequestSchema = DownloadRequestSchema.newInstance().
+                setDownloadRequestType(DownloadManager.DownloadRequestType.CRDS_OWNED).setUniqueCustomerCode(Ancodice);
+        String jsonStream = RDSDBMapper.get(mContext.get()).getDownloadRepository(downloadRequestSchema);
+        try {
+            res = ParserFactory.parseJsonToRDSRemoteEntity(jsonStream, DownloadManager.DownloadRequestType.CRDS_OWNED);
+            mCachedCustomersCRDS.put(Ancodice,res);
+        } catch (JSONException e) {
+            Log.e(TAG,"Error: " + e.getLocalizedMessage());
+            e.printStackTrace();
+        }
         return res;
     }
 
-    public List<DriverCardData> getCustomerDrivers(String Ancodice) {
-        List<DriverCardData> res = new ArrayList<DriverCardData>();
-        if (mCachedCustomersDrivers.containsKey(Ancodice))
-            res = mCachedCustomersDrivers.get(Ancodice);
+    private List<VehicleCustom> getCustomerVehicles(String Ancodice) {
+        List<VehicleCustom> res = null;
+        // try to refresh data from db
+        String jsonStream = RDSDBMapper.get(mContext.get()).getDownloadRepository(DownloadRequestSchema.newInstance().
+                setDownloadRequestType(DownloadManager.DownloadRequestType.VEHICLES_OWNED));
+        try {
+            res = ParserFactory.parseJsonToRDSRemoteEntity(jsonStream, DownloadManager.DownloadRequestType.VEHICLES_OWNED);
+            mCachedCustomersVehicles.put(Ancodice,res);
+        } catch (JSONException e) {
+            Log.e(TAG,"Error: " + e.getLocalizedMessage());
+            e.printStackTrace();
+        }
         return res;
     }
 
+    private List<DriverCardData> getCustomerDrivers(String Ancodice) {
+
+        List<DriverCardData> res = null;
+        // try to refresh data from db
+        String jsonStream = RDSDBMapper.get(mContext.get()).getDownloadRepository(DownloadRequestSchema.newInstance().
+                setDownloadRequestType(DownloadManager.DownloadRequestType.DRIVERS_OWNED));
+        try {
+            res = ParserFactory.parseJsonToRDSRemoteEntity(jsonStream, DownloadManager.DownloadRequestType.DRIVERS_OWNED);
+            mCachedCustomersDrivers.put(Ancodice,res);
+        } catch (JSONException e) {
+            Log.e(TAG,"Error: " + e.getLocalizedMessage());
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    /*
     public boolean hasCustomers()
     {
         return mCachedMainContractors.size() > 0;
     }
+    */
 
 
     public boolean hasCustomerVehicles(String Ancodice)
@@ -180,98 +253,82 @@ public class CacheDataManager
         return mCachedCRDSNotTrusted.size() > 0;
     }
 
-    public Object getValue(DownloadRequestSchema downloadRequestSchema) {
+    public Object getValue(DownloadRequestSchema downloadRequestSchema) throws RDSEmptyDataException {
 
         Object result = null;
         final String customerCode = downloadRequestSchema.getUniqueCustomerCode();
         final String vehicleVIN = downloadRequestSchema.getVehicleVIN();
+        Log.d(TAG, "getValue: " + downloadRequestSchema.getUniqueCustomerCode() + " " + downloadRequestSchema.getDownloadRequestType());
         switch (downloadRequestSchema.getDownloadRequestType())
         {
             case VEHICLE_NOT_TRUSTED:
-                result = CacheDataManager.getInstance().getVehicleNotTrusted();
+                result = CacheDataManager.get().getVehicleNotTrusted();
                 break;
             case CRDS_NOT_TRUSTED:
-                result = CacheDataManager.getInstance().getCRDSNotTrusted();
+                result = CacheDataManager.get().getCRDSNotTrusted();
                 break;
             case CUSTOMERS_LIST:
-                result = CacheDataManager.getInstance().getCachedCustomerListData();
+                result = CacheDataManager.get().getCustomers();
                 break;
             case VEHICLES_OWNED:
-                result = CacheDataManager.getInstance().getCustomerVehicles(customerCode);
+                result = CacheDataManager.get().getCustomerVehicles(customerCode);
                 break;
             case DRIVERS_OWNED:
-                result = CacheDataManager.getInstance().getCustomerDrivers(customerCode);
+                result = CacheDataManager.get().getCustomerDrivers(customerCode);
                 break;
             case CRDS_OWNED:
-                result = CacheDataManager.getInstance().getCustomerCRDS(customerCode);
+                Log.d(TAG, "getValue: " + downloadRequestSchema.getDownloadRequestType());
+                result = CacheDataManager.get().getCustomerCRDS(customerCode);
                 break;
             case DRIVERS_NOT_TRUSTED:
-                result = CacheDataManager.getInstance().getDriversNotTrusted();
+                result = CacheDataManager.get().getDriversNotTrusted();
                 break;
             case MAIN_MENU:
                 break;
             case VEHICLE_DIAGNOSTIC:
                 break;
+        }
+        Log.d(TAG, "Value: " + (result != null));
+        if (result == null) {
+            Log.d(TAG, "Raise RDSEmptyDataException");
+            throw new RDSEmptyDataException("RDS request: " + downloadRequestSchema.toString());
         }
         return result;
     }
 
 
 
-    public static boolean checkedCachedDataPresence(ResultOperation result, DownloadRequestSchema requestInfo) {
-        boolean mHasCacheData = false;
-        switch (requestInfo.getDownloadRequestType())
-        {
-            case VEHICLE_NOT_TRUSTED:
-                if((mHasCacheData = CacheDataManager.getInstance().hasVehiclesNotTrusted())){
-                    result.setClassReturn(CacheDataManager.getInstance().getVehicleNotTrusted());
-                }
-                break;
-            case CRDS_NOT_TRUSTED:
-                if((mHasCacheData = CacheDataManager.getInstance().hasCRDSNotTrusted())){
-                    result.setClassReturn(CacheDataManager.getInstance().getCRDSNotTrusted());
-                }
-                break;
-            case DRIVERS_OWNED:
-                if((mHasCacheData = CacheDataManager.getInstance().hasCustomerDrivers(requestInfo.getUniqueCustomerCode()))){
-                    result.setClassReturn(CacheDataManager.getInstance().getCustomerDrivers(requestInfo.getUniqueCustomerCode()));
-                }
-                break;
-            case CRDS_OWNED:
-                if((mHasCacheData = CacheDataManager.getInstance().hasCustomerCRDS(requestInfo.getUniqueCustomerCode()))){
-                    result.setClassReturn(CacheDataManager.getInstance().getCustomerCRDS(requestInfo.getUniqueCustomerCode()));
-                }
-                break;
-            case DRIVERS_NOT_TRUSTED:
-                if((mHasCacheData = CacheDataManager.getInstance().hasDriversNotTrusted())){
-                    result.setClassReturn(CacheDataManager.getInstance().getDriversNotTrusted());
-                }
-                break;
-            case CUSTOMERS_LIST:
-                if((mHasCacheData = CacheDataManager.getInstance().hasCustomers())){
-                    result.setClassReturn(CacheDataManager.getInstance().getCustomers(null));
-                }
-                break;
-            case VEHICLES_OWNED:
-                if((mHasCacheData = CacheDataManager.getInstance().hasCustomerVehicles(requestInfo.getUniqueCustomerCode()))){
-                    result.setClassReturn(CacheDataManager.getInstance().getCustomerVehicles(requestInfo.getUniqueCustomerCode()));
-                }
-                break;
-            case MAIN_MENU:
-                break;
-            case VEHICLE_DIAGNOSTIC:
-                break;
+    public static boolean existData(ResultOperation result, DownloadRequestSchema requestInfo){
+        boolean mHasCacheData;
+        Log.d(TAG, "existData");
+        try {
+            result.setClassReturn(CacheDataManager.get().getValue(requestInfo));
+            Log.d(TAG, "existData::result.setClassReturn");
+            mHasCacheData = result.getClassReturn() != null;
+        } catch (RDSEmptyDataException e) {
+            Log.d(TAG, "existData::RDSEmptyDataException");
+            mHasCacheData = false;
         }
+        Log.d(TAG, "existData::setStatus");
         result.setStatus(mHasCacheData);
         return mHasCacheData;
     }
 
-    public String getDownloadRepository(String uuidDownload) {
-        return RDSDBMapper.getInstance(mContext.get()).getDownloadRepository(uuidDownload);
+    public String getDownloadRepository(String uuidDownload) throws RDSEmptyDataException {
+        String res =  RDSDBMapper.get(mContext.get()).getDownloadRepository(uuidDownload);
+        if(res.isEmpty())
+            throw  new RDSEmptyDataException("Repo Empty: " + uuidDownload);
+        return  res;
+    }
+    public String getDownloadRepository(DownloadRequestSchema downloadRequestSchema) throws RDSEmptyDataException {
+        String res = RDSDBMapper.get(mContext.get()).getDownloadRepository(downloadRequestSchema);
+        if(res.isEmpty())
+            throw  new RDSEmptyDataException("Repo Empty: " + downloadRequestSchema.toString());
+        return  res;
     }
 
     public String saveDownloadRepository(DownloadRequestSchema downloadRequestSchema, String jsonStream) {
 
-        return RDSDBMapper.getInstance(mContext.get()).saveDownloadToRepository(downloadRequestSchema,jsonStream);
+        return RDSDBMapper.get(mContext.get()).saveDownloadToRepository(downloadRequestSchema,jsonStream);
     }
 }

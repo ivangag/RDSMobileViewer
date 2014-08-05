@@ -52,8 +52,7 @@ public class ParserFactory {
         return result;
     }
     public static ArrayList parseVehicles(JSONArray vehicles) throws JSONException {
-        ArrayList result;
-        result = new ArrayList<VehicleCustom>();
+        ArrayList result = new ArrayList<VehicleCustom>();
         // Get the JSON array of  results
         for (int i = 0; i < vehicles.length(); i++) {
             JSONObject jsonObject = vehicles.getJSONObject(i);
@@ -191,6 +190,34 @@ public class ParserFactory {
             in.close();
         }
         return contents.toByteArray();
+    }
+
+
+    public static ArrayList parseJsonToRDSRemoteEntity(String jsonRaw, DownloadManager.DownloadRequestType requestType) throws JSONException {
+        final JSONArray jsonArray = new JSONArray(jsonRaw);
+        ArrayList result = null;
+        switch (requestType) {
+
+            case VEHICLE_DIAGNOSTIC:
+            case VEHICLES_OWNED:
+            case VEHICLE_NOT_TRUSTED:
+                result = ParserFactory.parseVehicles(jsonArray);
+                break;
+            case CUSTOMERS_LIST:
+                result = ParserFactory.parseCustomers(jsonArray);
+                break;
+            case CRDS_NOT_TRUSTED:
+            case CRDS_OWNED:
+                result = ParserFactory.parseCRDS(jsonArray);
+                break;
+            case DRIVERS_OWNED:
+            case DRIVERS_NOT_TRUSTED:
+                result = ParserFactory.parseDrivers(jsonArray);
+                break;
+            case MAIN_MENU:
+                break;
+        }
+        return result;
     }
 
 }

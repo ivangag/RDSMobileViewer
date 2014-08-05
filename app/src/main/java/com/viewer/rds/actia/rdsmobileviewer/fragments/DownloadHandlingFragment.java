@@ -103,7 +103,7 @@ public class DownloadHandlingFragment extends Fragment implements DownloadManage
         mCallbacks = (TaskDownloadCallbacks) activity;
         /*
         if(activity instanceof DownloadManager.IRemoteDownloadDataListener)
-            DownloadManager.getInstance().addListener((DownloadManager.IRemoteDownloadDataListener) activity);
+            DownloadManager.get().addListener((DownloadManager.IRemoteDownloadDataListener) activity);
             */
     }
 

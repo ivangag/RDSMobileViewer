@@ -11,6 +11,19 @@ import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
 public class DownloadRequestSchema implements Parcelable {
 
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb
+          .append("RequestType:").append(mDownloadRequestType.toString())
+          .append("Customer:").append(mUniqueCustomerCode)
+          .append("Vehicle:").append(mVehicleVIN)
+          .append("CacheRequested:").append(mObtainCacheIfExist);
+
+        return sb.toString();
+
+    }
+
     private boolean mObtainCacheIfExist;
 
     private String mVehicleVIN = "";
@@ -62,8 +75,9 @@ public class DownloadRequestSchema implements Parcelable {
         return mDownloadRequestType;
     }
 
-    public void setDownloadRequestType(DownloadManager.DownloadRequestType mDownloadRequestType) {
+    public DownloadRequestSchema setDownloadRequestType(DownloadManager.DownloadRequestType mDownloadRequestType) {
         this.mDownloadRequestType = mDownloadRequestType;
+        return this;
     }
 
     private DownloadRequestSchema(DownloadManager.DownloadRequestType requestType) {
@@ -75,8 +89,9 @@ public class DownloadRequestSchema implements Parcelable {
         return mUniqueCustomerCode;
     }
 
-    public void setUniqueCustomerCode(String mUniqueCustomerCode) {
+    public DownloadRequestSchema setUniqueCustomerCode(String mUniqueCustomerCode) {
         this.mUniqueCustomerCode = mUniqueCustomerCode;
+        return this;
     }
 
 
@@ -84,8 +99,9 @@ public class DownloadRequestSchema implements Parcelable {
         return mVehicleVIN;
     }
 
-    public void setVehicleVIN(String mVehicleVIN) {
+    public DownloadRequestSchema setVehicleVIN(String mVehicleVIN) {
         this.mVehicleVIN = mVehicleVIN;
+        return this;
     }
 
     public static DownloadRequestSchema newInstance() {

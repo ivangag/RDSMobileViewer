@@ -20,9 +20,9 @@ public final class ApplicationEntry extends Application {
 
     @Override
     public void onCreate() {
-        //DownloadManager.getInstance().startRDService(this);
+        //DownloadManager.get().startRDService(this);
         DownloadManager.getInstance().bindRDService(this);
-        CacheDataManager.getInstance().setContext(this);
+        CacheDataManager.get().setContext(this);
         super.onCreate();
     }
 }

@@ -225,18 +225,7 @@ public class MainMenuCardsFragment extends BaseFragment implements IFragmentNoti
         @Override
         public void setupInnerViewElements(ViewGroup parent, View view) {
 
-            //super.setupInnerViewElements(parent,view);
-            //Retrieve elements
-            //mTextViewTitleHeader = (TextView) parent.findViewById(R.id.card_rds_main_menu_primary_title);
-            //mTextViewTitleMain = (TextView) parent.findViewById(R.id.card_rds_main_menu_secondary_title);
             mThumbnailMenuType = (ImageView) parent.findViewById(R.id.rds_menu_item_thumbnail_image);
-
-            /*
-            if(mTextViewTitleHeader != null)
-                mTextViewTitleHeader.setText(mCustomerName);
-            if(mTextViewTitleMain != null)
-                mTextViewTitleMain.setText(mTitleMain);
-            */
             switch (mItemMenuType)
             {
                 case CUSTOMERS:
