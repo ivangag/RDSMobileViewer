@@ -9,8 +9,8 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
-            <option value="$PROJECT_DIR$/library-1.7.4-SNAPSHOT" />
-            <option value="$PROJECT_DIR$/library-1.8.1-SNAPSHOT" />
+            <option value="$PROJECT_DIR$/library-1.9.1-SNAPSHOT" />
+            <option value="$PROJECT_DIR$/volley" />
           </set>
         </option>
       </GradleProjectSettings>

@@ -34,6 +34,7 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     // You must install or update the Support Repository through the SDK manager to use this dependency.
     compile 'com.android.support:support-v13:19.+'
-    compile project(':library-1.8.1-SNAPSHOT')
+    compile project(':library-1.9.1-SNAPSHOT')
+    compile project(':volley')
     compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.+'
 }

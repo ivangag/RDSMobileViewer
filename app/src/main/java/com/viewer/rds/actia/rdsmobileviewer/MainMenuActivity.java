@@ -10,6 +10,10 @@ import android.view.MenuItem;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.viewer.rds.actia.rdsmobileviewer.db.RDSDBMapper;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.BaseFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.CRDSCardsFragment;
@@ -20,6 +24,9 @@ import com.viewer.rds.actia.rdsmobileviewer.fragments.MainMenuCardsFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.VehiclesCardsFragment;
 import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
 import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
+import com.viewer.rds.actia.rdsmobileviewer.volley.VolleyRequestManager;
+
+import org.json.JSONObject;
 
 import java.util.List;
 
@@ -343,6 +350,7 @@ public class MainMenuActivity extends BaseActivity
         //item.getMenuInfo()
         switch (id) {
             case R.id.action_settings:
+                makeVolleyRequest();
                 return true;
             case R.id.action_download_data:
                 if(!(getFragmentType(R.id.fragment_main).equals(DownloadManager.DownloadRequestType.MAIN_MENU))) {
@@ -356,6 +364,36 @@ public class MainMenuActivity extends BaseActivity
         return super.onOptionsItemSelected(item);
     }
 
+
+    void makeVolleyRequest(){
+        String url = DownloadManager.DownloadRequestType.CUSTOMERS_LIST.
+                getWSCallName(null);
+        JsonObjectRequest jsObjRequest = new JsonObjectRequest
+                (Request.Method.GET, url, null, new Response.Listener() {
+
+                    /*
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        //mTxtDisplay.setText("Response: " + response.toString());
+                    }
+                    */
+
+                    @Override
+                    public void onResponse(Object response) {
+                        if(response instanceof JSONObject){
+
+                        }
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // TODO Auto-generated method stub
+
+                    }
+                });
+        VolleyRequestManager.getInstance(this).addToRequestQueue(jsObjRequest);
+    }
 
 
     @Override

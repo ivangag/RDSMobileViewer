@@ -10,6 +10,8 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.viewer.rds.actia.rdsmobileviewer.CRDSCustom;
 import com.viewer.rds.actia.rdsmobileviewer.DownloadRequestSchema;
 import com.viewer.rds.actia.rdsmobileviewer.DriverCardData;
@@ -319,6 +321,7 @@ public class DownloadManager {
                                          DownloadRequestSchema downloadRequestInfo) {
 
         this.addListener(clientDownloadDataListener);
+
 
         try {
             mRDSClientRequest.fetchRemoteData(mRDSServiceResponse,downloadRequestInfo);
