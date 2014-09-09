@@ -30,7 +30,7 @@ import android.widget.TextView;
 import com.viewer.rds.actia.rdsmobileviewer.PlaceholderFragmentFactory;
 import com.viewer.rds.actia.rdsmobileviewer.R;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.BaseFragment;
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
+import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadRDSManager;
 
 import it.gmariotti.cardslib.library.internal.Card;
 import it.gmariotti.cardslib.library.internal.CardHeader;
@@ -46,7 +46,7 @@ public class HeaderCard extends Card {
     public final static String PARENT_FRAGMENT_TYPE = "PARENT_FRAGMENT_TYPE";
     public final static String CUSTOMER_CODE = "CUSTOMER_CODE";
     private String mCustomerCode;
-    private DownloadManager.DownloadRequestType mDownloadRequestType;
+    private DownloadRDSManager.DownloadRequestType mDownloadRequestType;
     private BaseFragment.IFragmentsInteractionListener mListener;
     private String mFragmentTag;
     protected String mTitle;
@@ -54,7 +54,7 @@ public class HeaderCard extends Card {
 
     public HeaderCard(Context context, BaseFragment.IFragmentsInteractionListener listener, Bundle extraData) {
         this(context, R.layout.card_rds_extras_color_inner_base_main);
-        mDownloadRequestType = Enum.valueOf(DownloadManager.DownloadRequestType.class,extraData.getString(PARENT_FRAGMENT_TYPE));
+        mDownloadRequestType = Enum.valueOf(DownloadRDSManager.DownloadRequestType.class,extraData.getString(PARENT_FRAGMENT_TYPE));
         mCustomerCode =  extraData.getString(CUSTOMER_CODE);
         mListener = listener;
     }

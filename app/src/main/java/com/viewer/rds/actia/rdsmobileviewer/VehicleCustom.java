@@ -4,164 +4,186 @@ import android.content.ContentValues;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.activeandroid.Model;
+import com.activeandroid.annotation.Column;
+import com.activeandroid.annotation.Table;
 import com.viewer.rds.actia.rdsmobileviewer.db.RDSDBHelper;
 import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
 
 /**
  * Created by igaglioti on 08/07/2014.
  */
-public class VehicleCustom implements Parcelable {
+public class VehicleCustom extends Model implements Parcelable {
 
-    private String _CustomerName;
+    @Column
+    private transient String CustomerUniqeId;
 
-    private String _DiagnosticDeviceTime;
+    @Column
+    private String CustomerName;
 
-    private String _FileContent;
+    @Column
+    private String DiagnosticDeviceTime;
 
-    private String _IMEI;
+    @Column
+    private String FileContent;
 
-    private String _IdDevice;
+    @Column
+    private String IMEI;
 
-    private String _JourneyEnableDate;
+    @Column
+    private String IdDevice;
 
-    private String _PhoneNumber;
+    @Column
+    private String JourneyEnableDate;
 
-    private String _StartDate;
+    @Column
+    private String PhoneNumber;
 
-    private String _Status;
+    @Column
+    private String StartDate;
 
-    private String _VIN;
+    @Column
+    private String Status;
 
-    private String _VRN;
-    private String mSwVersion;
-    private String _SwName;
+    @Column(unique = true, onUniqueConflict = Column.ConflictAction.REPLACE)
+    private String VIN;
+
+    @Column
+    private String VRN;
+
+    @Column
+    private String SwVersion;
+
+    @Column
+    private String SwName;
 
     public VehicleCustom(String VIN) {
-        _VIN = VIN;
+        this.VIN = VIN;
     }
 
     public VehicleCustom() {
+        super();
     }
     public VehicleCustom(Parcel in) {
-        _CustomerName = in.readString();
-        _DiagnosticDeviceTime = in.readString();
-        _FileContent = in.readString();
-        _IMEI = in.readString();
-        _IdDevice = in.readString();
-        _JourneyEnableDate = in.readString();
-        _PhoneNumber = in.readString();
-        _StartDate = in.readString();
-        _Status = in.readString();
-        _VIN = in.readString();
-        _VRN = in.readString();
+        CustomerName = in.readString();
+        DiagnosticDeviceTime = in.readString();
+        FileContent = in.readString();
+        IMEI = in.readString();
+        IdDevice = in.readString();
+        JourneyEnableDate = in.readString();
+        PhoneNumber = in.readString();
+        StartDate = in.readString();
+        Status = in.readString();
+        VIN = in.readString();
+        VRN = in.readString();
     }
 
     public String getCustomerName() {
-        return _CustomerName;
+        return CustomerName;
     }
 
     public void setCustomerName(String customerName) {
-        this._CustomerName = customerName;
+        this.CustomerName = customerName;
     }
 
     public String getDiagnosticDeviceTime() {
-        return _DiagnosticDeviceTime;
+        return DiagnosticDeviceTime;
     }
 
 
     public void setDiagnosticDeviceTime(String diagnosticDeviceTime) {
-        this._DiagnosticDeviceTime = Utils.getDateTimeFromTicks(diagnosticDeviceTime);
+        this.DiagnosticDeviceTime = Utils.getDateTimeFromTicks(diagnosticDeviceTime);
     }
 
 
 
     public String getFileContent() {
-        return _FileContent;
+        return FileContent;
     }
 
     public void setFileContent(String fileContent) {
-        this._FileContent = fileContent;
+        this.FileContent = fileContent;
     }
 
     public String getIMEI() {
-        return _IMEI;
+        return IMEI;
     }
 
     public void setIMEI(String imei) {
-        this._IMEI = imei;
+        this.IMEI = imei;
     }
 
     public String getIdDevice() {
-        return _IdDevice;
+        return IdDevice;
     }
 
     public void setIdDevice(String idDevice) {
-        this._IdDevice = idDevice;
+        this.IdDevice = idDevice;
     }
 
     public String getJourneyEnableDate() {
-        return _JourneyEnableDate;
+        return JourneyEnableDate;
     }
 
     public void setJourneyEnableDate(String journeyEnableDate) {
-        this._JourneyEnableDate = journeyEnableDate;
+        this.JourneyEnableDate = journeyEnableDate;
     }
 
     public String getPhoneNumber() {
-        return _PhoneNumber;
+        return PhoneNumber;
     }
 
     public void setPhoneNumber(String phoneNumber) {
-        this._PhoneNumber = phoneNumber;
+        this.PhoneNumber = phoneNumber;
     }
 
     public String getStartDate() {
-        return _StartDate;
+        return StartDate;
     }
 
     public void setStartDate(String startDate) {
-        this._StartDate = Utils.getDateTimeFromTicks(startDate);
+        this.StartDate = Utils.getDateTimeFromTicks(startDate);
     }
 
     public String getStatus() {
-        return _Status;
+        return Status;
     }
 
     public void setStatus(String status) {
-        this._Status = status;
+        this.Status = status;
     }
 
     public String getVIN() {
-        return _VIN;
+        return VIN;
     }
 
     public void setVIN(String vin) {
-        this._VIN = vin;
+        this.VIN = vin;
     }
 
     public String getVRN() {
-        return _VRN;
+        return VRN;
     }
 
     public void setVRN(String vrn) {
-        this._VRN = vrn;
+        this.VRN = vrn;
     }
 
 
     public void setSwVersion(String swVersion) {
-        this.mSwVersion = swVersion;
+        this.SwVersion = swVersion;
     }
 
     public String getSwVersion() {
-        return mSwVersion;
+        return SwVersion;
     }
 
     public void setSwName(String swName) {
-        this._SwName = swName;
+        this.SwName = swName;
     }
 
     public String getSwName() {
-        return _SwName;
+        return SwName;
     }
 
 
@@ -181,17 +203,17 @@ public class VehicleCustom implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(_CustomerName);
-        dest.writeString(_DiagnosticDeviceTime);
-        dest.writeString(_FileContent);
-        dest.writeString(_IMEI);
-        dest.writeString(_IdDevice);
-        dest.writeString(_JourneyEnableDate);
-        dest.writeString(_PhoneNumber);
-        dest.writeString(_StartDate);
-        dest.writeString(_Status);
-        dest.writeString(_VIN);
-        dest.writeString(_VRN);
+        dest.writeString(CustomerName);
+        dest.writeString(DiagnosticDeviceTime);
+        dest.writeString(FileContent);
+        dest.writeString(IMEI);
+        dest.writeString(IdDevice);
+        dest.writeString(JourneyEnableDate);
+        dest.writeString(PhoneNumber);
+        dest.writeString(StartDate);
+        dest.writeString(Status);
+        dest.writeString(VIN);
+        dest.writeString(VRN);
     }
 
     @Override
@@ -204,15 +226,15 @@ public class VehicleCustom implements Parcelable {
     public String toString()
     {
         StringBuilder sb = new StringBuilder();
-        return  sb.append("VIN:").append(_VIN).append("\t\n")
-        .append("Plate:").append(_VRN).append("\t\n")
-        .append("IMEI:").append(_IMEI).append("\t\n")
-        .append("Phone:").append(_PhoneNumber).append("\t\n")
-        .append("Sw:").append(_SwName).append("\t\n")
-        .append("SwVersion:").append(mSwVersion).append("\t\n")
-        .append("DiagTime:").append(_DiagnosticDeviceTime).toString();
+        return  sb.append("VIN:").append(VIN).append("\t\n")
+        .append("Plate:").append(VRN).append("\t\n")
+        .append("IMEI:").append(IMEI).append("\t\n")
+        .append("Phone:").append(PhoneNumber).append("\t\n")
+        .append("Sw:").append(SwName).append("\t\n")
+        .append("SwVersion:").append(SwVersion).append("\t\n")
+        .append("DiagTime:").append(DiagnosticDeviceTime).toString();
         //String res = String.format("VIN:%s\t\nVRN:%s\t\nIMEI:%s\t\nPhoneNumber:%s\t\nSwName:%s\t\nSwVersion:%s\t\nDiagnosticDeviceTime:%s",
-         //       _VIN,_VRN,_IMEI,_PhoneNumber,_SwName, mSwVersion,_DiagnosticDeviceTime);
+         //       VIN,VRN,IMEI,PhoneNumber,SwName, SwVersion,DiagnosticDeviceTime);
         //return res;
     }
 
@@ -252,5 +274,13 @@ public class VehicleCustom implements Parcelable {
         cv.put(RDSDBHelper.START_DATE,vehicle.getStartDate());
         cv.put(RDSDBHelper.JOURNEY_ENBL_DATE,vehicle.getJourneyEnableDate());
         return cv;
+    }
+
+    public String getCustomerUniqeId() {
+        return CustomerUniqeId;
+    }
+
+    public void setCustomerUniqeId(String customerUniqeId) {
+        CustomerUniqeId = customerUniqeId;
     }
 }

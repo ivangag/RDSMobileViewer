@@ -10,50 +10,50 @@ import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
 /**
  * Created by igaglioti on 11/07/2014.
  */
+
 public class MainContractorData implements Parcelable{
 
-    private String mEmail;
+    private String Email;
+
+    private String FriendlyName;
 
 
-    private String mFriendlyName;
+    private int IdCustomer;
 
 
-    private int mIdCustomer;
+    private String InsertDate;
 
 
-    private String mInsertDate;
+    private boolean IsAutomaticDriverAssociationEnabled;
 
 
-    private boolean mIsAutomaticDriverAssociationEnabled;
+    private boolean IsEmailForwardServiceActive;
 
 
-    private boolean mIsEmailForwardServiceActive;
+    private boolean IsFilePushingServiceActive;
 
 
-    private boolean mIsFilePushingServiceActive;
+    private boolean IsSuperCRDSServiceActive;
 
 
-    private boolean mIsSuperCRDSServiceActive;
+    private String Ancodice;
 
 
-    private String mAncodice;
-
-
-    private int mContractLeaseDuration;
+    private int ContractLeaseDuration;
 
     public MainContractorData(Parcel in) {
 
-        mAncodice = in.readString();
-        mEmail = in.readString();
-        mFriendlyName = in.readString();
-        mInsertDate = in.readString();
-        mContractLeaseDuration = in.readInt();
+        Ancodice = in.readString();
+        Email = in.readString();
+        FriendlyName = in.readString();
+        InsertDate = in.readString();
+        ContractLeaseDuration = in.readInt();
         boolean[] values = new boolean[4];
         in.readBooleanArray(values);
-        mIsAutomaticDriverAssociationEnabled = values[0];
-        mIsEmailForwardServiceActive = values[1];
-        mIsFilePushingServiceActive = values[2];
-        mIsSuperCRDSServiceActive = values[3];
+        IsAutomaticDriverAssociationEnabled = values[0];
+        IsEmailForwardServiceActive = values[1];
+        IsFilePushingServiceActive = values[2];
+        IsSuperCRDSServiceActive = values[3];
     }
 
     public MainContractorData() {
@@ -61,75 +61,75 @@ public class MainContractorData implements Parcelable{
     }
 
     public String getEmail() {
-        return mEmail;
+        return Email;
     }
 
     public void setEmail(String email) {
-        this.mEmail = email;
+        this.Email = email;
     }
 
     public String getFriendlyName() {
-        return mFriendlyName;
+        return FriendlyName;
     }
 
     public void setFriendlyName(String friendlyName) {
-        this.mFriendlyName = friendlyName;
+        this.FriendlyName = friendlyName;
     }
 
     public int getIdCustomer() {
-        return mIdCustomer;
+        return IdCustomer;
     }
 
     public void setIdCustomer(int idCustomer) {
-        this.mIdCustomer = idCustomer;
+        this.IdCustomer = idCustomer;
     }
 
     public String getInsertDate() {
-        return mInsertDate;
+        return InsertDate;
     }
 
     public void setInsertDate(String insertDate) {
-        this.mInsertDate = Utils.getDateTimeFromTicks(insertDate);
+        this.InsertDate = Utils.getDateTimeFromTicks(insertDate);
     }
 
-    public boolean ismIsAutomaticDriverAssociationEnabled() {
-        return mIsAutomaticDriverAssociationEnabled;
+    public boolean isAutomaticDriverAssociationEnabled() {
+        return IsAutomaticDriverAssociationEnabled;
     }
 
     public void setIsAutomaticDriverAssociationEnabled(boolean automaticDriverAssociationEnabled) {
-        this.mIsAutomaticDriverAssociationEnabled = automaticDriverAssociationEnabled;
+        this.IsAutomaticDriverAssociationEnabled = automaticDriverAssociationEnabled;
     }
 
-    public boolean ismIsEmailForwardServiceActive() {
-        return mIsEmailForwardServiceActive;
+    public boolean isEmailForwardServiceActive() {
+        return IsEmailForwardServiceActive;
     }
 
     public void setIsEmailForwardServiceActive(boolean emailForwardServiceActive) {
-        this.mIsEmailForwardServiceActive = emailForwardServiceActive;
+        this.IsEmailForwardServiceActive = emailForwardServiceActive;
     }
 
-    public boolean ismIsFilePushingServiceActive() {
-        return mIsFilePushingServiceActive;
+    public boolean isFilePushingServiceActive() {
+        return IsFilePushingServiceActive;
     }
 
     public void setIsFilePushingServiceActive(boolean filePushingServiceActive) {
-        this.mIsFilePushingServiceActive = filePushingServiceActive;
+        this.IsFilePushingServiceActive = filePushingServiceActive;
     }
 
-    public boolean ismIsSuperCRDSServiceActive() {
-        return mIsSuperCRDSServiceActive;
+    public boolean isSuperCRDSServiceActive() {
+        return IsSuperCRDSServiceActive;
     }
 
     public void setIsSuperCRDSServiceActive(boolean superCRDSServiceActive) {
-        this.mIsSuperCRDSServiceActive = superCRDSServiceActive;
+        this.IsSuperCRDSServiceActive = superCRDSServiceActive;
     }
 
     public String getAncodice() {
-        return mAncodice;
+        return Ancodice;
     }
 
     public void setAncodice(String mAncodice) {
-        this.mAncodice = mAncodice;
+        this.Ancodice = mAncodice;
     }
 
 
@@ -148,12 +148,12 @@ public class MainContractorData implements Parcelable{
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(mAncodice);
-        dest.writeString(mEmail);
-        dest.writeString(mFriendlyName);
-        dest.writeString(mInsertDate);
-        dest.writeInt(mContractLeaseDuration);
-        dest.writeBooleanArray(new boolean[]{mIsAutomaticDriverAssociationEnabled, mIsEmailForwardServiceActive, mIsFilePushingServiceActive, mIsSuperCRDSServiceActive});
+        dest.writeString(Ancodice);
+        dest.writeString(Email);
+        dest.writeString(FriendlyName);
+        dest.writeString(InsertDate);
+        dest.writeInt(ContractLeaseDuration);
+        dest.writeBooleanArray(new boolean[]{IsAutomaticDriverAssociationEnabled, IsEmailForwardServiceActive, IsFilePushingServiceActive, IsSuperCRDSServiceActive});
     }
 
     @Override
@@ -167,11 +167,11 @@ public class MainContractorData implements Parcelable{
     {
         /*
         String res = String.format("Name:%s;AnCode:%s;InsertDate:%s;FilePush:%b;SuperCRDS:%b;EmailPush:%b;AutoDriver:%b",
-                mFriendlyName,mAncodice,mInsertDate,mIsFilePushingServiceActive,mIsSuperCRDSServiceActive,mIsEmailForwardServiceActive,mIsAutomaticDriverAssociationEnabled);
+                FriendlyName,Ancodice,InsertDate,IsFilePushingServiceActive,IsSuperCRDSServiceActive,IsEmailForwardServiceActive,IsAutomaticDriverAssociationEnabled);
                 */
         String res = String.format("Name:%s\t\nPRIMARY_CUSTOMER_ID:%d\t\nAnCodice:%s\t\nInsertDate:%s\t\nFilePush:%b\t\nSuperCRDS:%b\t\nEmailPush:%b\t\nAutoDriver:%b",
                 getFriendlyName(),getIdCustomer(),getAncodice(),getInsertDate(),
-                mIsFilePushingServiceActive,mIsSuperCRDSServiceActive,mIsEmailForwardServiceActive,mIsAutomaticDriverAssociationEnabled);
+                IsFilePushingServiceActive, IsSuperCRDSServiceActive, IsEmailForwardServiceActive, IsAutomaticDriverAssociationEnabled);
         return res;
     }
 
@@ -196,10 +196,10 @@ public class MainContractorData implements Parcelable{
         cv.put(RDSDBHelper.EMAIL,customer.getEmail());
         cv.put(RDSDBHelper.ID_CUSTOMER, customer.getIdCustomer());
         cv.put(RDSDBHelper.INSERT_DATE,customer.getInsertDate());
-        cv.put(RDSDBHelper.AUTO_DRIVER, customer.ismIsAutomaticDriverAssociationEnabled());
-        cv.put(RDSDBHelper.EMAIL_FORWARD,customer.ismIsEmailForwardServiceActive());
-        cv.put(RDSDBHelper.SUPER_CRDS, customer.ismIsSuperCRDSServiceActive());
-        cv.put(RDSDBHelper.FILE_PUSH,customer.ismIsFilePushingServiceActive());
+        cv.put(RDSDBHelper.AUTO_DRIVER, customer.isAutomaticDriverAssociationEnabled());
+        cv.put(RDSDBHelper.EMAIL_FORWARD,customer.isEmailForwardServiceActive());
+        cv.put(RDSDBHelper.SUPER_CRDS, customer.isSuperCRDSServiceActive());
+        cv.put(RDSDBHelper.FILE_PUSH,customer.isFilePushingServiceActive());
         return cv;
     }
 }

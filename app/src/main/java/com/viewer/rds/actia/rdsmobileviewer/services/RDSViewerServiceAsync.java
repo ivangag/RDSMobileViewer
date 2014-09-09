@@ -4,7 +4,6 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.net.http.AndroidHttpClient;
-import android.os.Debug;
 import android.os.IBinder;
 import android.os.Parcel;
 import android.os.RemoteException;
@@ -15,9 +14,7 @@ import com.viewer.rds.actia.rdsmobileviewer.IRDSClientResponse;
 import com.viewer.rds.actia.rdsmobileviewer.IRDSClientRequest;
 import com.viewer.rds.actia.rdsmobileviewer.ResultOperation;
 import com.viewer.rds.actia.rdsmobileviewer.db.RDSDBMapper;
-import com.viewer.rds.actia.rdsmobileviewer.utils.CacheDataManager;
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
-import com.viewer.rds.actia.rdsmobileviewer.utils.RDSEmptyDataException;
+import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadRDSManager;
 
 public class RDSViewerServiceAsync extends Service {
     private static RDSDBMapper mRDSDBMapper;
@@ -98,7 +95,7 @@ public class RDSViewerServiceAsync extends Service {
             */
             if(!mHasCacheData) {
                 Log.d(TAG, "mHasCacheData: " + mHasCacheData);
-                resOp = DownloadManager.FetchingRemoteData(mClient, downloadRequest, false);
+                resOp = DownloadRDSManager.FetchingRemoteData(mClient, downloadRequest, false);
                 Log.d(TAG, "FetchingRemoteData: " + resOp.isStatus());
             }
 

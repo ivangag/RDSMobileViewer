@@ -12,12 +12,12 @@ import com.viewer.rds.actia.rdsmobileviewer.PlaceholderFragmentFactory;
 import com.viewer.rds.actia.rdsmobileviewer.R;
 import com.viewer.rds.actia.rdsmobileviewer.DownloadRequestSchema;
 import com.viewer.rds.actia.rdsmobileviewer.ResultOperation;
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
+import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadRDSManager;
 
 /**
  * Created by igaglioti on 28/07/2014.
  */
-public class DownloadHandlingFragment extends Fragment implements DownloadManager.IRemoteDownloadDataListener{
+public class DownloadHandlerFragment extends Fragment implements DownloadRDSManager.IRemoteDownloadDataListener{
 
     private TaskDownloadCallbacks mCallbacks;
     private DownloadRequestSchema mDownloadRequest = null;
@@ -62,7 +62,7 @@ public class DownloadHandlingFragment extends Fragment implements DownloadManage
 
         // Retain this fragment across configuration changes.
         setRetainInstance(true);
-        DownloadManager.getInstance().addListener(this);
+        DownloadRDSManager.getInstance().addListener(this);
     }
 
     public void startDownloadRequest(DownloadRequestSchema downloadRequest) {
@@ -71,7 +71,8 @@ public class DownloadHandlingFragment extends Fragment implements DownloadManage
 
             setDownloadMsg();
 
-            DownloadManager.getInstance().RequireDownloadAsyncTask(null, mDownloadRequest);
+            //DownloadManager.getInstance().RequireDownloadAsyncTask(null, mDownloadRequest);
+            DownloadRDSManager.getInstance().RequireDownloadVolleyTask(getActivity(),this, mDownloadRequest);
             ++mDownloadRequestCountPending;
         }
     }
@@ -116,7 +117,7 @@ public class DownloadHandlingFragment extends Fragment implements DownloadManage
     @Override
     public void onDestroy() {
         super.onDestroy();
-        DownloadManager.getInstance().removeListener(this);
+        DownloadRDSManager.getInstance().removeListener(this);
     }
 
     @Override
@@ -135,9 +136,9 @@ public class DownloadHandlingFragment extends Fragment implements DownloadManage
         mCallbacks = null;
     }
 
-    public static DownloadHandlingFragment newIstance(DownloadRequestSchema downloadRequestSchema) {
+    public static DownloadHandlerFragment newInstance(DownloadRequestSchema downloadRequestSchema) {
 
-        DownloadHandlingFragment fragment = new DownloadHandlingFragment();
+        DownloadHandlerFragment fragment = new DownloadHandlerFragment();
         Bundle args = new Bundle();
         args.putParcelable(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE, downloadRequestSchema);
         fragment.setArguments(args);

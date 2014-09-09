@@ -13,8 +13,8 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import com.viewer.rds.actia.rdsmobileviewer.fragments.BaseFragment;
-import com.viewer.rds.actia.rdsmobileviewer.fragments.DownloadHandlingFragment;
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
+import com.viewer.rds.actia.rdsmobileviewer.fragments.DownloadHandlerFragment;
+import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadRDSManager;
 import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
 
 import java.util.Locale;
@@ -22,7 +22,7 @@ import java.util.Locale;
 /**
  * Created by igaglioti on 23/07/2014.
  */
-public class DetailsMainMenuActivity extends BaseActivity implements ActionBar.TabListener,DownloadHandlingFragment.TaskDownloadCallbacks {
+public class DetailsMainMenuActivity extends BaseActivity implements ActionBar.TabListener,DownloadHandlerFragment.TaskDownloadCallbacks {
 
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
@@ -33,7 +33,7 @@ public class DetailsMainMenuActivity extends BaseActivity implements ActionBar.T
         if(savedInstanceState == null){
             FragmentTransaction ft = mFragmentManager.beginTransaction();
 
-            ft.add(R.id.fragment_handling_download, DownloadHandlingFragment.newIstance(null), FRAGMENT_DOWNLOAD_TAG)
+            ft.add(R.id.fragment_handling_download, DownloadHandlerFragment.newInstance(null), FRAGMENT_DOWNLOAD_TAG)
                     .commit();
         }
         setActivityDetailsLayout();
@@ -169,25 +169,6 @@ public class DetailsMainMenuActivity extends BaseActivity implements ActionBar.T
         }
     }
 
-/*
-    @Override
-    public void hideDownloadProgressDialog() {
-        findViewById(R.id.loadingPanel).setVisibility(View.GONE);
-        findViewById(R.id.pager).setVisibility(View.VISIBLE);
-        View view = findViewById(R.id.fragment_main_details);
-        if(view != null)
-            view.setVisibility(View.VISIBLE);
-    }
-    @Override
-    public void showProgressDialog(String text) {
-        ((TextView)findViewById(R.id.txt_progress_loading)).setText(String.format(getString(R.string.progress_loading_text),text));
-        findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
-        findViewById(R.id.pager).setVisibility(View.GONE);
-        View view = findViewById(R.id.fragment_main_details);
-        if(view != null)
-            view.setVisibility(View.GONE);
-    }
-*/
 
     @Override
     public void hideDownloadProgressDialog() {
@@ -225,14 +206,14 @@ public class DetailsMainMenuActivity extends BaseActivity implements ActionBar.T
     @Override
     public void onStop() {
         super.onStop();
-        DownloadManager.getInstance().removeListener(this);
+        DownloadRDSManager.getInstance().removeListener(this);
      //   DownloadUtility.get().unbindRDSService(this);
     }
 
     @Override
     public void onStart() {
        super.onStart();
-        DownloadManager.getInstance().addListener(this);
+        DownloadRDSManager.getInstance().addListener(this);
    //    DownloadUtility.get().bindRDService(this);
 
     }
@@ -250,8 +231,8 @@ public class DetailsMainMenuActivity extends BaseActivity implements ActionBar.T
             case R.id.action_download_data:
                 //launchDownloadRequest(false);
                 //requireDataDownload(makeDownloadRequestSchema(false));
-                DownloadManager.DownloadRequestType fragmentType =
-                        DownloadManager.DownloadRequestType.valueOf(mCurrentTabFragment.getArguments().
+                DownloadRDSManager.DownloadRequestType fragmentType =
+                        DownloadRDSManager.DownloadRequestType.valueOf(mCurrentTabFragment.getArguments().
                         getString(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE));
                 DownloadRequestSchema downloadRequestSchema = DownloadRequestSchema.newInstance
                         (fragmentType,((BaseFragment) mCurrentTabFragment).getUniqueCustomerCode(),"",false);
@@ -264,7 +245,7 @@ public class DetailsMainMenuActivity extends BaseActivity implements ActionBar.T
     private DownloadRequestSchema makeDownloadRequestSchema(boolean cacheIfExist) {
 
         DownloadRequestSchema requestType = DownloadRequestSchema.newInstance();
-        DownloadManager.DownloadRequestType fragmentType = DownloadManager.DownloadRequestType.valueOf(mCurrentTabFragment.getArguments().getString(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE));
+        DownloadRDSManager.DownloadRequestType fragmentType = DownloadRDSManager.DownloadRequestType.valueOf(mCurrentTabFragment.getArguments().getString(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE));
         requestType.setDownloadRequestType(fragmentType);
         requestType.setCacheOption(cacheIfExist);
         return requestType;

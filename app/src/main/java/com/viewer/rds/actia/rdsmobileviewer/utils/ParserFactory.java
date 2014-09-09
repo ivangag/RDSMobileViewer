@@ -193,7 +193,7 @@ public class ParserFactory {
     }
 
 
-    public static ArrayList parseJsonToRDSRemoteEntity(String jsonRaw, DownloadManager.DownloadRequestType requestType) throws JSONException {
+    public static ArrayList parseJsonToRDSRemoteEntity(String jsonRaw, DownloadRDSManager.DownloadRequestType requestType) throws JSONException {
         final JSONArray jsonArray = new JSONArray(jsonRaw);
         ArrayList result = null;
         switch (requestType) {
@@ -220,4 +220,11 @@ public class ParserFactory {
         return result;
     }
 
+    public static byte[] getBytesFromJsonArray(ArrayList<Double> arrayList) {
+        final byte[] streamCompress = new byte[arrayList.size()];
+        for (int Idx = 0; Idx < arrayList.size(); Idx++) {
+            streamCompress[Idx] = arrayList.get(Idx).byteValue();
+        }
+        return streamCompress;
+    }
 }

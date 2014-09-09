@@ -12,7 +12,7 @@ import android.widget.TextView;
 
 import com.viewer.rds.actia.rdsmobileviewer.PlaceholderFragmentFactory;
 import com.viewer.rds.actia.rdsmobileviewer.R;
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
+import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadRDSManager;
 import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
 
 import java.util.ArrayList;
@@ -153,7 +153,7 @@ public class MainMenuCardsFragment extends BaseFragment implements IFragmentNoti
         }
     }
 
-     public static MainMenuCardsFragment newInstance(DownloadManager.DownloadRequestType fragmentType, boolean setActionBarTitle) {
+     public static MainMenuCardsFragment newInstance(DownloadRDSManager.DownloadRequestType fragmentType, boolean setActionBarTitle) {
         MainMenuCardsFragment fragment = new MainMenuCardsFragment();
         Bundle args = new Bundle();
         args.putString(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE, fragmentType.toString());

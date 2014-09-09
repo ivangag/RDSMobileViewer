@@ -2,8 +2,9 @@ package com.viewer.rds.actia.rdsmobileviewer;
 
 import android.app.Application;
 
+import com.activeandroid.ActiveAndroid;
 import com.viewer.rds.actia.rdsmobileviewer.utils.CacheDataManager;
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
+import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadRDSManager;
 import com.viewer.rds.actia.rdsmobileviewer.volley.VolleyRequestManager;
 
 /**
@@ -15,17 +16,19 @@ public final class ApplicationEntry extends Application {
 
     @Override
     public void onTerminate() {
-        VolleyRequestManager.getInstance(this).getRequestQueue().stop();
-        DownloadManager.getInstance().unbindRDSService(this);
         super.onTerminate();
+        VolleyRequestManager.getInstance(this).getRequestQueue().stop();
+        DownloadRDSManager.getInstance().unbindRDSService(this);
+        ActiveAndroid.dispose();
     }
 
     @Override
     public void onCreate() {
+        super.onCreate();
         //DownloadManager.get().startRDService(this);
         VolleyRequestManager.getInstance(this).getRequestQueue().start();
-        DownloadManager.getInstance().bindRDService(this);
+        DownloadRDSManager.getInstance().bindRDService(this);
         CacheDataManager.get().setContext(this);
-        super.onCreate();
+        ActiveAndroid.initialize(this);
     }
 }

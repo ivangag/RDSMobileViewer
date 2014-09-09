@@ -21,7 +21,7 @@ import com.viewer.rds.actia.rdsmobileviewer.PlaceholderFragmentFactory;
 import com.viewer.rds.actia.rdsmobileviewer.R;
 import com.viewer.rds.actia.rdsmobileviewer.cards.CustomExpandCard;
 import com.viewer.rds.actia.rdsmobileviewer.cards.HeaderCard;
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
+import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadRDSManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -71,7 +71,7 @@ public class CRDSCardsFragment extends BaseFragment implements IFragmentNotifica
 
         if(mIsFirstVisualization) {
             mIsFirstVisualization = false;
-            DownloadManager.DownloadRequestType type = DownloadManager.DownloadRequestType.valueOf((String) getArguments().get(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE));
+            DownloadRDSManager.DownloadRequestType type = DownloadRDSManager.DownloadRequestType.valueOf((String) getArguments().get(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE));
             if(mListener != null)
                 mListener.onFirstFragmentVisualisation(this, type);
         }
@@ -164,7 +164,7 @@ public class CRDSCardsFragment extends BaseFragment implements IFragmentNotifica
         }
     }
 
-    public static CRDSCardsFragment newInstance(DownloadManager.DownloadRequestType fragmentType,boolean setActionBarTitle) {
+    public static CRDSCardsFragment newInstance(DownloadRDSManager.DownloadRequestType fragmentType,boolean setActionBarTitle) {
 
         CRDSCardsFragment fragment = new CRDSCardsFragment();
         Bundle args = new Bundle();
@@ -262,9 +262,9 @@ public class CRDSCardsFragment extends BaseFragment implements IFragmentNotifica
         public CRDSDataCardWrapper(Context context, CRDSCustom crdsData) {
             super(context, R.layout.card_rds_item_simple_inner_content);
 
-            DownloadManager.DownloadRequestType downloadRequestType = Enum.valueOf(DownloadManager.DownloadRequestType.class,
+            DownloadRDSManager.DownloadRequestType downloadRequestType = Enum.valueOf(DownloadRDSManager.DownloadRequestType.class,
                     CRDSCardsFragment.this.getArguments().getString(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE));
-            if(downloadRequestType.equals(DownloadManager.DownloadRequestType.CRDS_NOT_TRUSTED))
+            if(downloadRequestType.equals(DownloadRDSManager.DownloadRequestType.CRDS_NOT_TRUSTED))
                 this.mTitleHeader =  crdsData.getAppName() + " (" + crdsData.getRagioneSociale() + ")";
             else
                 this.mTitleHeader = crdsData.getAppName();

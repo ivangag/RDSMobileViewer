@@ -10,23 +10,17 @@ import android.view.MenuItem;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
-import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
+import com.activeandroid.ActiveAndroid;
 import com.viewer.rds.actia.rdsmobileviewer.db.RDSDBMapper;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.BaseFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.CRDSCardsFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.CustomersCardsFragment;
-import com.viewer.rds.actia.rdsmobileviewer.fragments.DownloadHandlingFragment;
+import com.viewer.rds.actia.rdsmobileviewer.fragments.DownloadHandlerFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.DriversCardsFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.MainMenuCardsFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.VehiclesCardsFragment;
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
+import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadRDSManager;
 import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
-import com.viewer.rds.actia.rdsmobileviewer.volley.VolleyRequestManager;
-
-import org.json.JSONObject;
 
 import java.util.List;
 
@@ -34,7 +28,7 @@ import java.util.List;
  * Created by igaglioti on 23/07/2014.
  */
 public class MainMenuActivity extends BaseActivity
-        implements MainMenuCardsFragment.OnMainMenuInteractionListener, DownloadHandlingFragment.TaskDownloadCallbacks, FragmentManager.OnBackStackChangedListener {
+        implements MainMenuCardsFragment.OnMainMenuInteractionListener, DownloadHandlerFragment.TaskDownloadCallbacks, FragmentManager.OnBackStackChangedListener {
 
     private static MainMenuCardsFragment mMenuCardsFragment;
     private static CustomersCardsFragment mCustomerListFragment;
@@ -42,8 +36,8 @@ public class MainMenuActivity extends BaseActivity
     private static CRDSCardsFragment mCRDCustomerCardsFragment;
     private static DriversCardsFragment mDriversCustomerListFragment;
 
-    private DownloadManager.DownloadRequestType mCurrentPrimaryFragmentType;
-    private DownloadManager.DownloadRequestType mCurrentSecondaryFragmentType = null;
+    private DownloadRDSManager.DownloadRequestType mCurrentPrimaryFragmentType;
+    private DownloadRDSManager.DownloadRequestType mCurrentSecondaryFragmentType = null;
     private RDSDBMapper mRDSDBMapper;
     private static boolean isFragmentsInit = false;
     private static String mLastAddedFragment = "";
@@ -54,11 +48,11 @@ public class MainMenuActivity extends BaseActivity
         super.onCreate(savedInstanceState);
         if(!isFragmentsInit)
         {
-            mMenuCardsFragment = MainMenuCardsFragment.newInstance(DownloadManager.DownloadRequestType.MAIN_MENU, true);
-            mCustomerListFragment = CustomersCardsFragment.newInstance(DownloadManager.DownloadRequestType.CUSTOMERS_LIST, true);
-            mVehiclesCustomerListFragment = VehiclesCardsFragment.newInstance(DownloadManager.DownloadRequestType.VEHICLES_OWNED, true);
-            mCRDCustomerCardsFragment = CRDSCardsFragment.newInstance(DownloadManager.DownloadRequestType.CRDS_OWNED, true);
-            mDriversCustomerListFragment = DriversHolderFragment.newInstance(DownloadManager.DownloadRequestType.DRIVERS_OWNED, true);
+            mMenuCardsFragment = MainMenuCardsFragment.newInstance(DownloadRDSManager.DownloadRequestType.MAIN_MENU, true);
+            mCustomerListFragment = CustomersCardsFragment.newInstance(DownloadRDSManager.DownloadRequestType.CUSTOMERS_LIST, true);
+            mVehiclesCustomerListFragment = VehiclesCardsFragment.newInstance(DownloadRDSManager.DownloadRequestType.VEHICLES_OWNED, true);
+            mCRDCustomerCardsFragment = CRDSCardsFragment.newInstance(DownloadRDSManager.DownloadRequestType.CRDS_OWNED, true);
+            mDriversCustomerListFragment = DriversHolderFragment.newInstance(DownloadRDSManager.DownloadRequestType.DRIVERS_OWNED, true);
             isFragmentsInit = true;
         }
         setActivityCustomersLayout(savedInstanceState);
@@ -73,10 +67,10 @@ public class MainMenuActivity extends BaseActivity
         if (savedInstanceState == null) {
 
             FragmentTransaction ft = mFragmentManager.beginTransaction();
-            mCurrentPrimaryFragmentType = DownloadManager.DownloadRequestType.MAIN_MENU;
+            mCurrentPrimaryFragmentType = DownloadRDSManager.DownloadRequestType.MAIN_MENU;
 
             ft.add(R.id.fragment_main, mMenuCardsFragment, FRAGMENT_MAIN_MENU_TAG)
-                    .add(R.id.fragment_handling_download, DownloadHandlingFragment.newIstance(null), FRAGMENT_DOWNLOAD_TAG)
+                    .add(R.id.fragment_handling_download, DownloadHandlerFragment.newInstance(null), FRAGMENT_DOWNLOAD_TAG)
                     .commit();
 
             mFragmentManager.executePendingTransactions();
@@ -104,11 +98,11 @@ public class MainMenuActivity extends BaseActivity
         mCurrentSecondaryFragmentType = getFragmentType(R.id.fragment_main_details);
         if(newOrientation.equals(LANDSCAPE))
         {
-            if(mCurrentPrimaryFragmentType == DownloadManager.DownloadRequestType.MAIN_MENU)
+            if(mCurrentPrimaryFragmentType == DownloadRDSManager.DownloadRequestType.MAIN_MENU)
             {
 
             }
-            else if(mCurrentPrimaryFragmentType != DownloadManager.DownloadRequestType.CUSTOMERS_LIST)
+            else if(mCurrentPrimaryFragmentType != DownloadRDSManager.DownloadRequestType.CUSTOMERS_LIST)
             {
                 // add customers on the place of extra info and put extra to secondary fragment place
                 final Fragment fragmentPrimary = getFragment(R.id.fragment_main);
@@ -216,7 +210,7 @@ public class MainMenuActivity extends BaseActivity
     public void onStart() {
         super.onStart();
         mRDSDBMapper.open();
-        DownloadManager.getInstance().addListener(this);
+        DownloadRDSManager.getInstance().addListener(this);
         //DownloadUtility.get().bindRDService(this);
         //mRDSDBMapper.deleteDatabase();
        // mRDSDBMapper.deleteTable(); //!!only for test!!
@@ -227,7 +221,7 @@ public class MainMenuActivity extends BaseActivity
     @Override
     public void onStop() {
         super.onStop();
-        DownloadManager.getInstance().removeListener(this);
+        DownloadRDSManager.getInstance().removeListener(this);
         //DownloadUtility.get().unbindRDSService(this);
     }
 
@@ -250,7 +244,7 @@ public class MainMenuActivity extends BaseActivity
                     break;
                 case CUSTOMERS_LIST:
                     if (mDisplayOrientation.equals(PORTRAIT) // this should never happen
-                            && !getFragmentType(R.id.fragment_main).equals(DownloadManager.DownloadRequestType.CUSTOMERS_LIST))
+                            && !getFragmentType(R.id.fragment_main).equals(DownloadRDSManager.DownloadRequestType.CUSTOMERS_LIST))
                         replaceFragment(R.id.fragment_main, null, mCustomerListFragment, false);
 
                     //PushDataToFragment(mCustomerListFragment, requestType, result.getClassReturn());
@@ -262,9 +256,24 @@ public class MainMenuActivity extends BaseActivity
                 case VEHICLES_OWNED:
                     handleDetailsFragmentViewOnUpdateData(mVehiclesCustomerListFragment);
                     mVehiclesCustomerListFragment.OnUpdateData(requestType.getUniqueCustomerCode(), result.getClassReturn(), VehicleCustom.class);
-                    for (VehicleCustom vehicleCustom : (List<VehicleCustom>) result.getClassReturn()) {
+                    /*for (VehicleCustom vehicleCustom : (List<VehicleCustom>) result.getClassReturn()) {
                         mRDSDBMapper.insertOrUpdateVehicleData(vehicleCustom, requestType.getUniqueCustomerCode(), true);
+                    }*/
+                    ActiveAndroid.beginTransaction();
+                    try{
+                        for (VehicleCustom vehicleCustom : (List<VehicleCustom>) result.getClassReturn()) {
+
+                            //VehicleBound vehicleBound = (VehicleBound) vehicleCustom;
+                            long idRes = -1;
+                            vehicleCustom.setCustomerUniqeId(requestType.getUniqueCustomerCode());
+                            idRes = vehicleCustom.save();
+                        }
+                        ActiveAndroid.setTransactionSuccessful();
                     }
+                    finally {
+                        ActiveAndroid.endTransaction();
+                    }
+
                     break;
                 case DRIVERS_OWNED:
                     handleDetailsFragmentViewOnUpdateData(mDriversCustomerListFragment);
@@ -287,7 +296,7 @@ public class MainMenuActivity extends BaseActivity
     }
 
     public void handleDetailsFragmentViewOnUpdateData(BaseFragment fragment) {
-        if (getFragmentType(R.id.fragment_main).equals(DownloadManager.DownloadRequestType.CUSTOMERS_LIST)) {
+        if (getFragmentType(R.id.fragment_main).equals(DownloadRDSManager.DownloadRequestType.CUSTOMERS_LIST)) {
             int newLayoutId = R.id.fragment_main;
             if (mDisplayOrientation.equals(LANDSCAPE))
                 newLayoutId = R.id.fragment_main_details;
@@ -307,9 +316,10 @@ public class MainMenuActivity extends BaseActivity
         boolean showInfo = false;
         final Fragment downloadFragment = getFragmentManager().findFragmentByTag(FRAGMENT_DOWNLOAD_TAG);
         if((null != downloadFragment)
-            && (downloadFragment instanceof DownloadHandlingFragment))
+            && (downloadFragment instanceof DownloadHandlerFragment))
         {
-            showInfo = (((DownloadHandlingFragment)(downloadFragment)).getDownloadRequestCountPending() > 0);
+            //showInfo = (((DownloadHandlerFragment)(downloadFragment)).getDownloadRequestCountPending() > 0);
+            showInfo = DownloadRDSManager.getInstance().getRequestCounter() > 0;
         }
         if(!showInfo) {
             if (mDisplayOrientation.equals(LANDSCAPE)) {
@@ -350,51 +360,17 @@ public class MainMenuActivity extends BaseActivity
         //item.getMenuInfo()
         switch (id) {
             case R.id.action_settings:
-                makeVolleyRequest();
-                return true;
+                   return true;
             case R.id.action_download_data:
-                if(!(getFragmentType(R.id.fragment_main).equals(DownloadManager.DownloadRequestType.MAIN_MENU))) {
+                if(!(getFragmentType(R.id.fragment_main).equals(DownloadRDSManager.DownloadRequestType.MAIN_MENU))) {
                     DownloadRequestSchema downloadRequestSchema = DownloadRequestSchema.newInstance
                             (getFragmentType(R.id.fragment_main),((BaseFragment) getFragment(R.id.fragment_main)).getUniqueCustomerCode(),"",false);
                     makeDownloadRequest(downloadRequestSchema);
                 }
                 return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
-
-
-    void makeVolleyRequest(){
-        String url = DownloadManager.DownloadRequestType.CUSTOMERS_LIST.
-                getWSCallName(null);
-        JsonObjectRequest jsObjRequest = new JsonObjectRequest
-                (Request.Method.GET, url, null, new Response.Listener() {
-
-                    /*
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        //mTxtDisplay.setText("Response: " + response.toString());
-                    }
-                    */
-
-                    @Override
-                    public void onResponse(Object response) {
-                        if(response instanceof JSONObject){
-
-                        }
-                    }
-                }, new Response.ErrorListener() {
-
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        // TODO Auto-generated method stub
-
-                    }
-                });
-        VolleyRequestManager.getInstance(this).addToRequestQueue(jsObjRequest);
-    }
-
 
     @Override
     public void onMenuSectionSelected(Utils.MainMenuSectionItemType subMenuSelected) {
@@ -421,27 +397,6 @@ public class MainMenuActivity extends BaseActivity
 
     @Override
     public void onBackPressed() {
-
-        boolean callBaseBackPressed = true;
-        /*
-        if(mDisplayOrientation == Configuration.ORIENTATION_LANDSCAPE)
-        {
-            //when it's time return to main menu
-            DownloadUtility.DownloadRequestType fragmentPrimaryType = getFragmentType(R.id.fragment_main);
-            final int bsCount = mFragmentManager.getBackStackEntryCount();
-            if((bsCount == 0)
-                && !fragmentPrimaryType.equals(DownloadUtility.DownloadRequestType.MAIN_MENU))
-            {
-                replaceFragment(R.id.fragment_main, mFragmentManager.findFragmentById(R.id.fragment_main), getFragment(DownloadUtility.DownloadRequestType.MAIN_MENU), true);
-                callBaseBackPressed = false;
-            }
-            if(!fragmentPrimaryType.equals(DownloadUtility.DownloadRequestType.MAIN_MENU))
-            {
-                hideExtraLayout();
-            }
-        }
-        */
-        if(callBaseBackPressed)
             super.onBackPressed();
     }
 

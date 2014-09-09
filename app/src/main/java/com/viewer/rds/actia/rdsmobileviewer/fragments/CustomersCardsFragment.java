@@ -18,7 +18,7 @@ import android.widget.TextView;
 import com.viewer.rds.actia.rdsmobileviewer.MainContractorData;
 import com.viewer.rds.actia.rdsmobileviewer.PlaceholderFragmentFactory;
 import com.viewer.rds.actia.rdsmobileviewer.R;
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
+import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadRDSManager;
 import com.viewer.rds.actia.rdsmobileviewer.cards.CustomExpandCard;
 
 import java.util.ArrayList;
@@ -50,7 +50,7 @@ public class CustomersCardsFragment extends BaseFragment implements IFragmentNot
     private List<CustomerDataCardWrapper> mLastRetrievedItems = new ArrayList<CustomerDataCardWrapper>();
     private List<CustomerDataCardWrapper> mLastFilteredItems;
     private String mLastFilter;
-    private DownloadManager.DownloadRequestType fragmentRDSType;
+    private DownloadRDSManager.DownloadRequestType fragmentRDSType;
 
     @Override
     public boolean getIfHastToSetTitle() {
@@ -127,7 +127,7 @@ public class CustomersCardsFragment extends BaseFragment implements IFragmentNot
 
         if(mIsFirstVisualization) {
             mIsFirstVisualization = false;
-            fragmentRDSType = DownloadManager.DownloadRequestType.valueOf((String) getArguments().get(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE));
+            fragmentRDSType = DownloadRDSManager.DownloadRequestType.valueOf((String) getArguments().get(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE));
             if(mListener != null)
                 mListener.onFirstFragmentVisualisation(this, fragmentRDSType);
         }
@@ -161,7 +161,7 @@ public class CustomersCardsFragment extends BaseFragment implements IFragmentNot
         }
     }
 
-    public static CustomersCardsFragment newInstance(DownloadManager.DownloadRequestType fragmentType, boolean setActionBarTitle ) {
+    public static CustomersCardsFragment newInstance(DownloadRDSManager.DownloadRequestType fragmentType, boolean setActionBarTitle ) {
         CustomersCardsFragment fragment = new CustomersCardsFragment();
         Bundle args = new Bundle();
         args.putBoolean(PlaceholderFragmentFactory.ARG_SET_TITLE_ACTION_BAR, setActionBarTitle);
@@ -284,13 +284,13 @@ public class CustomersCardsFragment extends BaseFragment implements IFragmentNot
                 public void onMenuItemClick(BaseCard card, MenuItem item) {
                     switch (item.getItemId()) {
                         case R.id.action_getVehicles:
-                            mListener.onCustomerVehiclesDataRequiredSelected(DownloadManager.DownloadRequestType.VEHICLES_OWNED,((CustomerDataCardWrapper) card).mCustomerAncodice,true);
+                            mListener.onCustomerVehiclesDataRequiredSelected(DownloadRDSManager.DownloadRequestType.VEHICLES_OWNED,((CustomerDataCardWrapper) card).mCustomerAncodice,true);
                             break;
                         case R.id.action_getDrivers:
-                            mListener.onCustomerDrivesDataRequiredSelected(DownloadManager.DownloadRequestType.DRIVERS_OWNED,((CustomerDataCardWrapper) card).mCustomerAncodice,true);
+                            mListener.onCustomerDrivesDataRequiredSelected(DownloadRDSManager.DownloadRequestType.DRIVERS_OWNED,((CustomerDataCardWrapper) card).mCustomerAncodice,true);
                             break;
                         case R.id.action_getCRDS:
-                            mListener.onCustomerCRDSDataRequiredSelected(DownloadManager.DownloadRequestType.CRDS_OWNED,((CustomerDataCardWrapper) card).mCustomerAncodice,true);
+                            mListener.onCustomerCRDSDataRequiredSelected(DownloadRDSManager.DownloadRequestType.CRDS_OWNED,((CustomerDataCardWrapper) card).mCustomerAncodice,true);
                             break;
                     }
                 }

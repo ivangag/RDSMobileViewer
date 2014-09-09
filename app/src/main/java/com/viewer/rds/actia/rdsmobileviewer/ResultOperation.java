@@ -8,11 +8,11 @@ import android.os.Parcelable;
  */
 public class ResultOperation implements Parcelable{
 
-    private boolean mStatus;
-    private String mOtherInfo;
-    private Object mClassReturn;
-    private int mClassReturnSize;
-    private String mClassReturnType = null;
+    private boolean Status;
+    private String OtherInfo;
+    private Object ClassReturn;
+    private transient int mClassReturnSize;
+    private transient String mClassReturnType = null;
 
     private ResultOperation() {
 
@@ -34,27 +34,27 @@ public class ResultOperation implements Parcelable{
     }
 
     public boolean isStatus() {
-        return mStatus;
+        return Status;
     }
 
     public void setStatus(boolean mStatus) {
-        this.mStatus = mStatus;
+        this.Status = mStatus;
     }
 
     public String getOtherInfo() {
-        return mOtherInfo;
+        return OtherInfo;
     }
 
     public void setOtherInfo(String mOtherInfo) {
-        this.mOtherInfo = mOtherInfo;
+        this.OtherInfo = mOtherInfo;
     }
 
     public Object getClassReturn() {
-        return mClassReturn;
+        return ClassReturn;
     }
 
     public void setClassReturn(Object mClassReturn) {
-        this.mClassReturn = mClassReturn;
+        this.ClassReturn = mClassReturn;
     }
 
     public String getClassReturnType(){
@@ -68,18 +68,18 @@ public class ResultOperation implements Parcelable{
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeBooleanArray(new boolean[]{mStatus});
-        dest.writeString(mOtherInfo);
+        dest.writeBooleanArray(new boolean[]{Status});
+        dest.writeString(OtherInfo);
         setClassReturnSize();
         dest.writeInt(mClassReturnSize);
-        if (mClassReturn instanceof String) {
+        if (ClassReturn instanceof String) {
             mClassReturnType = "String";
             dest.writeString(mClassReturnType);
-            dest.writeString((String) mClassReturn);
+            dest.writeString((String) ClassReturn);
         } else {
             mClassReturnType = "bytes";
             dest.writeString(mClassReturnType);
-            dest.writeByteArray((byte[]) mClassReturn);
+            dest.writeByteArray((byte[]) ClassReturn);
         }
     }
 
@@ -87,17 +87,17 @@ public class ResultOperation implements Parcelable{
     public ResultOperation(Parcel in) {
         boolean[] val = new boolean[1];
         in.readBooleanArray(val);
-        mStatus = val[0];
-        mOtherInfo = in.readString();
+        Status = val[0];
+        OtherInfo = in.readString();
         mClassReturnSize = in.readInt();
         mClassReturnType = in.readString();
         if(mClassReturnType.equals("bytes")) {
             byte[] classResStream = new byte[mClassReturnSize];
             in.readByteArray(classResStream);
-            mClassReturn = classResStream;
+            ClassReturn = classResStream;
         }
         else{
-            mClassReturn = in.readString();
+            ClassReturn = in.readString();
         }
     }
 
@@ -114,7 +114,7 @@ public class ResultOperation implements Parcelable{
     };
 
     public void setClassReturnSize() {
-        if(mClassReturn instanceof byte[])
-            this.mClassReturnSize = ((byte[])mClassReturn).length;
+        if(ClassReturn instanceof byte[])
+            this.mClassReturnSize = ((byte[]) ClassReturn).length;
     }
 }

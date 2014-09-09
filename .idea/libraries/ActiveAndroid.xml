@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="ActiveAndroid">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/ActiveAndroid/ActiveAndroid.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/../../ActiveAndroid-master/ActiveAndroid-master/src" />
+    </SOURCES>
+  </library>
+</component>

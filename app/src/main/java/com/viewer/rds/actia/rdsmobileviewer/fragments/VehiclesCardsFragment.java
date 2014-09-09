@@ -19,7 +19,7 @@ import com.viewer.rds.actia.rdsmobileviewer.PlaceholderFragmentFactory;
 import com.viewer.rds.actia.rdsmobileviewer.R;
 import com.viewer.rds.actia.rdsmobileviewer.cards.HeaderCard;
 import com.viewer.rds.actia.rdsmobileviewer.cards.CustomExpandCard;
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
+import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadRDSManager;
 import com.viewer.rds.actia.rdsmobileviewer.VehicleCustom;
 
 import java.util.ArrayList;
@@ -45,7 +45,7 @@ public class VehiclesCardsFragment extends BaseFragment implements IFragmentNoti
     private List<VehicleDataCardWrapper> mLastRetrievedItems = new ArrayList<VehicleDataCardWrapper>();
     private List<VehicleDataCardWrapper> mLastFilteredItems = new ArrayList<VehicleDataCardWrapper>();
     private IFragmentsInteractionListener mListener;
-    private DownloadManager.DownloadRequestType fragmentRDSType;
+    private DownloadRDSManager.DownloadRequestType fragmentRDSType;
 
     @Override
     public void onAttach(Activity activity) {
@@ -142,7 +142,7 @@ public class VehiclesCardsFragment extends BaseFragment implements IFragmentNoti
 
         if(mIsFirstVisualization) {
             mIsFirstVisualization = false;
-            fragmentRDSType = DownloadManager.DownloadRequestType.valueOf((String) getArguments().get(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE));
+            fragmentRDSType = DownloadRDSManager.DownloadRequestType.valueOf((String) getArguments().get(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE));
             if(mListener != null)
                 mListener.onFirstFragmentVisualisation(this, fragmentRDSType);
         }
@@ -165,7 +165,7 @@ public class VehiclesCardsFragment extends BaseFragment implements IFragmentNoti
     }
 
 
-    public static VehiclesCardsFragment newInstance(DownloadManager.DownloadRequestType fragmentType, boolean setActionBarTitle) {
+    public static VehiclesCardsFragment newInstance(DownloadRDSManager.DownloadRequestType fragmentType, boolean setActionBarTitle) {
 
         VehiclesCardsFragment fragment = new VehiclesCardsFragment();
         Bundle args = new Bundle();

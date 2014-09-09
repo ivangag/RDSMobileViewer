@@ -10,11 +10,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.viewer.rds.actia.rdsmobileviewer.fragments.DownloadHandlingFragment;
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
+import com.viewer.rds.actia.rdsmobileviewer.fragments.DownloadHandlerFragment;
+import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadRDSManager;
 
-public class DownloadActivity extends Activity implements DownloadHandlingFragment.TaskDownloadCallbacks,
-        DownloadManager.IRemoteDownloadDataListener{
+public class DownloadActivity extends Activity implements DownloadHandlerFragment.TaskDownloadCallbacks,
+        DownloadRDSManager.IRemoteDownloadDataListener{
 
     @Override
     protected void onStart() {
@@ -24,7 +24,7 @@ public class DownloadActivity extends Activity implements DownloadHandlingFragme
 
     @Override
     protected void onStop() {
-        DownloadManager.getInstance().removeListener(this);
+        DownloadRDSManager.getInstance().removeListener(this);
         super.onStop();
 
     }
@@ -39,7 +39,7 @@ public class DownloadActivity extends Activity implements DownloadHandlingFragme
 
         if (savedInstanceState == null) {
             getFragmentManager().beginTransaction()
-                    .add(R.id.container, DownloadHandlingFragment.newIstance(downloadRequest))
+                    .add(R.id.container, DownloadHandlerFragment.newInstance(downloadRequest))
                     //.add(R.id.container, new PlaceholderFragment())
                     .commit();
         }
@@ -90,10 +90,10 @@ public class DownloadActivity extends Activity implements DownloadHandlingFragme
 
         Bundle args = new Bundle();
         args.putParcelable(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE, requestType);
-        args.putParcelable(DownloadManager.DOWNLOAD_DATA_RESULT,result);
+        args.putParcelable(DownloadRDSManager.DOWNLOAD_DATA_RESULT,result);
         Intent intent = new Intent();
         intent.putExtras(args);
-        setResult(DownloadManager.DOWNLOAD_RESULT_OK,intent);
+        setResult(DownloadRDSManager.DOWNLOAD_RESULT_OK,intent);
         finish();
     }
 

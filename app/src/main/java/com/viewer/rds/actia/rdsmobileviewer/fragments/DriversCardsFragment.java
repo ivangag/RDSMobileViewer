@@ -21,7 +21,7 @@ import com.viewer.rds.actia.rdsmobileviewer.PlaceholderFragmentFactory;
 import com.viewer.rds.actia.rdsmobileviewer.R;
 import com.viewer.rds.actia.rdsmobileviewer.cards.CustomExpandCard;
 import com.viewer.rds.actia.rdsmobileviewer.cards.HeaderCard;
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
+import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadRDSManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -71,7 +71,7 @@ public class DriversCardsFragment extends BaseFragment implements IFragmentNotif
 
         if(mIsFirstVisualization) {
             mIsFirstVisualization = false;
-            DownloadManager.DownloadRequestType type = DownloadManager.DownloadRequestType.valueOf((String) getArguments().get(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE));
+            DownloadRDSManager.DownloadRequestType type = DownloadRDSManager.DownloadRequestType.valueOf((String) getArguments().get(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE));
             if(mListener != null)
                 mListener.onFirstFragmentVisualisation(this, type);
         }
@@ -164,7 +164,7 @@ public class DriversCardsFragment extends BaseFragment implements IFragmentNotif
     }
 
 
-    public static DriversCardsFragment newInstance(DownloadManager.DownloadRequestType fragmentType,boolean setActionBarTitle) {
+    public static DriversCardsFragment newInstance(DownloadRDSManager.DownloadRequestType fragmentType,boolean setActionBarTitle) {
 
         DriversCardsFragment fragment = new DriversCardsFragment();
         Bundle args = new Bundle();

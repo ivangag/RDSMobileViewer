@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.view.MenuItem;
 
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
+import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadRDSManager;
 
 /**
  * Base Fragment
@@ -14,12 +14,12 @@ import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
 public abstract class BaseFragment extends Fragment {
 
     public interface IFragmentsInteractionListener {
-        public void onFirstFragmentVisualisation(Fragment sender, DownloadManager.DownloadRequestType requestType);
+        public void onFirstFragmentVisualisation(Fragment sender, DownloadRDSManager.DownloadRequestType requestType);
         public void onRequireVehicleDiagnosticData(String vehicleVIN,boolean cacheIfExist);
         public void onCustomerSelected(String CustomerAncodice);
-        public void onCustomerVehiclesDataRequiredSelected(DownloadManager.DownloadRequestType downloadRequestType,String CustomerAncodice,boolean cacheIfExist);
-        public void onCustomerDrivesDataRequiredSelected(DownloadManager.DownloadRequestType downloadRequestType, String CustomerAncodice,boolean cacheIfExist);
-        public void onCustomerCRDSDataRequiredSelected(DownloadManager.DownloadRequestType downloadRequestType,String CustomerAncodice,boolean cacheIfExist);
+        public void onCustomerVehiclesDataRequiredSelected(DownloadRDSManager.DownloadRequestType downloadRequestType,String CustomerAncodice,boolean cacheIfExist);
+        public void onCustomerDrivesDataRequiredSelected(DownloadRDSManager.DownloadRequestType downloadRequestType, String CustomerAncodice,boolean cacheIfExist);
+        public void onCustomerCRDSDataRequiredSelected(DownloadRDSManager.DownloadRequestType downloadRequestType,String CustomerAncodice,boolean cacheIfExist);
     }
 
     @Override

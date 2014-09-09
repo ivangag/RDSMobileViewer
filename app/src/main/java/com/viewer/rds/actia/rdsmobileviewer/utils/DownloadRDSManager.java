@@ -10,8 +10,8 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
 import com.viewer.rds.actia.rdsmobileviewer.CRDSCustom;
 import com.viewer.rds.actia.rdsmobileviewer.DownloadRequestSchema;
 import com.viewer.rds.actia.rdsmobileviewer.DriverCardData;
@@ -24,6 +24,8 @@ import com.viewer.rds.actia.rdsmobileviewer.ResultOperation;
 import com.viewer.rds.actia.rdsmobileviewer.VehicleCustom;
 import com.viewer.rds.actia.rdsmobileviewer.services.RDSViewerServiceAsync;
 import com.viewer.rds.actia.rdsmobileviewer.services.RDSViewerServiceSync;
+import com.viewer.rds.actia.rdsmobileviewer.volley.GsonRequest;
+import com.viewer.rds.actia.rdsmobileviewer.volley.VolleyRequestManager;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -39,11 +41,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by igaglioti on 09/07/2014.
  */
-public class DownloadManager {
+public class DownloadRDSManager {
+    private AtomicInteger mRequestCounter = new AtomicInteger();
 
     public final static int DOWNLOAD_DATA_REQUEST = 0;
 
@@ -52,7 +56,7 @@ public class DownloadManager {
 
     public static final String DOWNLOAD_DATA_RESULT = "DOWNLOAD_DATA_RESULT";
 
-    private final static String TAG = DownloadManager.class
+    private final static String TAG = DownloadRDSManager.class
             .getCanonicalName();
     private final static String RDSRestFulURL = "http://iob.actiaitalia.com/ACTIA.ARDIS.RESTFul/Service.svc/json/";
 
@@ -72,12 +76,12 @@ public class DownloadManager {
     private final static String status  = "Status";
 
 
-    private static DownloadManager ourInstance = new DownloadManager();
+    private static DownloadRDSManager ourInstance = new DownloadRDSManager();
 
-    public static DownloadManager getInstance() {
+    public static DownloadRDSManager getInstance() {
         return ourInstance;
     }
-    private DownloadManager() {
+    private DownloadRDSManager() {
     }
 
     private Set<IRemoteDownloadDataListener> mListeners = new HashSet<IRemoteDownloadDataListener>();
@@ -99,6 +103,7 @@ public class DownloadManager {
     }
 
     public void notifyListeners(final DownloadRequestSchema requestType,final ResultOperation result) {
+        mRequestCounter.decrementAndGet();
         for (final IRemoteDownloadDataListener listener : mListeners) {
             if(listener instanceof Activity)
                 ((Activity)listener).runOnUiThread(new Runnable() {
@@ -112,6 +117,10 @@ public class DownloadManager {
             }
 
         }
+    }
+
+    public int getRequestCounter() {
+        return mRequestCounter.get();
     }
 
     public interface IRemoteDownloadDataListener {
@@ -265,7 +274,7 @@ public class DownloadManager {
                 // Takes a JSON source string and extracts characters
                 // and tokens from it.
 
-                resultOperation = DownloadManager.buildResultOperation(JSONResponse, resultOperation);
+                resultOperation = DownloadRDSManager.buildResultOperation(JSONResponse, resultOperation);
 
                 if(mTranslateRemoteData){
                     if(resultOperation.isStatus()) {
@@ -286,12 +295,12 @@ public class DownloadManager {
 
     private static ResultOperation buildResultOperation(String JSONResponse,
                                                         ResultOperation resultOperationInstance) throws JSONException, IOException {
-        JSONArray jsonArray;
+
         JSONObject jsonObject = new JSONObject(JSONResponse);
         byte[] streamDecompress = null;
         if (!jsonObject.isNull(classReturn)) {
             // get ClassReturn field
-            jsonArray = jsonObject.getJSONArray(classReturn);
+            final JSONArray jsonArray = jsonObject.getJSONArray(classReturn);
             if (Utils.GZIP_MAGICAL_1 == jsonArray.getInt(0)) {
                 final byte[] streamCompress = ParserFactory.getBytesFromJsonArray(jsonArray);
                 streamDecompress = ParserFactory.decompressFromGZip(new ByteArrayInputStream(streamCompress));
@@ -321,28 +330,55 @@ public class DownloadManager {
                                          DownloadRequestSchema downloadRequestInfo) {
 
         this.addListener(clientDownloadDataListener);
-
-
         try {
             mRDSClientRequest.fetchRemoteData(mRDSServiceResponse,downloadRequestInfo);
         } catch (RemoteException e) {
             Log.e(TAG,"RemoteException => mRDSClientRequest.fetchRemoteData: " + e.getLocalizedMessage());
         }
-        /*
-        if(downloadRequestInfo.getDownloadRequestType().equals(DownloadRequestType.VEHICLE_NOT_TRUSTED))
-        {
-            try {
-                mRDSClientRequest.fetchRemoteData(mRDSServiceResponse,downloadRequestInfo);
-            } catch (RemoteException e) {
-                e.printStackTrace();
-                Log.e(TAG,"RemoteException => mRDSClientRequest.fetchRemoteData: " + e.getLocalizedMessage());
-            }
-        } else {
-            DownloadDataTask downloadDataTask = new DownloadDataTask();
-            downloadDataTask.execute(downloadRequestInfo);
-        }
-         */
+    }
 
+    public void RequireDownloadVolleyTask(Context context, IRemoteDownloadDataListener clientDownloadDataListener,
+                                         final DownloadRequestSchema downloadRequestInfo) {
+
+        this.addListener(clientDownloadDataListener);
+
+        final DownloadRequestType requestType = downloadRequestInfo.getDownloadRequestType();
+        final String url = requestType.getWSCallName(downloadRequestInfo);
+
+        GsonRequest<ResultOperation> gsonRequest = new GsonRequest<ResultOperation>(
+                url,ResultOperation.class,null,new Response.Listener<ResultOperation>() {
+            @Override
+            public void onResponse(ResultOperation response) {
+                boolean status = response.isStatus();
+                try {
+                   final ArrayList<Double> arrayList = (ArrayList<Double>) response.getClassReturn();
+                    if (Utils.GZIP_MAGICAL_1 == arrayList.get(0)) {
+                        final byte[] streamCompress = ParserFactory.getBytesFromJsonArray(arrayList);
+                        final byte[] streamDecompress = ParserFactory.decompressFromGZip(new ByteArrayInputStream(streamCompress));
+                        final String jsonRaw = new String(streamDecompress);
+                        ArrayList data = ParserFactory.parseJsonToRDSRemoteEntity(jsonRaw, downloadRequestInfo.getDownloadRequestType());
+                        response.setClassReturn(data);
+                    }
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                finally {
+                    notifyListeners(downloadRequestInfo,response);
+                }
+            }
+            },new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+                String errorMsg = error.getLocalizedMessage();
+            }
+        }
+        );
+        gsonRequest.setTag(downloadRequestInfo.getDownloadRequestType().toString());
+        VolleyRequestManager.getInstance(context).addToRequestQueue(gsonRequest);
     }
 
     class DownloadDataTask extends AsyncTask<DownloadRequestSchema,Void,ResultOperation>
@@ -362,7 +398,7 @@ public class DownloadManager {
                 mHasCacheData = CacheDataManager.existData(result, mRequestInfo);
             }
             if(!mHasCacheData) {
-                result = DownloadManager.FetchingRemoteData(mClient, mRequestInfo, isResultTranslated);
+                result = DownloadRDSManager.FetchingRemoteData(mClient, mRequestInfo, isResultTranslated);
             }
 
 
@@ -492,14 +528,6 @@ public class DownloadManager {
                         jsonRaw = CacheDataManager.get().getDownloadRepository((String)result.getClassReturn());
                     }
                     if(!jsonRaw.isEmpty()) {
-
-                    /*
-                    try {
-                        SerializerFactory.convertJSONtoDataObject(jsonArray.get(0).toString(),downloadRequest.getDownloadRequestType().getRemoteDataType());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    */
                         data = ParserFactory.parseJsonToRDSRemoteEntity(jsonRaw, downloadRequest.getDownloadRequestType());
                         result.setClassReturn(data);
                         CacheDataManager.get().UpdateCache(downloadRequest, data);

@@ -94,9 +94,9 @@ public class CacheDataManager
         // try to refresh data from db
         List<MainContractorData> res = null;
         String jsonStream = RDSDBMapper.get(mContext.get()).getDownloadRepository(DownloadRequestSchema.newInstance().
-                setDownloadRequestType(DownloadManager.DownloadRequestType.CUSTOMERS_LIST));
+                setDownloadRequestType(DownloadRDSManager.DownloadRequestType.CUSTOMERS_LIST));
         try {
-            res  = ParserFactory.parseJsonToRDSRemoteEntity(jsonStream, DownloadManager.DownloadRequestType.CUSTOMERS_LIST);
+            res  = ParserFactory.parseJsonToRDSRemoteEntity(jsonStream, DownloadRDSManager.DownloadRequestType.CUSTOMERS_LIST);
             mCachedMainContractors = res;
         } catch (JSONException e) {
             Log.e(TAG,"Error: " + e.getLocalizedMessage());
@@ -119,9 +119,9 @@ public class CacheDataManager
         // try to refresh data from db
         List<VehicleCustom> res = null;
         String jsonStream = RDSDBMapper.get(mContext.get()).getDownloadRepository(DownloadRequestSchema.newInstance().
-                setDownloadRequestType(DownloadManager.DownloadRequestType.VEHICLE_NOT_TRUSTED));
+                setDownloadRequestType(DownloadRDSManager.DownloadRequestType.VEHICLE_NOT_TRUSTED));
         try {
-            res = ParserFactory.parseJsonToRDSRemoteEntity(jsonStream, DownloadManager.DownloadRequestType.VEHICLE_NOT_TRUSTED);
+            res = ParserFactory.parseJsonToRDSRemoteEntity(jsonStream, DownloadRDSManager.DownloadRequestType.VEHICLE_NOT_TRUSTED);
             mCachedVehiclesNotTrusted = res;
         } catch (JSONException e) {
             Log.e(TAG,"Error: " + e.getLocalizedMessage());
@@ -134,9 +134,9 @@ public class CacheDataManager
         // try to refresh data from db
         List<CRDSCustom> res = null;
         String jsonStream = RDSDBMapper.get(mContext.get()).getDownloadRepository(DownloadRequestSchema.newInstance().
-                setDownloadRequestType(DownloadManager.DownloadRequestType.CRDS_NOT_TRUSTED));
+                setDownloadRequestType(DownloadRDSManager.DownloadRequestType.CRDS_NOT_TRUSTED));
         try {
-            res = ParserFactory.parseJsonToRDSRemoteEntity(jsonStream, DownloadManager.DownloadRequestType.CRDS_NOT_TRUSTED);
+            res = ParserFactory.parseJsonToRDSRemoteEntity(jsonStream, DownloadRDSManager.DownloadRequestType.CRDS_NOT_TRUSTED);
             mCachedCRDSNotTrusted = res;
         } catch (JSONException e) {
             Log.e(TAG,"Error: " + e.getLocalizedMessage());
@@ -154,9 +154,9 @@ public class CacheDataManager
         // try to refresh data from db
         List<DriverCardData> res = null;
         String jsonStream = RDSDBMapper.get(mContext.get()).getDownloadRepository(DownloadRequestSchema.newInstance().
-                setDownloadRequestType(DownloadManager.DownloadRequestType.DRIVERS_NOT_TRUSTED));
+                setDownloadRequestType(DownloadRDSManager.DownloadRequestType.DRIVERS_NOT_TRUSTED));
         try {
-            res = ParserFactory.parseJsonToRDSRemoteEntity(jsonStream, DownloadManager.DownloadRequestType.DRIVERS_NOT_TRUSTED);
+            res = ParserFactory.parseJsonToRDSRemoteEntity(jsonStream, DownloadRDSManager.DownloadRequestType.DRIVERS_NOT_TRUSTED);
             mCachedDriversNotTrusted = res;
         } catch (JSONException e) {
             Log.e(TAG,"Error: " + e.getLocalizedMessage());
@@ -172,10 +172,10 @@ public class CacheDataManager
         // try to refresh data from db
         Log.d(TAG, "getCustomerCRDS. mContext:" + (mContext.get() != null));
         DownloadRequestSchema downloadRequestSchema = DownloadRequestSchema.newInstance().
-                setDownloadRequestType(DownloadManager.DownloadRequestType.CRDS_OWNED).setUniqueCustomerCode(Ancodice);
+                setDownloadRequestType(DownloadRDSManager.DownloadRequestType.CRDS_OWNED).setUniqueCustomerCode(Ancodice);
         String jsonStream = RDSDBMapper.get(mContext.get()).getDownloadRepository(downloadRequestSchema);
         try {
-            res = ParserFactory.parseJsonToRDSRemoteEntity(jsonStream, DownloadManager.DownloadRequestType.CRDS_OWNED);
+            res = ParserFactory.parseJsonToRDSRemoteEntity(jsonStream, DownloadRDSManager.DownloadRequestType.CRDS_OWNED);
             mCachedCustomersCRDS.put(Ancodice,res);
         } catch (JSONException e) {
             Log.e(TAG,"Error: " + e.getLocalizedMessage());
@@ -188,9 +188,9 @@ public class CacheDataManager
         List<VehicleCustom> res = null;
         // try to refresh data from db
         String jsonStream = RDSDBMapper.get(mContext.get()).getDownloadRepository(DownloadRequestSchema.newInstance().
-                setDownloadRequestType(DownloadManager.DownloadRequestType.VEHICLES_OWNED));
+                setDownloadRequestType(DownloadRDSManager.DownloadRequestType.VEHICLES_OWNED));
         try {
-            res = ParserFactory.parseJsonToRDSRemoteEntity(jsonStream, DownloadManager.DownloadRequestType.VEHICLES_OWNED);
+            res = ParserFactory.parseJsonToRDSRemoteEntity(jsonStream, DownloadRDSManager.DownloadRequestType.VEHICLES_OWNED);
             mCachedCustomersVehicles.put(Ancodice,res);
         } catch (JSONException e) {
             Log.e(TAG,"Error: " + e.getLocalizedMessage());
@@ -204,9 +204,9 @@ public class CacheDataManager
         List<DriverCardData> res = null;
         // try to refresh data from db
         String jsonStream = RDSDBMapper.get(mContext.get()).getDownloadRepository(DownloadRequestSchema.newInstance().
-                setDownloadRequestType(DownloadManager.DownloadRequestType.DRIVERS_OWNED));
+                setDownloadRequestType(DownloadRDSManager.DownloadRequestType.DRIVERS_OWNED));
         try {
-            res = ParserFactory.parseJsonToRDSRemoteEntity(jsonStream, DownloadManager.DownloadRequestType.DRIVERS_OWNED);
+            res = ParserFactory.parseJsonToRDSRemoteEntity(jsonStream, DownloadRDSManager.DownloadRequestType.DRIVERS_OWNED);
             mCachedCustomersDrivers.put(Ancodice,res);
         } catch (JSONException e) {
             Log.e(TAG,"Error: " + e.getLocalizedMessage());

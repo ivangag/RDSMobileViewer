@@ -7,7 +7,6 @@ import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,12 +19,12 @@ import android.widget.TextView;
 
 import com.viewer.rds.actia.rdsmobileviewer.fragments.BaseFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.CRDSCardsFragment;
-import com.viewer.rds.actia.rdsmobileviewer.fragments.DownloadHandlingFragment;
+import com.viewer.rds.actia.rdsmobileviewer.fragments.DownloadHandlerFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.DriversCardsFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.IFragmentNotification;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.VehiclesCardsFragment;
 import com.viewer.rds.actia.rdsmobileviewer.utils.CacheDataManager;
-import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadManager;
+import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadRDSManager;
 import com.viewer.rds.actia.rdsmobileviewer.utils.RDSEmptyDataException;
 import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
 
@@ -34,7 +33,7 @@ import java.util.Iterator;
 
 
 public abstract class BaseActivity extends Activity implements
-        DownloadManager.IRemoteDownloadDataListener,BaseFragment.IFragmentsInteractionListener {
+        DownloadRDSManager.IRemoteDownloadDataListener,BaseFragment.IFragmentsInteractionListener {
 
     public final static String ACTIVITY_TYPE = "ACTIVITY_TYPE";
 
@@ -43,7 +42,7 @@ public abstract class BaseActivity extends Activity implements
     protected static final int LANDSCAPE = Configuration.ORIENTATION_LANDSCAPE;
     protected static final int PORTRAIT = Configuration.ORIENTATION_PORTRAIT;
     protected FragmentManager mFragmentManager;
-    private final static DownloadManager mDownloadManager = DownloadManager.getInstance();
+    private final static DownloadRDSManager mDownloadManager = DownloadRDSManager.getInstance();
     private ShareActionProvider mShareActionProvider;
     private boolean mIsShareIntentPending;
 
@@ -249,17 +248,17 @@ public abstract class BaseActivity extends Activity implements
     }
 
     @Override
-    public void onCustomerVehiclesDataRequiredSelected(DownloadManager.DownloadRequestType downloadRequestType,String CustomerAncodice,boolean cacheIfExist) {
+    public void onCustomerVehiclesDataRequiredSelected(DownloadRDSManager.DownloadRequestType downloadRequestType,String CustomerAncodice,boolean cacheIfExist) {
         makeDownloadRequest(DownloadRequestSchema.newInstance(downloadRequestType, CustomerAncodice, "", cacheIfExist));
     }
 
     @Override
-    public void onCustomerDrivesDataRequiredSelected(DownloadManager.DownloadRequestType downloadRequestType,String CustomerAncodice,boolean cacheIfExist) {
+    public void onCustomerDrivesDataRequiredSelected(DownloadRDSManager.DownloadRequestType downloadRequestType,String CustomerAncodice,boolean cacheIfExist) {
         makeDownloadRequest(DownloadRequestSchema.newInstance(downloadRequestType, CustomerAncodice, "", cacheIfExist));
     }
 
     @Override
-    public void onCustomerCRDSDataRequiredSelected(DownloadManager.DownloadRequestType downloadRequestType,String CustomerAncodice,boolean cacheIfExist) {
+    public void onCustomerCRDSDataRequiredSelected(DownloadRDSManager.DownloadRequestType downloadRequestType,String CustomerAncodice,boolean cacheIfExist) {
         makeDownloadRequest(DownloadRequestSchema.newInstance(downloadRequestType, CustomerAncodice, "", cacheIfExist));
     }
 
@@ -269,19 +268,19 @@ public abstract class BaseActivity extends Activity implements
         showProgressDialog(dataRequest.getDownloadRequestType().getLocalizedName(this) + " "
                 + (dataRequest.getUniqueCustomerCode()  )
         );
-        DownloadManager.getInstance().RequireDownloadAsyncTask(this, dataRequest);
+        DownloadRDSManager.getInstance().RequireDownloadAsyncTask(this, dataRequest);
     }
 
     @Override
     public void onRequireVehicleDiagnosticData(String vehicleVIN, boolean cacheIfExist) {
-        makeDownloadRequest(DownloadRequestSchema.newInstance(DownloadManager.DownloadRequestType.VEHICLE_DIAGNOSTIC, "", vehicleVIN, cacheIfExist));
+        makeDownloadRequest(DownloadRequestSchema.newInstance(DownloadRDSManager.DownloadRequestType.VEHICLE_DIAGNOSTIC, "", vehicleVIN, cacheIfExist));
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode == DownloadManager.DOWNLOAD_DATA_REQUEST)
+        if(requestCode == DownloadRDSManager.DOWNLOAD_DATA_REQUEST)
         {
-            if(resultCode == DownloadManager.DOWNLOAD_RESULT_OK) {
+            if(resultCode == DownloadRDSManager.DOWNLOAD_RESULT_OK) {
                 DownloadRequestSchema downloadRequestSchema = data.getExtras().getParcelable(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE);
                 try {
                     handleDownloadDataFinished(downloadRequestSchema, ResultOperation.newInstance(true, "", CacheDataManager.get().getValue(downloadRequestSchema)));
@@ -299,7 +298,7 @@ public abstract class BaseActivity extends Activity implements
         {
             //setTextMsgDownloadFragment(request, downloadFragment);
             showProgressDialog("");
-            ((DownloadHandlingFragment)(downloadFragment)).startDownloadRequest(request);
+            ((DownloadHandlerFragment)(downloadFragment)).startDownloadRequest(request);
         }
         /*
         if(downloadRequestType.equals(DownloadManager.DownloadRequestType.CUSTOMERS_LIST))
@@ -355,7 +354,7 @@ public abstract class BaseActivity extends Activity implements
         }
 
 
-        public static DriversHolderFragment newInstance(DownloadManager.DownloadRequestType fragmentType, boolean setActionBarTitle)
+        public static DriversHolderFragment newInstance(DownloadRDSManager.DownloadRequestType fragmentType, boolean setActionBarTitle)
         {
             DriversHolderFragment fragment = new DriversHolderFragment();
             Bundle args = new Bundle();
@@ -387,7 +386,7 @@ public abstract class BaseActivity extends Activity implements
     }
 
     @Override
-    public void onFirstFragmentVisualisation(Fragment sender, DownloadManager.DownloadRequestType requestType) {
+    public void onFirstFragmentVisualisation(Fragment sender, DownloadRDSManager.DownloadRequestType requestType) {
         Object result = null;
         DownloadRequestSchema downloadRequestSchema = DownloadRequestSchema.newInstance(requestType,
                 ((BaseFragment) sender).getUniqueCustomerCode(),"",true);
@@ -460,11 +459,11 @@ public abstract class BaseActivity extends Activity implements
         }
     }
 
-    protected DownloadManager.DownloadRequestType getFragmentType(int fragmentLayoutId)
+    protected DownloadRDSManager.DownloadRequestType getFragmentType(int fragmentLayoutId)
     {
         Fragment fragment = getFragment(fragmentLayoutId);
         if(fragment != null)
-            return Enum.valueOf(DownloadManager.DownloadRequestType.class,fragment.getArguments().getString(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE));
+            return Enum.valueOf(DownloadRDSManager.DownloadRequestType.class,fragment.getArguments().getString(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE));
         return null;
     }
 
