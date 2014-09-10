@@ -3,6 +3,8 @@ package com.viewer.rds.actia.rdsmobileviewer.utils;
 import android.content.Context;
 import android.util.Log;
 
+import com.activeandroid.ActiveAndroid;
+import com.activeandroid.query.Select;
 import com.viewer.rds.actia.rdsmobileviewer.CRDSCustom;
 import com.viewer.rds.actia.rdsmobileviewer.DownloadRequestSchema;
 import com.viewer.rds.actia.rdsmobileviewer.DriverCardData;
@@ -81,6 +83,15 @@ public class CacheDataManager
         }
     }
 
+    private void setCachedCustomerListData(List<MainContractorData> data)
+    {
+        mCachedMainContractors = data;
+    }
+
+    private void setCachedVehicleNotTrustedListData(List<VehicleCustom> data) {
+        mCachedVehiclesNotTrusted = data;
+    }
+
     private void setCachedDrivesNotTrustedListData(List<DriverCardData> result) {
         this.mCachedDriversNotTrusted = result;
     }
@@ -92,6 +103,7 @@ public class CacheDataManager
     private List<MainContractorData> getCustomers() {
 
         // try to refresh data from db
+        /*
         List<MainContractorData> res = null;
         String jsonStream = RDSDBMapper.get(mContext.get()).getDownloadRepository(DownloadRequestSchema.newInstance().
                 setDownloadRequestType(DownloadRDSManager.DownloadRequestType.CUSTOMERS_LIST));
@@ -102,22 +114,18 @@ public class CacheDataManager
             Log.e(TAG,"Error: " + e.getLocalizedMessage());
             e.printStackTrace();
         }
-
+        */
+        final List<MainContractorData>  res =
+                new Select().
+                        from(MainContractorData.class)
+                        .execute();
         return res;
     }
 
-    private void setCachedCustomerListData(List<MainContractorData> data)
-    {
-        mCachedMainContractors = data;
-    }
-
-    private void setCachedVehicleNotTrustedListData(List<VehicleCustom> data) {
-        mCachedVehiclesNotTrusted = data;
-    }
 
     private List<VehicleCustom> getVehicleNotTrusted() {
         // try to refresh data from db
-        List<VehicleCustom> res = null;
+        /*
         String jsonStream = RDSDBMapper.get(mContext.get()).getDownloadRepository(DownloadRequestSchema.newInstance().
                 setDownloadRequestType(DownloadRDSManager.DownloadRequestType.VEHICLE_NOT_TRUSTED));
         try {
@@ -127,11 +135,18 @@ public class CacheDataManager
             Log.e(TAG,"Error: " + e.getLocalizedMessage());
             e.printStackTrace();
         }
+        */
+        final List<VehicleCustom>  res =
+                new Select().
+                 from(VehicleCustom.class)
+                 .where("CustomerUniqueId = ?","")
+                 .execute();
       return res;
     }
 
     private List<CRDSCustom> getCRDSNotTrusted() {
         // try to refresh data from db
+        /*
         List<CRDSCustom> res = null;
         String jsonStream = RDSDBMapper.get(mContext.get()).getDownloadRepository(DownloadRequestSchema.newInstance().
                 setDownloadRequestType(DownloadRDSManager.DownloadRequestType.CRDS_NOT_TRUSTED));
@@ -142,6 +157,12 @@ public class CacheDataManager
             Log.e(TAG,"Error: " + e.getLocalizedMessage());
             e.printStackTrace();
         }
+        */
+        final List<CRDSCustom>  res =
+                new Select().
+                        from(CRDSCustom.class)
+                        .where("CustomerUniqueId = ?","")
+                        .execute();
         return res;
     }
 
@@ -152,6 +173,7 @@ public class CacheDataManager
 
     private List<DriverCardData> getDriversNotTrusted() {
         // try to refresh data from db
+        /*
         List<DriverCardData> res = null;
         String jsonStream = RDSDBMapper.get(mContext.get()).getDownloadRepository(DownloadRequestSchema.newInstance().
                 setDownloadRequestType(DownloadRDSManager.DownloadRequestType.DRIVERS_NOT_TRUSTED));
@@ -162,15 +184,22 @@ public class CacheDataManager
             Log.e(TAG,"Error: " + e.getLocalizedMessage());
             e.printStackTrace();
         }
+        */
+        final List<DriverCardData>  res =
+                new Select().
+                        from(DriverCardData.class)
+                        .where("CustomerUniqueId = ?","")
+                        .execute();
         return res;
     }
 
 
-    private List<CRDSCustom> getCustomerCRDS(String Ancodice) {
+    private List<CRDSCustom> getCRDS(String Ancodice) {
 
+        /*
         List<CRDSCustom> res = null;
         // try to refresh data from db
-        Log.d(TAG, "getCustomerCRDS. mContext:" + (mContext.get() != null));
+        Log.d(TAG, "getCRDS. mContext:" + (mContext.get() != null));
         DownloadRequestSchema downloadRequestSchema = DownloadRequestSchema.newInstance().
                 setDownloadRequestType(DownloadRDSManager.DownloadRequestType.CRDS_OWNED).setUniqueCustomerCode(Ancodice);
         String jsonStream = RDSDBMapper.get(mContext.get()).getDownloadRepository(downloadRequestSchema);
@@ -182,9 +211,17 @@ public class CacheDataManager
             e.printStackTrace();
         }
         return res;
+        */
+        final List<CRDSCustom>  res =
+                new Select().
+                        from(CRDSCustom.class)
+                        .where("CustomerUniqueId = ?",Ancodice)
+                        .execute();
+        return res;
     }
 
-    private List<VehicleCustom> getCustomerVehicles(String Ancodice) {
+    private List<VehicleCustom> getVehicles(String Ancodice) {
+        /*
         List<VehicleCustom> res = null;
         // try to refresh data from db
         String jsonStream = RDSDBMapper.get(mContext.get()).getDownloadRepository(DownloadRequestSchema.newInstance().
@@ -196,11 +233,18 @@ public class CacheDataManager
             Log.e(TAG,"Error: " + e.getLocalizedMessage());
             e.printStackTrace();
         }
+        */
+        final List<VehicleCustom>  res =
+                new Select().
+                        from(VehicleCustom.class)
+                        .where("CustomerUniqueId = ?",Ancodice)
+                        .execute();
         return res;
     }
 
-    private List<DriverCardData> getCustomerDrivers(String Ancodice) {
+    private List<DriverCardData> getDrivers(String Ancodice) {
 
+        /*
         List<DriverCardData> res = null;
         // try to refresh data from db
         String jsonStream = RDSDBMapper.get(mContext.get()).getDownloadRepository(DownloadRequestSchema.newInstance().
@@ -212,6 +256,13 @@ public class CacheDataManager
             Log.e(TAG,"Error: " + e.getLocalizedMessage());
             e.printStackTrace();
         }
+        return res;
+        */
+        final List<DriverCardData>  res =
+                new Select().
+                        from(DriverCardData.class)
+                        .where("CustomerUniqueId = ?",Ancodice)
+                        .execute();
         return res;
     }
 
@@ -256,32 +307,26 @@ public class CacheDataManager
     public Object getValue(DownloadRequestSchema downloadRequestSchema) throws RDSEmptyDataException {
 
         Object result = null;
-        final String customerCode = downloadRequestSchema.getUniqueCustomerCode();
+        final String customerCode = (downloadRequestSchema.getUniqueCustomerCode() != null)
+                ? downloadRequestSchema.getUniqueCustomerCode() : "";
         final String vehicleVIN = downloadRequestSchema.getVehicleVIN();
         Log.d(TAG, "getValue: " + downloadRequestSchema.getUniqueCustomerCode() + " " + downloadRequestSchema.getDownloadRequestType());
         switch (downloadRequestSchema.getDownloadRequestType())
         {
             case VEHICLE_NOT_TRUSTED:
-                result = CacheDataManager.get().getVehicleNotTrusted();
+            case VEHICLES_OWNED:
+                result = CacheDataManager.get().getVehicles(customerCode);
                 break;
             case CRDS_NOT_TRUSTED:
-                result = CacheDataManager.get().getCRDSNotTrusted();
+            case CRDS_OWNED:
+                result = CacheDataManager.get().getCRDS(customerCode);
+                break;
+            case DRIVERS_OWNED:
+            case DRIVERS_NOT_TRUSTED:
+                result = CacheDataManager.get().getDrivers(customerCode);
                 break;
             case CUSTOMERS_LIST:
                 result = CacheDataManager.get().getCustomers();
-                break;
-            case VEHICLES_OWNED:
-                result = CacheDataManager.get().getCustomerVehicles(customerCode);
-                break;
-            case DRIVERS_OWNED:
-                result = CacheDataManager.get().getCustomerDrivers(customerCode);
-                break;
-            case CRDS_OWNED:
-                Log.d(TAG, "getValue: " + downloadRequestSchema.getDownloadRequestType());
-                result = CacheDataManager.get().getCustomerCRDS(customerCode);
-                break;
-            case DRIVERS_NOT_TRUSTED:
-                result = CacheDataManager.get().getDriversNotTrusted();
                 break;
             case MAIN_MENU:
                 break;
@@ -331,4 +376,90 @@ public class CacheDataManager
 
         return RDSDBMapper.get(mContext.get()).saveDownloadToRepository(downloadRequestSchema,jsonStream);
     }
+
+
+    private void saveVehicles(DownloadRequestSchema requestType,List<VehicleCustom> vehicles){
+        ActiveAndroid.beginTransaction();
+        try{
+            for (VehicleCustom vehicleCustom : vehicles) {
+
+                vehicleCustom.setCustomerUniqueId(requestType.getUniqueCustomerCode());
+                vehicleCustom.save();
+            }
+            ActiveAndroid.setTransactionSuccessful();
+        }
+        finally {
+            ActiveAndroid.endTransaction();
+        }
+    }
+
+    private void saveCRDS(DownloadRequestSchema requestType,List<CRDSCustom> CRDS){
+        ActiveAndroid.beginTransaction();
+        try{
+            for (CRDSCustom crdsCustom : CRDS) {
+
+                crdsCustom.setCustomerUniqueId(requestType.getUniqueCustomerCode());
+                crdsCustom.save();
+            }
+            ActiveAndroid.setTransactionSuccessful();
+        }
+        finally {
+            ActiveAndroid.endTransaction();
+        }
+    }
+
+
+
+    private void saveDrivers(DownloadRequestSchema requestType, List<DriverCardData> drivers) {
+        ActiveAndroid.beginTransaction();
+        try{
+            for (DriverCardData crdsCustom : drivers) {
+
+                crdsCustom.setCustomerUniqueId(requestType.getUniqueCustomerCode());
+                crdsCustom.save();
+            }
+            ActiveAndroid.setTransactionSuccessful();
+        }
+        finally {
+            ActiveAndroid.endTransaction();
+        }
+    }
+    private void saveCustomers(DownloadRequestSchema downloadRequestInfo, List<MainContractorData> customers) {
+        ActiveAndroid.beginTransaction();
+        try{
+            for (MainContractorData customer : customers) {
+                customer.save();
+            }
+            ActiveAndroid.setTransactionSuccessful();
+        }
+        finally {
+            ActiveAndroid.endTransaction();
+        }
+    }
+    public void saveDownloadRepository(DownloadRequestSchema downloadRequestInfo, ResultOperation response) {
+        switch (downloadRequestInfo.getDownloadRequestType()) {
+            case CUSTOMERS_LIST:
+                this.saveCustomers(downloadRequestInfo, (List<MainContractorData>) response.getClassReturn());
+                break;
+            case VEHICLES_OWNED:
+            case VEHICLE_NOT_TRUSTED:
+                this.saveVehicles(downloadRequestInfo,(List<VehicleCustom>)response.getClassReturn());
+                break;
+            case CRDS_OWNED:
+            case CRDS_NOT_TRUSTED:
+                this.saveCRDS(downloadRequestInfo, (List<CRDSCustom>) response.getClassReturn());
+                break;
+            case DRIVERS_OWNED:
+            case DRIVERS_NOT_TRUSTED:
+                this.saveDrivers(downloadRequestInfo, (List<DriverCardData>) response.getClassReturn());
+                break;
+            case MAIN_MENU:
+                break;
+            case VEHICLE_DIAGNOSTIC:
+                break;
+        }
+    }
+
+
+
 }

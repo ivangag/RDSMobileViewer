@@ -19,6 +19,7 @@ import com.viewer.rds.actia.rdsmobileviewer.fragments.DownloadHandlerFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.DriversCardsFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.MainMenuCardsFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.VehiclesCardsFragment;
+import com.viewer.rds.actia.rdsmobileviewer.utils.CacheDataManager;
 import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadRDSManager;
 import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
 
@@ -259,20 +260,7 @@ public class MainMenuActivity extends BaseActivity
                     /*for (VehicleCustom vehicleCustom : (List<VehicleCustom>) result.getClassReturn()) {
                         mRDSDBMapper.insertOrUpdateVehicleData(vehicleCustom, requestType.getUniqueCustomerCode(), true);
                     }*/
-                    ActiveAndroid.beginTransaction();
-                    try{
-                        for (VehicleCustom vehicleCustom : (List<VehicleCustom>) result.getClassReturn()) {
-
-                            //VehicleBound vehicleBound = (VehicleBound) vehicleCustom;
-                            long idRes = -1;
-                            vehicleCustom.setCustomerUniqeId(requestType.getUniqueCustomerCode());
-                            idRes = vehicleCustom.save();
-                        }
-                        ActiveAndroid.setTransactionSuccessful();
-                    }
-                    finally {
-                        ActiveAndroid.endTransaction();
-                    }
+                    //CacheDataManager.get().saveDownloadRepository(requestType,result);
 
                     break;
                 case DRIVERS_OWNED:

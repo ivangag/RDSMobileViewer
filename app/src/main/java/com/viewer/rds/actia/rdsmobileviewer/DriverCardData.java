@@ -3,88 +3,105 @@ package com.viewer.rds.actia.rdsmobileviewer;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.activeandroid.Model;
+import com.activeandroid.annotation.Column;
+import com.activeandroid.annotation.Table;
 import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
 
 /**
  * Created by igaglioti on 11/07/2014.
  */
-public class DriverCardData implements Parcelable {
+@Table(name = "Drivers")
+public class DriverCardData extends Model implements Parcelable {
 
-    private String status;
+    @Column
+    private transient String CustomerUniqueId;
 
-    public DriverCardData(){}
-    private String mCustomerName;
+    @Column
+    private String Status;
 
-    private String mIdCard;
+    @Column
+    private String CustomerName;
 
-    private String mName;
+    @Column(unique = true, onUniqueConflict = Column.ConflictAction.REPLACE)
+    private String IdCard;
 
-    private String mInsertingDate;
+    @Column
+    private String Name;
 
-    private String mBindingDate;
+    @Column
+    private String InsertingDate;
 
-    private String mDeviceAnnouncer;
+    @Column
+    private String StartDate;
 
-    private boolean mIsActivated;
+    @Column
+    private String VehicleVIN;
+
+    @Column
+    private boolean IsActivated;
 
     public DriverCardData(Parcel in) {
 
     }
+    public DriverCardData(){
+        super();
+    }
 
     public String getCustomerName() {
-        return mCustomerName;
+        return CustomerName;
     }
 
     public void setCustomerName(String mCustomerName) {
-        this.mCustomerName = mCustomerName;
+        this.CustomerName = mCustomerName;
     }
 
     public String getIdCard() {
-        return mIdCard;
+        return IdCard;
     }
 
     public void setIdCard(String mIdCard) {
-        this.mIdCard = mIdCard;
+        this.IdCard = mIdCard;
     }
 
     public String getName() {
-        return mName;
+        return Name;
     }
 
     public void setName(String mName) {
-        this.mName = mName;
+        this.Name = mName;
     }
 
     public String getInsertingDate() {
-        return mInsertingDate;
+        return InsertingDate;
     }
 
     public void setInsertingDate(String mInsertingDate) {
-        this.mInsertingDate = Utils.getDateTimeFromTicks(mInsertingDate);
+        this.InsertingDate = Utils.getDateTimeFromTicks(mInsertingDate);
     }
 
-    public String getBindingDate() {
-        return mBindingDate;
+    public String getStartDate() {
+        return StartDate;
     }
 
-    public void setBindingDate(String mBindingDate) {
-        this.mBindingDate = Utils.getDateTimeFromTicks(mBindingDate);
+    public void setStartDate(String mBindingDate) {
+        this.StartDate = Utils.getDateTimeFromTicks(mBindingDate);
     }
 
     public String getDeviceAnnouncer() {
-        return mDeviceAnnouncer;
+        return VehicleVIN;
     }
 
     public void setDeviceAnnouncer(String mDeviceAnnouncer) {
-        this.mDeviceAnnouncer = mDeviceAnnouncer;
+        this.VehicleVIN = mDeviceAnnouncer;
     }
 
-    public boolean ismIsActivated() {
-        return mIsActivated;
+    public boolean isActivated() {
+        return IsActivated;
     }
 
     public void setIsActivated(boolean mIsActivated) {
-        this.mIsActivated = mIsActivated;
+        this.IsActivated = mIsActivated;
     }
 
     @Override
@@ -111,16 +128,24 @@ public class DriverCardData implements Parcelable {
     @Override
     public String toString()
     {
-        String res = String.format("IdCard:%s\t\nName:%s\t\nInsertDate:%s\t\nDeviceAnnouncer:%s\t\nCustomer:%s\t\nIsActivated:%b\t\nBindingDate:%s",
-                mIdCard,mName,mInsertingDate,mDeviceAnnouncer,mCustomerName,mIsActivated,mBindingDate);
+        String res = String.format("IdCard:%s\t\nName:%s\t\nInsertDate:%s\t\nDeviceAnnouncer:%s\t\nCustomer:%s\t\nIsActivated:%b\t\nStartDate:%s",
+                IdCard, Name, InsertingDate, VehicleVIN, CustomerName, IsActivated, StartDate);
         return res;
     }
 
     public void setStatus(String status) {
-        this.status = status;
+        this.Status = status;
     }
 
     public String getStatus() {
-        return status;
+        return Status;
+    }
+
+    public String getCustomerUniqueId() {
+        return CustomerUniqueId;
+    }
+
+    public void setCustomerUniqueId(String customerUniqueId) {
+        CustomerUniqueId = customerUniqueId;
     }
 }

@@ -3,93 +3,99 @@ package com.viewer.rds.actia.rdsmobileviewer;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.activeandroid.Model;
+import com.activeandroid.annotation.Column;
+import com.activeandroid.annotation.Table;
 import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
-
-import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
  * Created by igaglioti on 09/07/2014.
  */
-public class CRDSCustom implements Parcelable {
+@Table(name = "CRDS")
+public class CRDSCustom extends Model implements Parcelable {
 
+    @Column
+    private transient String CustomerUniqueId;
 
-    private String activationState;
+    @Column
+    private String ActivationState;
 
+    @Column
+    private String AppName;
 
-    private String appName;
+    @Column
+    private String AppType;
 
+    @Column
+    private String CAP;
 
-    private String appType;
+    @Column
+    private String Cellulare;
 
+    @Column
+    private String Citta;
 
-    private String cap;
+    @Column
+    private String Culture;
 
+    @Column
+    private String DataRicezione;
 
-    private String cellulare;
+    @Column
+    private String DiagnosticAction;
 
+    @Column
+    private String Email;
 
-    private String citta;
+    @Column
+    private String Fax;
 
+    @Column
+    private String Indirizzo;
 
-    private String culture;
+    @Column
+    private String LastLifeSignal;
 
+    @Column
+    private String ModoRicezioneCodice;
 
-    private String dataRicezione;
+    @Column
+    private String Nazione;
 
+    @Column
+    private String PartitaIva;
 
-    private String diagnosticAction;
+    @Column
+    private String Password;
 
+    @Column
+    private String RagioneSociale;
 
-    private String email;
+    @Column
+    private String Responsabile;
 
+    @Column
+    private String Telefono;
 
-    private String fax;
+    @Column
+    private String Versione;
 
+    @Column
+    private String XML;
 
-    private String indirizzo;
-
-
-    private String lastLifeSignal;
-
-
-    private String modoRicezioneCodice;
-
-
-    @JsonProperty("Nazione")
-    private String nazione;
-
-
-    private String partitaIva;
-
-
-    private String password;
-
-
-    private String ragioneSociale;
-
-
-    private String responsabile;
-
-
-    private String telefono;
-
-
-    private String versione;
-
-    private String xml;
-
-    private String crdsid;
+    @Column(unique = true, onUniqueConflict = Column.ConflictAction.REPLACE)
+    private String GUID;
 
     public CRDSCustom(Parcel in) {
 
     }
 
     public CRDSCustom(String CRDSGuid) {
-        crdsid = CRDSGuid;
+        GUID = CRDSGuid;
     }
 
     public CRDSCustom() {
-
+        super();
     }
 
     @Override
@@ -114,187 +120,187 @@ public class CRDSCustom implements Parcelable {
     };
 
     public String getCRDSId() {
-        return crdsid;
+        return GUID;
     }
 
     public void setCRDSId(String mCRDSId) {
-        this.crdsid = mCRDSId;
+        this.GUID = mCRDSId;
     }
 
     public String getActivationState() {
-        return activationState;
+        return ActivationState;
     }
 
     public void setActivationState(String mActivationState) {
-        this.activationState = mActivationState;
+        this.ActivationState = mActivationState;
     }
 
     public String getAppName() {
-        return appName;
+        return AppName;
     }
 
     public void setAppName(String mAppName) {
-        this.appName = mAppName;
+        this.AppName = mAppName;
     }
 
     public String getAppType() {
-        return appType;
+        return AppType;
     }
 
     public void setAppType(String mAppType) {
-        this.appType = mAppType;
+        this.AppType = mAppType;
     }
 
     public String getCAP() {
-        return cap;
+        return CAP;
     }
 
     public void setCAP(String mCAP) {
-        this.cap = mCAP;
+        this.CAP = mCAP;
     }
 
     public String getCellulare() {
-        return cellulare;
+        return Cellulare;
     }
 
     public void setCellulare(String mCellulare) {
-        this.cellulare = mCellulare;
+        this.Cellulare = mCellulare;
     }
 
     public String getCitta() {
-        return citta;
+        return Citta;
     }
 
     public void setCitta(String mCitta) {
-        this.citta = mCitta;
+        this.Citta = mCitta;
     }
 
     public String getCulture() {
-        return culture;
+        return Culture;
     }
 
     public void setCulture(String mCulture) {
-        this.culture = mCulture;
+        this.Culture = mCulture;
     }
 
     public String getDataRicezione() {
-        return dataRicezione;
+        return DataRicezione;
     }
 
     public void setDataRicezione(String mDataRicezione) {
-        this.dataRicezione = Utils.getDateTimeFromTicks(mDataRicezione);
+        this.DataRicezione = Utils.getDateTimeFromTicks(mDataRicezione);
     }
 
     public String getDiagnosticAction() {
-        return diagnosticAction;
+        return DiagnosticAction;
     }
 
     public void setDiagnosticAction(String mDiagnosticAction) {
-        this.diagnosticAction = Utils.getDateTimeFromTicks(mDiagnosticAction);
+        this.DiagnosticAction = Utils.getDateTimeFromTicks(mDiagnosticAction);
     }
 
     public String getEmail() {
-        return email;
+        return Email;
     }
 
     public void setEmail(String mEmail) {
-        this.email = mEmail;
+        this.Email = mEmail;
     }
 
     public String getFax() {
-        return fax;
+        return Fax;
     }
 
     public void setFax(String mFax) {
-        this.fax = mFax;
+        this.Fax = mFax;
     }
 
     public String getIndirizzo() {
-        return indirizzo;
+        return Indirizzo;
     }
 
     public void setIndirizzo(String mIndirizzo) {
-        this.indirizzo = mIndirizzo;
+        this.Indirizzo = mIndirizzo;
     }
 
     public String getLastLifeSignal() {
-        return lastLifeSignal;
+        return LastLifeSignal;
     }
 
     public void setLastLifeSignal(String mLastLifeSignal) {
-        this.lastLifeSignal = Utils.getDateTimeFromTicks(mLastLifeSignal);
+        this.LastLifeSignal = Utils.getDateTimeFromTicks(mLastLifeSignal);
     }
 
     public String getModoRicezioneCodice() {
-        return modoRicezioneCodice;
+        return ModoRicezioneCodice;
     }
 
     public void setModoRicezioneCodice(String mModoRicezioneCodice) {
-        this.modoRicezioneCodice = mModoRicezioneCodice;
+        this.ModoRicezioneCodice = mModoRicezioneCodice;
     }
 
     public String getNazione() {
-        return nazione;
+        return Nazione;
     }
 
     public void setNazione(String mNazione) {
-        this.nazione = mNazione;
+        this.Nazione = mNazione;
     }
 
     public String getPartitaIva() {
-        return partitaIva;
+        return PartitaIva;
     }
 
     public void setPartitaIva(String mPartitaIva) {
-        this.partitaIva = mPartitaIva;
+        this.PartitaIva = mPartitaIva;
     }
 
     public String getPassword() {
-        return password;
+        return Password;
     }
 
     public void setPassword(String mPassword) {
-        this.password = mPassword;
+        this.Password = mPassword;
     }
 
     public String getRagioneSociale() {
-        return ragioneSociale;
+        return RagioneSociale;
     }
 
     public void setRagioneSociale(String mRagioneSociale) {
-        this.ragioneSociale = mRagioneSociale;
+        this.RagioneSociale = mRagioneSociale;
     }
 
     public String getResponsabile() {
-        return responsabile;
+        return Responsabile;
     }
 
     public void setResponsabile(String mResponsabile) {
-        this.responsabile = mResponsabile;
+        this.Responsabile = mResponsabile;
     }
 
     public String getTelefono() {
-        return telefono;
+        return Telefono;
     }
 
     public void setTelefono(String mTelefono) {
-        this.telefono = mTelefono;
+        this.Telefono = mTelefono;
     }
 
     public String getVersione() {
-        return versione;
+        return Versione;
     }
 
     public void setVersione(String mVersione) {
-        this.versione = mVersione;
+        this.Versione = mVersione;
     }
 
     public String getXML() {
-        return xml;
+        return XML;
     }
 
     public void setXML(String mXML) {
-        this.xml = mXML;
+        this.XML = mXML;
     }
 
 
@@ -302,7 +308,15 @@ public class CRDSCustom implements Parcelable {
     public String toString()
     {
         String res = String.format("GUID:%s\t\nRagioneSociale:%s\t\nResp:%s\t\nEmail:%s\t\nCittà:%s\t\nDataRicezione:%s\t\nApplicazione:%s(V%s)",
-                crdsid, ragioneSociale, responsabile, email, citta, dataRicezione, appName, versione);
+                GUID, RagioneSociale, Responsabile, Email, Citta, DataRicezione, AppName, Versione);
         return res;
+    }
+
+    public String getCustomerUniqueId() {
+        return CustomerUniqueId;
+    }
+
+    public void setCustomerUniqueId(String customerUniqueId) {
+        CustomerUniqueId = customerUniqueId;
     }
 }

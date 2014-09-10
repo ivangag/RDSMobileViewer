@@ -342,8 +342,7 @@ public class DownloadRDSManager {
 
         this.addListener(clientDownloadDataListener);
 
-        final DownloadRequestType requestType = downloadRequestInfo.getDownloadRequestType();
-        final String url = requestType.getWSCallName(downloadRequestInfo);
+        final String url = downloadRequestInfo.getDownloadRequestType().getWSCallName(downloadRequestInfo);
 
         GsonRequest<ResultOperation> gsonRequest = new GsonRequest<ResultOperation>(
                 url,ResultOperation.class,null,new Response.Listener<ResultOperation>() {
@@ -366,6 +365,7 @@ public class DownloadRDSManager {
                     e.printStackTrace();
                 }
                 finally {
+                    CacheDataManager.get().saveDownloadRepository(downloadRequestInfo,response);
                     notifyListeners(downloadRequestInfo,response);
                 }
             }

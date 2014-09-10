@@ -14,9 +14,11 @@ import android.widget.LinearLayout;
 
 import com.viewer.rds.actia.rdsmobileviewer.fragments.BaseFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.DownloadHandlerFragment;
+import com.viewer.rds.actia.rdsmobileviewer.utils.CacheDataManager;
 import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadRDSManager;
 import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
 
+import java.util.List;
 import java.util.Locale;
 
 /**

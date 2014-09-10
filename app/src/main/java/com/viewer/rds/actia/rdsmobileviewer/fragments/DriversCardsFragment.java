@@ -194,7 +194,7 @@ public class DriversCardsFragment extends BaseFragment implements IFragmentNotif
             this.mIdCard = driverCardData.getIdCard();
             this.mDiagnosticTime =
                     (driverCardData.getInsertingDate() != null ?  driverCardData.getInsertingDate() : "Not Available")
-                            + "(" + (driverCardData.getBindingDate() != null ?  driverCardData.getBindingDate() : "Not Available") + ")";
+                            + "(" + (driverCardData.getStartDate() != null ?  driverCardData.getStartDate() : "Not Available") + ")";
             this.mCustomerName = driverCardData.getCustomerName();
 
             this.mBaseCustomData = driverCardData;

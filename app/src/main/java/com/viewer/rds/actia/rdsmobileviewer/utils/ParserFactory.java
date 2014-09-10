@@ -1,5 +1,7 @@
 package com.viewer.rds.actia.rdsmobileviewer.utils;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.viewer.rds.actia.rdsmobileviewer.CRDSCustom;
 import com.viewer.rds.actia.rdsmobileviewer.DriverCardData;
 import com.viewer.rds.actia.rdsmobileviewer.MainContractorData;
@@ -12,6 +14,7 @@ import org.json.JSONObject;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.zip.GZIPInputStream;
 
@@ -96,7 +99,7 @@ public class ParserFactory {
             if (!jsonObject.isNull("InsertDate"))
                 remoteItem.setInsertingDate(jsonObject.getString("InsertDate"));
             if (!jsonObject.isNull("StartDate"))
-                remoteItem.setBindingDate(jsonObject.getString("StartDate"));
+                remoteItem.setStartDate(jsonObject.getString("StartDate"));
             if (!jsonObject.isNull("IsActivated"))
                 remoteItem.setIsActivated(jsonObject.getBoolean("IsActivated"));
             if (!jsonObject.isNull("Name"))
@@ -193,6 +196,7 @@ public class ParserFactory {
     }
 
 
+    final static Type typeOfVehicleArray = new TypeToken<ArrayList<VehicleCustom>>(){}.getType();
     public static ArrayList parseJsonToRDSRemoteEntity(String jsonRaw, DownloadRDSManager.DownloadRequestType requestType) throws JSONException {
         final JSONArray jsonArray = new JSONArray(jsonRaw);
         ArrayList result = null;
@@ -202,6 +206,8 @@ public class ParserFactory {
             case VEHICLES_OWNED:
             case VEHICLE_NOT_TRUSTED:
                 result = ParserFactory.parseVehicles(jsonArray);
+                Gson gson = new Gson();
+                result = gson.fromJson(jsonRaw, typeOfVehicleArray);
                 break;
             case CUSTOMERS_LIST:
                 result = ParserFactory.parseCustomers(jsonArray);

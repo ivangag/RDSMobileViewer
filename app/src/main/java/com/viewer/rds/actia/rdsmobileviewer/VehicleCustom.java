@@ -6,7 +6,6 @@ import android.os.Parcelable;
 
 import com.activeandroid.Model;
 import com.activeandroid.annotation.Column;
-import com.activeandroid.annotation.Table;
 import com.viewer.rds.actia.rdsmobileviewer.db.RDSDBHelper;
 import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
 
@@ -16,7 +15,7 @@ import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
 public class VehicleCustom extends Model implements Parcelable {
 
     @Column
-    private transient String CustomerUniqeId;
+    private transient String CustomerUniqueId;
 
     @Column
     private String CustomerName;
@@ -276,11 +275,11 @@ public class VehicleCustom extends Model implements Parcelable {
         return cv;
     }
 
-    public String getCustomerUniqeId() {
-        return CustomerUniqeId;
+    public String getCustomerUniqueId() {
+        return CustomerUniqueId;
     }
 
-    public void setCustomerUniqeId(String customerUniqeId) {
-        CustomerUniqeId = customerUniqeId;
+    public void setCustomerUniqueId(String customerUniqueId) {
+        CustomerUniqueId = customerUniqueId;
     }
 }

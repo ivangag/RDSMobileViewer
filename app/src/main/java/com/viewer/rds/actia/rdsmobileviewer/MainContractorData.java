@@ -4,41 +4,46 @@ import android.content.ContentValues;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.activeandroid.Model;
+import com.activeandroid.annotation.Column;
+import com.activeandroid.annotation.Table;
 import com.viewer.rds.actia.rdsmobileviewer.db.RDSDBHelper;
 import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
 
 /**
  * Created by igaglioti on 11/07/2014.
  */
+@Table(name = "Customers")
+public class MainContractorData extends Model implements Parcelable{
 
-public class MainContractorData implements Parcelable{
-
+    @Column
     private String Email;
 
+    @Column
     private String FriendlyName;
 
-
+    @Column(unique = true, onUniqueConflict = Column.ConflictAction.REPLACE)
     private int IdCustomer;
 
-
+    @Column
     private String InsertDate;
 
-
+    @Column
     private boolean IsAutomaticDriverAssociationEnabled;
 
-
+    @Column
     private boolean IsEmailForwardServiceActive;
 
-
+    @Column
     private boolean IsFilePushingServiceActive;
 
-
+    @Column
     private boolean IsSuperCRDSServiceActive;
 
-
+    @Column(unique = true, onUniqueConflict = Column.ConflictAction.REPLACE)
     private String Ancodice;
 
-
+    @Column
     private int ContractLeaseDuration;
 
     public MainContractorData(Parcel in) {
@@ -57,7 +62,7 @@ public class MainContractorData implements Parcelable{
     }
 
     public MainContractorData() {
-
+        super();
     }
 
     public String getEmail() {

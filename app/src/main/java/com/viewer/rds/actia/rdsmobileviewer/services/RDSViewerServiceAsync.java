@@ -78,21 +78,8 @@ public class RDSViewerServiceAsync extends Service {
 
             final boolean mObtainCacheIfExist = downloadRequest.getCacheOption();
 
-
             boolean mHasCacheData = false;
-              /*
-            if(mObtainCacheIfExist){
-                Log.d(TAG, "mObtainCacheIfExist");
-                try {
-                   resOp.setClassReturn(CacheDataManager.get().getDownloadRepository(downloadRequest).getBytes());
-                } catch (RDSEmptyDataException e) {
-                    mHasCacheData = false;
-                    resOp.setStatus(false);
-                    e.printStackTrace();
-                }
-                Log.d(TAG, "mHasCacheData: " + mHasCacheData);
-            }
-            */
+
             if(!mHasCacheData) {
                 Log.d(TAG, "mHasCacheData: " + mHasCacheData);
                 resOp = DownloadRDSManager.FetchingRemoteData(mClient, downloadRequest, false);
