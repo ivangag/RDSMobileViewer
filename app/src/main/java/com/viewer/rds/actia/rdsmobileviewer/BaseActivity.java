@@ -7,6 +7,7 @@ import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -54,6 +55,7 @@ public abstract class BaseActivity extends Activity implements
     final protected static String FRAGMENT_DOWNLOAD_TAG  = "FRAGMENT_DOWNLOAD_TAG";
 
     private ArrayList<String> mFragmentTags;
+    private ArrayList<Integer> mFragmentIdCollection;
     Integer mDisplayOrientation;
     protected Fragment mCurrentTabFragment;
 
@@ -75,6 +77,10 @@ public abstract class BaseActivity extends Activity implements
         mFragmentTags.add(FRAGMENT_VEHICLES_TAG);
         mFragmentTags.add(FRAGMENT_CUSTOMERS_TAG);
         mFragmentTags.add(FRAGMENT_MAIN_MENU_TAG);
+
+        mFragmentIdCollection = new ArrayList<Integer>();
+        mFragmentIdCollection.add(R.id.fragment_main);
+        mFragmentIdCollection.add(R.id.fragment_main_details);
     }
 
 
@@ -171,17 +177,29 @@ public abstract class BaseActivity extends Activity implements
     {
         Fragment mFragment = null;
         String tag;
-        Iterator<String> iteration = mFragmentTags.iterator();
-        while(iteration.hasNext()) {
-            tag = iteration.next();
-            mFragment = getFragmentManager().findFragmentByTag(tag);
-            if ((mFragment != null)
-                    && mFragment.isVisible()) {
-                // add your code here
-                break;
+        Integer id;
+
+        ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
+        if(viewPager != null) {
+            // 1.get id viewer page
+            id = viewPager.getCurrentItem();
+            //Get Fragment by tag
+            mFragment = getFragmentManager().findFragmentByTag("android:switcher:" + R.id.pager + ":" + id);
+        }
+        if (!((mFragment != null)
+                && mFragment.isVisible())) {
+            Iterator<Integer> iteration = mFragmentIdCollection.iterator();
+            while (iteration.hasNext()) {
+                id = iteration.next();
+                mFragment = getFragmentManager().findFragmentById(id);
+                if ((mFragment != null)
+                        && mFragment.isVisible()) {
+                    // add your code here
+                    break;
+                }
             }
         }
-        return mFragment != null ? (IFragmentNotification)mFragment: null;
+        return mFragment != null ? (IFragmentNotification)mFragment : null;
     }
 
     protected void showNewFragment(Fragment fragment, String tag) {
@@ -196,26 +214,6 @@ public abstract class BaseActivity extends Activity implements
         }
     }
 
-    protected void showNewFragment(Fragment fragment, String tag, boolean isDetailsFragment ) {
-
-        if(mDisplayOrientation.equals(Configuration.ORIENTATION_LANDSCAPE)) {
-            if (!fragment.isAdded()) {
-                FragmentTransaction fragmentTransaction = mFragmentManager
-                        .beginTransaction();
-                if (!isDetailsFragment)
-                    fragmentTransaction.replace(R.id.fragment_main, fragment, tag);
-                else
-                    fragmentTransaction.replace(R.id.fragment_main_details, fragment, tag);
-                //fragmentTransaction.addToBackStack(null);
-                fragmentTransaction.commit();
-                mFragmentManager.executePendingTransactions();
-            }
-        }
-        else
-        {
-            showNewFragment(fragment,tag);
-        }
-    }
 
     @Override
     public void onStart()   {
@@ -397,39 +395,6 @@ public abstract class BaseActivity extends Activity implements
         } catch (RDSEmptyDataException e) {
             e.printStackTrace();
         }
-
-
-        /*
-        switch (requestType)
-        {
-            case VEHICLE_NOT_TRUSTED:
-                result = CacheDataManager.get().getValue(downloadRequestSchema);
-                break;
-            case CRDS_NOT_TRUSTED:
-                result = CacheDataManager.get().getValue(downloadRequestSchema);
-                break;
-            case CUSTOMERS_LIST:
-                //result = CacheDataManager.get().getCustomers(getApplicationContext());
-                result = CacheDataManager.get().getValue(downloadRequestSchema);
-                break;
-            case VEHICLES_OWNED:
-                result = CacheDataManager.get().getCustomerVehicles(((BaseFragment) sender).getUniqueCustomerCode());
-                break;
-            case DRIVERS_OWNED:
-                result = CacheDataManager.get().getCustomerDrivers(((BaseFragment) sender).getUniqueCustomerCode());
-                break;
-            case CRDS_OWNED:
-                result = CacheDataManager.get().getValue(downloadRequestSchema);
-                break;
-            case DRIVERS_NOT_TRUSTED:
-                result = CacheDataManager.get().getDriversNotTrusted();
-                break;
-            case MAIN_MENU:
-                break;
-            case VEHICLE_DIAGNOSTIC:
-                break;
-        }
-        */
 
     }
 

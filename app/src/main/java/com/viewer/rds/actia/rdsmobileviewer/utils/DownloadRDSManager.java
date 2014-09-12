@@ -337,7 +337,7 @@ public class DownloadRDSManager {
         }
     }
 
-    public void RequireDownloadVolleyTask(Context context, IRemoteDownloadDataListener clientDownloadDataListener,
+    public void RequireDownloadVolleyTask(final Context context, IRemoteDownloadDataListener clientDownloadDataListener,
                                          final DownloadRequestSchema downloadRequestInfo) {
 
         this.addListener(clientDownloadDataListener);
@@ -366,14 +366,16 @@ public class DownloadRDSManager {
                 }
                 finally {
                     CacheDataManager.get().saveDownloadRepository(downloadRequestInfo,response);
-                    notifyListeners(downloadRequestInfo,response);
                 }
+                notifyListeners(downloadRequestInfo,response);
             }
             },new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
 
-                String errorMsg = error.getLocalizedMessage();
+                String errorMsg = error.getMessage();
+                notifyListeners(downloadRequestInfo,ResultOperation.newInstance(false,errorMsg,null));
+                Log.e(TAG,"DownloadError: " + errorMsg);
             }
         }
         );

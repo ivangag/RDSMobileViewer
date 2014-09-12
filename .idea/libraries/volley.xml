@@ -4,8 +4,6 @@
       <root url="jar://$PROJECT_DIR$/volley/volley.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES>
-      <root url="file://D:/igaglioti/Documenti/GitHub/volley/src" />
-    </SOURCES>
+    <SOURCES />
   </library>
 </component>

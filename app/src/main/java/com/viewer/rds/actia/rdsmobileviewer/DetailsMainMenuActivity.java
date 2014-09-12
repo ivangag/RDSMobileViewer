@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.viewer.rds.actia.rdsmobileviewer.fragments.BaseFragment;
 import com.viewer.rds.actia.rdsmobileviewer.fragments.DownloadHandlerFragment;
@@ -78,9 +79,6 @@ public class DetailsMainMenuActivity extends BaseActivity implements ActionBar.T
                             .setText(mSectionsPagerAdapter.getPageTitle(i))
                             .setTabListener(this));
         }
-
-
-
     }
 
     @Override
@@ -243,23 +241,16 @@ public class DetailsMainMenuActivity extends BaseActivity implements ActionBar.T
         }
         return super.onOptionsItemSelected(item);
     }
-
-    private DownloadRequestSchema makeDownloadRequestSchema(boolean cacheIfExist) {
-
-        DownloadRequestSchema requestType = DownloadRequestSchema.newInstance();
-        DownloadRDSManager.DownloadRequestType fragmentType = DownloadRDSManager.DownloadRequestType.valueOf(mCurrentTabFragment.getArguments().getString(PlaceholderFragmentFactory.ARG_FRAGMENT_TYPE));
-        requestType.setDownloadRequestType(fragmentType);
-        requestType.setCacheOption(cacheIfExist);
-        return requestType;
-    }
-
    @Override
     public void handleDownloadDataFinished(DownloadRequestSchema requestType, ResultOperation result)
     {
         if(result.isStatus()) {
             PushDataToFragment(mCurrentTabFragment, requestType, result.getClassReturn());
+        } else {
+            Toast.makeText(getApplicationContext(), "Download failed: " + result.getOtherInfo(), Toast.LENGTH_LONG).show();
         }
     }
+
 
 
 }

@@ -39,4 +39,11 @@ dependencies {
     compile project(':ActiveAndroid')
     compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.13'
     compile 'com.google.code.gson:gson:2.3'
+    compile 'com.octo.android.robospice:robospice-spring-android:1.4.11'
+    compile 'com.octo.android.robospice:robospice-google-http-client:1.4.11'
+    compile('com.google.http-client:google-http-client-gson:1.18.0-rc') {
+        exclude module: 'xpp3'
+        exclude group: 'stax'
+    }
+
 }

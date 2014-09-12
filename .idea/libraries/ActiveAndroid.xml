@@ -4,8 +4,6 @@
       <root url="jar://$PROJECT_DIR$/ActiveAndroid/ActiveAndroid.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES>
-      <root url="file://$PROJECT_DIR$/../../ActiveAndroid-master/ActiveAndroid-master/src" />
-    </SOURCES>
+    <SOURCES />
   </library>
 </component>

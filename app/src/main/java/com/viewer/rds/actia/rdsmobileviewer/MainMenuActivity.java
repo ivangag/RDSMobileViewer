@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.activeandroid.ActiveAndroid;
 import com.viewer.rds.actia.rdsmobileviewer.db.RDSDBMapper;
@@ -41,8 +42,6 @@ public class MainMenuActivity extends BaseActivity
     private DownloadRDSManager.DownloadRequestType mCurrentSecondaryFragmentType = null;
     private RDSDBMapper mRDSDBMapper;
     private static boolean isFragmentsInit = false;
-    private static String mLastAddedFragment = "";
-    private static int mTrackBackStackCount = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -250,9 +249,11 @@ public class MainMenuActivity extends BaseActivity
 
                     //PushDataToFragment(mCustomerListFragment, requestType, result.getClassReturn());
                     mCustomerListFragment.OnUpdateData("", result.getClassReturn(), MainContractorData.class);
+                    /*
                     for (MainContractorData customer : (List<MainContractorData>) result.getClassReturn()) {
                         mRDSDBMapper.insertOrUpdateCustomerData(customer);
                     }
+                    */
                     break;
                 case VEHICLES_OWNED:
                     handleDetailsFragmentViewOnUpdateData(mVehiclesCustomerListFragment);
@@ -280,6 +281,8 @@ public class MainMenuActivity extends BaseActivity
 
             if(mDisplayOrientation.equals(LANDSCAPE))
                 showExtraLayout();
+        }else {
+            Toast.makeText(getApplicationContext(),"Download failed: " + result.getOtherInfo(), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -288,13 +291,10 @@ public class MainMenuActivity extends BaseActivity
             int newLayoutId = R.id.fragment_main;
             if (mDisplayOrientation.equals(LANDSCAPE))
                 newLayoutId = R.id.fragment_main_details;
-
             if(((fragment.getId() != 0)
                 && fragment.getId() != newLayoutId)) {
             }
-
             replaceFragment(newLayoutId, null, fragment, false);
-
         }
     }
 
@@ -414,6 +414,5 @@ public class MainMenuActivity extends BaseActivity
                 && (getFragmentManager().findFragmentById(R.id.fragment_main_details) == null)){
             hideExtraLayout();
         }
-        mTrackBackStackCount = getFragmentManager().getBackStackEntryCount();
     }
 }
