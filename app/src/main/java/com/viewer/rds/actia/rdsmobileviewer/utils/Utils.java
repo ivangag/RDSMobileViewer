@@ -1,6 +1,9 @@
 package com.viewer.rds.actia.rdsmobileviewer.utils;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.util.Log;
 
 import com.viewer.rds.actia.rdsmobileviewer.R;
 import com.viewer.rds.actia.rdsmobileviewer.VehicleCustom;
@@ -20,14 +23,20 @@ import java.lang.ref.WeakReference;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 import java.util.zip.GZIPInputStream;
 
 /**
  * Created by igaglioti on 09/07/2014.
  */
-public class Utils {
+public final class Utils {
 
+
+    private final static String TAG = Utils.class
+            .getCanonicalName();
     static WeakReference<Context> mContext = null;
 
     public final static int GZIP_MAGICAL_1 = 0x1f;
@@ -97,7 +106,7 @@ public class Utils {
             }
             // Add 5 hour to go to GMT+1 time (server-side storing time)
             try {
-                long ticks = Long.valueOf(result) + TIME_HOURS * 1000 * (4 + offsetTimeZone);
+                long ticks = Long.valueOf(result);// - TIME_HOURS * 1000;// * (4 + offsetTimeZone);
                 Date date = new Date(ticks);
                 result = new SimpleDateFormat("yyyy-MM-dd HH:mm").format(date);
 
@@ -116,6 +125,47 @@ public class Utils {
     }
 
 
+
+
+        /*
+        private Context _context;
+        public ConnectionDetector(Context context){
+            this._context = context;
+        }
+        */
+
+        /**
+         * Checking for all possible internet providers
+         * **/
+        public boolean isConnectingToInternet() {
+            if(mContext.get() != null) {
+                ConnectivityManager connectivity = (ConnectivityManager) mContext.get().getSystemService(Context.CONNECTIVITY_SERVICE);
+                if (connectivity != null) {
+                    NetworkInfo[] info = connectivity.getAllNetworkInfo();
+                    if (info != null)
+                        for (int i = 0; i < info.length; i++)
+                            if (info[i].getState() == NetworkInfo.State.CONNECTED) {
+                                return true;
+                            }
+
+                }
+            }else {
+                Log.w(TAG,"isConnectingToInternet-> Context is null!");
+            }
+            return false;
+        }
+
+    public static void SortVehiclesByDiagDate(List<VehicleCustom> data){
+        Collections.sort(data, new Comparator<VehicleCustom>() {
+            public int compare(VehicleCustom o1, VehicleCustom o2) {
+                if(o2.getDiagnosticDeviceTime() != null
+                        && o1.getDiagnosticDeviceTime() != null )
+                    return o2.getDiagnosticDeviceTime().compareTo(o1.getDiagnosticDeviceTime());
+                else
+                    return -1;
+            }
+        });
+    }
     /*
     public static byte[] convertToByteArray(byte[] list) throws IOException {
         // write to byte array

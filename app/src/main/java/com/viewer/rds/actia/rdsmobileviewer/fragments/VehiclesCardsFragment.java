@@ -21,8 +21,10 @@ import com.viewer.rds.actia.rdsmobileviewer.cards.HeaderCard;
 import com.viewer.rds.actia.rdsmobileviewer.cards.CustomExpandCard;
 import com.viewer.rds.actia.rdsmobileviewer.utils.DownloadRDSManager;
 import com.viewer.rds.actia.rdsmobileviewer.VehicleCustom;
+import com.viewer.rds.actia.rdsmobileviewer.utils.Utils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -94,9 +96,12 @@ public class VehiclesCardsFragment extends BaseFragment implements IFragmentNoti
 
         mUniqueCustomerCode = UniqueCustomerCode;
         if(getActivity() != null) {
-            List<VehicleCustom> data = (List<VehicleCustom>) dataContentList;
-            updateBaseCardAdapter(itemBaseType, data);
-            setTitle();
+            if(dataContentList != null) {
+                List<VehicleCustom> data = (List<VehicleCustom>) dataContentList;
+                Utils.SortVehiclesByDiagDate(data);
+                updateBaseCardAdapter(itemBaseType, data);
+                setTitle();
+            }
         }
     }
 
@@ -372,7 +377,6 @@ public class VehiclesCardsFragment extends BaseFragment implements IFragmentNoti
                     mLastFilteredItems = (List<VehicleDataCardWrapper>) results.values;
                 else
                     mLastFilteredItems = mLastRetrievedItems;
-
                 mCardArrayAdapter.clear();
                 mCardArrayAdapter.addAll(BuildCardFromWrapper(mLastFilteredItems));
 
@@ -395,19 +399,6 @@ public class VehiclesCardsFragment extends BaseFragment implements IFragmentNoti
         List<VehicleDataCardWrapper> values = new ArrayList<VehicleDataCardWrapper>();
         for(VehicleDataCardWrapper item: mLastRetrievedItems)
         {
-            /*
-            if(!IsRawSearch)
-            {
-                if((getActivity().getString(R.string.filterALL).equals(constraint))
-                        || item.getNetworkTypeName().contains(constraint))
-                    values.add(item);
-            }
-            else
-            {
-                if(item.getRawText().contains(constraint))
-                    values.add(item);
-            }
-            */
             if(item.getBaseDataToString().contains(constraint))
                 values.add(item);
         }

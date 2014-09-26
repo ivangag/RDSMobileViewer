@@ -25,7 +25,7 @@ import com.viewer.rds.actia.rdsmobileviewer.VehicleCustom;
 import com.viewer.rds.actia.rdsmobileviewer.services.RDSViewerServiceAsync;
 import com.viewer.rds.actia.rdsmobileviewer.services.RDSViewerServiceSync;
 import com.viewer.rds.actia.rdsmobileviewer.volley.GsonRequest;
-import com.viewer.rds.actia.rdsmobileviewer.volley.VolleyRequestManager;
+import com.viewer.rds.actia.rdsmobileviewer.volley.VolleyRequestController;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -47,6 +47,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Created by igaglioti on 09/07/2014.
  */
 public class DownloadRDSManager {
+
+
+    private final static String TAG = DownloadRDSManager.class
+            .getCanonicalName();
+
     private AtomicInteger mRequestCounter = new AtomicInteger();
 
     public final static int DOWNLOAD_DATA_REQUEST = 0;
@@ -56,8 +61,6 @@ public class DownloadRDSManager {
 
     public static final String DOWNLOAD_DATA_RESULT = "DOWNLOAD_DATA_RESULT";
 
-    private final static String TAG = DownloadRDSManager.class
-            .getCanonicalName();
     private final static String RDSRestFulURL = "http://iob.actiaitalia.com/ACTIA.ARDIS.RESTFul/Service.svc/json/";
 
     private final static String mWSVehiclesNotTrustedCallName   = "GetVehiclesNotActivated";
@@ -380,7 +383,7 @@ public class DownloadRDSManager {
         }
         );
         gsonRequest.setTag(downloadRequestInfo.getDownloadRequestType().toString());
-        VolleyRequestManager.getInstance(context).addToRequestQueue(gsonRequest);
+        VolleyRequestController.getInstance(context).addToRequestQueue(gsonRequest);
     }
 
     class DownloadDataTask extends AsyncTask<DownloadRequestSchema,Void,ResultOperation>

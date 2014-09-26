@@ -6,6 +6,10 @@ android {
         exclude 'META-INF/ASL2.0'
         exclude 'META-INF/LICENSE'
         exclude 'META-INF/NOTICE'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
     }
     compileSdkVersion 20
     buildToolsVersion "20.0.0"
@@ -34,16 +38,26 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     // You must install or update the Support Repository through the SDK manager to use this dependency.
     compile 'com.android.support:support-v13:19.1.0'
+    compile "com.google.android.gms:play-services:5.2.08"
     compile project(':library-1.9.1-SNAPSHOT')
     compile project(':volley')
     compile project(':ActiveAndroid')
     compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.13'
     compile 'com.google.code.gson:gson:2.3'
-    compile 'com.octo.android.robospice:robospice-spring-android:1.4.11'
-    compile 'com.octo.android.robospice:robospice-google-http-client:1.4.11'
+    compile ( 'com.octo.android.robospice:robospice-spring-android:1.4.11')
+            {
+                exclude module: 'xpp3'
+                exclude group: 'stax'
+            }
+    compile ('com.octo.android.robospice:robospice-google-http-client:1.4.11')
+            {
+                exclude module: 'xpp3'
+                exclude group: 'stax'
+            }
     compile('com.google.http-client:google-http-client-gson:1.18.0-rc') {
         exclude module: 'xpp3'
         exclude group: 'stax'
     }
+    compile 'de.greenrobot:eventbus:2.2.1'
 
 }

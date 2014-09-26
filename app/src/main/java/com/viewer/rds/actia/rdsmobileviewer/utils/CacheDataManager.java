@@ -4,6 +4,8 @@ import android.content.Context;
 import android.util.Log;
 
 import com.activeandroid.ActiveAndroid;
+import com.activeandroid.Model;
+import com.activeandroid.query.Delete;
 import com.activeandroid.query.Select;
 import com.viewer.rds.actia.rdsmobileviewer.CRDSCustom;
 import com.viewer.rds.actia.rdsmobileviewer.DownloadRequestSchema;
@@ -304,42 +306,6 @@ public class CacheDataManager
         return mCachedCRDSNotTrusted.size() > 0;
     }
 
-    public Object getValue(DownloadRequestSchema downloadRequestSchema) throws RDSEmptyDataException {
-
-        Object result = null;
-        final String customerCode = (downloadRequestSchema.getUniqueCustomerCode() != null)
-                ? downloadRequestSchema.getUniqueCustomerCode() : "";
-        final String vehicleVIN = downloadRequestSchema.getVehicleVIN();
-        Log.d(TAG, "getValue: " + downloadRequestSchema.getUniqueCustomerCode() + " " + downloadRequestSchema.getDownloadRequestType());
-        switch (downloadRequestSchema.getDownloadRequestType())
-        {
-            case VEHICLE_NOT_TRUSTED:
-            case VEHICLES_OWNED:
-                result = CacheDataManager.get().getVehicles(customerCode);
-                break;
-            case CRDS_NOT_TRUSTED:
-            case CRDS_OWNED:
-                result = CacheDataManager.get().getCRDS(customerCode);
-                break;
-            case DRIVERS_OWNED:
-            case DRIVERS_NOT_TRUSTED:
-                result = CacheDataManager.get().getDrivers(customerCode);
-                break;
-            case CUSTOMERS_LIST:
-                result = CacheDataManager.get().getCustomers();
-                break;
-            case MAIN_MENU:
-                break;
-            case VEHICLE_DIAGNOSTIC:
-                break;
-        }
-        Log.d(TAG, "Value: " + (result != null));
-        if (result == null) {
-            Log.d(TAG, "Raise RDSEmptyDataException");
-            throw new RDSEmptyDataException("RDS request: " + downloadRequestSchema.toString());
-        }
-        return result;
-    }
 
 
 
@@ -399,6 +365,7 @@ public class CacheDataManager
             for (CRDSCustom crdsCustom : CRDS) {
 
                 crdsCustom.setCustomerUniqueId(requestType.getUniqueCustomerCode());
+                crdsCustom.setCustomerUniqueId(requestType.getUniqueCustomerCode());
                 crdsCustom.save();
             }
             ActiveAndroid.setTransactionSuccessful();
@@ -443,14 +410,17 @@ public class CacheDataManager
                 break;
             case VEHICLES_OWNED:
             case VEHICLE_NOT_TRUSTED:
+                new DeleteHandler<VehicleCustom>().deleteItems(new VehicleCustom(),downloadRequestInfo.getUniqueCustomerCode());
                 this.saveVehicles(downloadRequestInfo,(List<VehicleCustom>)response.getClassReturn());
                 break;
             case CRDS_OWNED:
             case CRDS_NOT_TRUSTED:
+                new DeleteHandler<CRDSCustom>().deleteItems(new CRDSCustom(),downloadRequestInfo.getUniqueCustomerCode());
                 this.saveCRDS(downloadRequestInfo, (List<CRDSCustom>) response.getClassReturn());
                 break;
             case DRIVERS_OWNED:
             case DRIVERS_NOT_TRUSTED:
+                new DeleteHandler<DriverCardData>().deleteItems(new DriverCardData(),downloadRequestInfo.getUniqueCustomerCode());
                 this.saveDrivers(downloadRequestInfo, (List<DriverCardData>) response.getClassReturn());
                 break;
             case MAIN_MENU:
@@ -460,6 +430,80 @@ public class CacheDataManager
         }
     }
 
+    public Object getValue(DownloadRequestSchema downloadRequestSchema) throws RDSEmptyDataException {
 
+        Object result = null;
+        final String customerCode = (downloadRequestSchema.getUniqueCustomerCode() != null)
+                ? downloadRequestSchema.getUniqueCustomerCode() : "";
+        final String vehicleVIN = downloadRequestSchema.getVehicleVIN();
+        Log.d(TAG, "getValue: " + downloadRequestSchema.getUniqueCustomerCode() + " " + downloadRequestSchema.getDownloadRequestType());
+        switch (downloadRequestSchema.getDownloadRequestType())
+        {
+            case VEHICLE_NOT_TRUSTED:
+            case VEHICLES_OWNED:
+                result = CacheDataManager.get().getVehicles(customerCode);
+                break;
+            case CRDS_NOT_TRUSTED:
+            case CRDS_OWNED:
+                result = CacheDataManager.get().getCRDS(customerCode);
+                break;
+            case DRIVERS_OWNED:
+            case DRIVERS_NOT_TRUSTED:
+                result = CacheDataManager.get().getDrivers(customerCode);
+                break;
+            case CUSTOMERS_LIST:
+                result = CacheDataManager.get().getCustomers();
+                break;
+            case MAIN_MENU:
+                break;
+            case VEHICLE_DIAGNOSTIC:
+                break;
+        }
+        Log.d(TAG, "Value: " + (result != null));
+        if (result == null) {
+            Log.d(TAG, "Raise RDSEmptyDataException");
+            throw new RDSEmptyDataException("RDS request: " + downloadRequestSchema.toString());
+        }
+        return result;
+    }
+
+
+    private void bulkDelete(DownloadRequestSchema downloadRequestSchema){
+
+        final String customerCode = (downloadRequestSchema.getUniqueCustomerCode() != null)
+                ? downloadRequestSchema.getUniqueCustomerCode() : "";
+        Log.d(TAG, "deleteValue: " + downloadRequestSchema.getUniqueCustomerCode() + " " + downloadRequestSchema.getDownloadRequestType());
+        switch (downloadRequestSchema.getDownloadRequestType()){
+
+            case VEHICLES_OWNED:
+            case VEHICLE_NOT_TRUSTED:
+               new DeleteHandler<VehicleCustom>().deleteItems(new VehicleCustom(),"");
+                break;
+            case CRDS_NOT_TRUSTED:
+                break;
+            case CUSTOMERS_LIST:
+                break;
+            case DRIVERS_OWNED:
+                break;
+            case CRDS_OWNED:
+                break;
+            case DRIVERS_NOT_TRUSTED:
+                break;
+            case MAIN_MENU:
+                break;
+            case VEHICLE_DIAGNOSTIC:
+                break;
+        }
+    }
+
+    class DeleteHandler<T extends Model> {
+
+        public void deleteItems(T objectType, String Ancodice ){
+            new Delete().
+                    from(objectType.getClass())
+                    .where("CustomerUniqueId = ?", Ancodice)
+                    .execute();
+        }
+    }
 
 }

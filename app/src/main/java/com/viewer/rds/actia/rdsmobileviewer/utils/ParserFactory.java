@@ -205,9 +205,9 @@ public class ParserFactory {
             case VEHICLE_DIAGNOSTIC:
             case VEHICLES_OWNED:
             case VEHICLE_NOT_TRUSTED:
-                result = ParserFactory.parseVehicles(jsonArray);
                 Gson gson = new Gson();
-                result = gson.fromJson(jsonRaw, typeOfVehicleArray);
+                //result = gson.fromJson(jsonRaw, typeOfVehicleArray);
+                result = ParserFactory.parseVehicles(jsonArray);
                 break;
             case CUSTOMERS_LIST:
                 result = ParserFactory.parseCustomers(jsonArray);

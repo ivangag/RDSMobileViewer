@@ -2,14 +2,34 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.viewer.rds.actia.rdsmobileviewer" >
 
-    <uses-permission android:name="android.permission.INTERNET" />
-    <!-- android:configChanges="orientation|screenSize" -->
+    <!-- GCM connects to Internet Services. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+ 
+    <!-- GCM requires a Google account. -->
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+ 
+    <!-- Keeps the processor from sleeping when a message is received. -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+ 
+    <!-- Creates a custom permission so only this app can receive its messages.-->
+    <permission android:name="com.example.gcm.permission.C2D_MESSAGE"
+        android:protectionLevel="signature" />
+
+    <uses-permission android:name="com.example.gcm.permission.C2D_MESSAGE" />
+ 
+    <!-- This app has permission to register and receive data message. -->
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+ 
     <application
         android:name=".ApplicationEntry"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher_alternative"
         android:label="@string/app_name"
         android:theme="@style/Theme.Ardis" >
+
+        <!-- Required for applications which use Google Play Services. -->
+        <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
+
         <activity
             android:name=".MainMenuActivity"
             android:label="@string/app_name" >
@@ -39,6 +59,22 @@
             android:label="@string/title_activity_download" >
         </activity>
 
+
+
+        <receiver
+            android:name=".gcm.GcmBroadcastReceiver"
+            android:permission="com.google.android.c2dm.permission.SEND" >
+            <intent-filter>
+
+                <!-- Receives the actual messages. -->
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+                <!-- Receives the registration id. -->
+                <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
+
+                <category android:name="com.viewer.rds.actia.rdsmobileviewer" />
+            </intent-filter>
+        </receiver>
+
 <!--        <service
             android:name=".services.RDSViewerServiceAsync"
             android:enabled="true"
@@ -49,9 +85,10 @@
             android:name=".services.RDSViewerServiceAsync"
             android:process=":ardis_light_process"
             android:enabled="true"
-            android:exported="true" >
+            android:exported="true">
         </service>
 
+        <!-- ActiveAndroid ORM DB Meta-Data Settings -->
         <meta-data android:name="AA_DB_NAME" android:value="rdsmobilerepo.db" />
         <meta-data android:name="AA_DB_VERSION" android:value="1" />
 

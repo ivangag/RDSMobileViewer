@@ -4,25 +4,24 @@ import android.content.Context;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 /**
  * Created by igaglioti on 05/09/2014.
  */
-public class VolleyRequestManager {
-    private static VolleyRequestManager mInstance;
+public class VolleyRequestController {
+    private static VolleyRequestController mInstance;
     private Context mCtx;
     private RequestQueue mRequestQueue;
 
-    public static VolleyRequestManager getInstance(Context context) {
+    public static VolleyRequestController getInstance(Context context) {
         if (mInstance == null) {
-            mInstance = new VolleyRequestManager(context);
+            mInstance = new VolleyRequestController(context);
         }
         return mInstance;
     }
 
-    private VolleyRequestManager(Context context) {
+    private VolleyRequestController(Context context) {
         mCtx = context;
         mRequestQueue = getRequestQueue();
     }
